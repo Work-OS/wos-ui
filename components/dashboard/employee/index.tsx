@@ -1,12 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardAction } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { StatCard } from "@/components/custom/stat-card"
+import { ClockWidget } from "@/components/custom/clock-widget"
 import { CURRENT_USER } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
 
@@ -46,18 +45,6 @@ function getGreeting() {
 
 export function OverviewSection() {
   const router = useRouter()
-  const [now, setNow] = useState<Date | null>(null)
-  const [clockedIn, setClockedIn] = useState(false)
-
-  useEffect(() => {
-    setNow(new Date())
-    const id = setInterval(() => setNow(new Date()), 1000)
-    return () => clearInterval(id)
-  }, [])
-
-  const timeStr = now
-    ? now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
-    : "--:--:-- --"
 
   const firstName = CURRENT_USER.name.split(" ")[0]
   const dateStr = new Date().toLocaleDateString("en-US", {
@@ -122,37 +109,9 @@ export function OverviewSection() {
         />
       </div>
 
-      {/* Quick clock-in + Leave balance */}
+      {/* Clock widget + Leave balance */}
       <div className="grid grid-cols-2 gap-4">
-        {/* Quick clock-in */}
-        <Card
-          className="cursor-pointer transition-shadow hover:shadow-lg"
-          onClick={() => router.push("/dashboard/employee/dtr")}
-        >
-          <CardHeader>
-            <CardTitle>Quick clock-in</CardTitle>
-            <CardAction>
-              <Badge variant={clockedIn ? "default" : "outline"}>
-                {clockedIn ? "Clocked in" : "Not clocked in"}
-              </Badge>
-            </CardAction>
-          </CardHeader>
-          <CardContent>
-            <p className="py-2 text-center text-4xl font-bold tabular-nums tracking-tight">
-              {timeStr}
-            </p>
-            <Button
-              className="mt-3 w-full justify-center"
-              variant={clockedIn ? "outline" : "default"}
-              onClick={(e) => {
-                e.stopPropagation()
-                setClockedIn((v) => !v)
-              }}
-            >
-              {clockedIn ? "Clock out" : "Clock in"}
-            </Button>
-          </CardContent>
-        </Card>
+        <ClockWidget />
 
         {/* Leave balance */}
         <Card>
