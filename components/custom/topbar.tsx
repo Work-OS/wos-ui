@@ -13,8 +13,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { roleUsers, sectionTitles } from "@/lib/nav-config"
+import { roleUsers, roleLabels, sectionTitles } from "@/lib/nav-config"
 import { StatusBadge } from "./status-badge"
+import { cn } from "@/lib/utils"
 import type { Role } from "@/lib/types"
 
 interface TopbarProps {
@@ -25,6 +26,7 @@ export function Topbar({ clockedIn }: TopbarProps) {
   const pathname = usePathname()
   const { resolvedTheme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const [switchRoleOpen, setSwitchRoleOpen] = useState(false)
   useEffect(() => setMounted(true), [])
 
   const role = (pathname.split("/")[2] as Role) ?? "employee"
@@ -75,11 +77,48 @@ export function Topbar({ clockedIn }: TopbarProps) {
             </Avatar>
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-52">
+        <DropdownMenuContent align="end" className="w-52" onCloseAutoFocus={() => setSwitchRoleOpen(false)}>
           <DropdownMenuLabel className="font-normal">
             <p className="text-[13px] font-semibold">{user.name}</p>
             <p className="text-xs text-muted-foreground">{user.title}</p>
           </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+
+          {/* Switch role accordion */}
+          <DropdownMenuItem
+            onSelect={(e) => { e.preventDefault(); setSwitchRoleOpen((v) => !v) }}
+            className="justify-between"
+          >
+            <span className="flex items-center gap-2">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+              </svg>
+              Switch role
+            </span>
+            <svg
+              width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+              className={cn("transition-transform duration-200", switchRoleOpen && "rotate-180")}
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </DropdownMenuItem>
+
+          {switchRoleOpen && (
+            <div className="mb-1 ml-2 space-y-0.5 border-l border-border pl-3">
+              {(["employee", "hr", "admin", "settings"] as Role[]).map((r) => {
+                if (r === role) return null
+                return (
+                  <DropdownMenuItem key={r} asChild>
+                    <Link href={`/dashboard/${r}`} className="text-[12px]">
+                      {roleLabels[r]}
+                    </Link>
+                  </DropdownMenuItem>
+                )
+              })}
+            </div>
+          )}
+
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
             <Link href="/dashboard/settings">
