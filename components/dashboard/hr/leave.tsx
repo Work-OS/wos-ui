@@ -10,6 +10,11 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { leaveRequests } from "@/lib/mock-data"
 
 export function LeaveSection() {
@@ -55,8 +60,28 @@ export function LeaveSection() {
               <TableCell className="text-right">
                 {r.status === "pending" && (
                   <div className="flex justify-end gap-1">
-                    <Button size="xs" variant="outline" className="border-success-border text-success">✓</Button>
-                    <Button size="xs" variant="outline" className="border-danger-border text-danger">✕</Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button size="icon-xs" variant="outline" className="border-success-border text-success hover:bg-gbg">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <path d="M20 6L9 17l-5-5" />
+                          </svg>
+                          <span className="sr-only">Approve</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Approve</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button size="icon-xs" variant="outline" className="border-danger-border text-danger hover:bg-rbg">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <path d="M18 6L6 18M6 6l12 12" />
+                          </svg>
+                          <span className="sr-only">Decline</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Decline</TooltipContent>
+                    </Tooltip>
                   </div>
                 )}
               </TableCell>
