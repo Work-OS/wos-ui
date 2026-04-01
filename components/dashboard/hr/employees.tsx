@@ -34,6 +34,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { employees } from "@/lib/mock-data"
+import { usePagination, TablePagination } from "@/components/custom/table-pagination"
 
 function AddEmployeeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
@@ -107,6 +108,9 @@ export function EmployeesSection() {
       e.position.toLowerCase().includes(search.toLowerCase()),
   )
 
+  const { paginated, page, setPage, pageSize, setPageSize, total, totalPages } =
+    usePagination(filtered)
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
@@ -114,7 +118,7 @@ export function EmployeesSection() {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
             <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
           </svg>
-          <Input className="pl-9" placeholder="Search employees…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input className="pl-9" placeholder="Search employees…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }} />
         </div>
         <Button size="sm" onClick={() => setAddOpen(true)}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1.5">
@@ -133,7 +137,7 @@ export function EmployeesSection() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filtered.map((emp) => (
+          {paginated.map((emp) => (
             <TableRow key={emp.id} className="cursor-pointer">
               <TableCell>
                 <div className="flex items-center gap-2.5">
@@ -171,6 +175,14 @@ export function EmployeesSection() {
           ))}
         </TableBody>
       </Table>
+      <TablePagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        pageSize={pageSize}
+        setPage={setPage}
+        setPageSize={setPageSize}
+      />
 
       <AddEmployeeModal open={addOpen} onClose={() => setAddOpen(false)} />
     </div>

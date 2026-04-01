@@ -3,6 +3,7 @@
 import { StatusBadge } from "@/components/custom/status-badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { usePagination, TablePagination } from "@/components/custom/table-pagination"
 import {
   Table,
   TableHeader,
@@ -19,6 +20,9 @@ import {
 import { employees } from "@/lib/mock-data"
 
 export function UsersSection() {
+  const { paginated, page, setPage, pageSize, setPageSize, total, totalPages } =
+    usePagination(employees)
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
@@ -40,7 +44,7 @@ export function UsersSection() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {employees.map((emp) => (
+          {paginated.map((emp) => (
             <TableRow key={emp.id} className="cursor-pointer">
               <TableCell>
                 <div className="flex items-center gap-2.5">
@@ -98,6 +102,14 @@ export function UsersSection() {
           ))}
         </TableBody>
       </Table>
+      <TablePagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        pageSize={pageSize}
+        setPage={setPage}
+        setPageSize={setPageSize}
+      />
     </div>
   )
 }

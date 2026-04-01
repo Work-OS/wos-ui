@@ -2,6 +2,7 @@
 
 import { StatusBadge } from "@/components/custom/status-badge"
 import { Button } from "@/components/ui/button"
+import { usePagination, TablePagination } from "@/components/custom/table-pagination"
 import {
   Table,
   TableHeader,
@@ -18,6 +19,9 @@ import {
 import { leaveRequests } from "@/lib/mock-data"
 
 export function LeaveSection() {
+  const { paginated, page, setPage, pageSize, setPageSize, total, totalPages } =
+    usePagination(leaveRequests)
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -37,7 +41,7 @@ export function LeaveSection() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {leaveRequests.map((r) => (
+          {paginated.map((r) => (
             <TableRow key={r.id}>
               <TableCell>
                 <div className="flex items-center gap-2">
@@ -89,6 +93,14 @@ export function LeaveSection() {
           ))}
         </TableBody>
       </Table>
+      <TablePagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        pageSize={pageSize}
+        setPage={setPage}
+        setPageSize={setPageSize}
+      />
     </div>
   )
 }
