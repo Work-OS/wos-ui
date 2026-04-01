@@ -120,6 +120,33 @@ export const attendanceRecords: AttendanceRecord[] = [
     otHours: "—",
     status: "present",
   },
+  {
+    date: "Mar 19",
+    day: "Wed",
+    timeIn: "9:00 AM",
+    timeOut: "9:15 PM",
+    hoursWorked: "12h 15m",
+    otHours: "3.25",
+    status: "overtime",
+  },
+  {
+    date: "Mar 18",
+    day: "Tue",
+    timeIn: "9:05 AM",
+    timeOut: "6:00 PM",
+    hoursWorked: "8h 55m",
+    otHours: "—",
+    status: "overbreak",
+  },
+  {
+    date: "Mar 17",
+    day: "Mon",
+    timeIn: "9:00 AM",
+    timeOut: "4:45 PM",
+    hoursWorked: "7h 45m",
+    otHours: "—",
+    status: "undertime",
+  },
 ]
 
 export const payslips: PayslipData[] = [

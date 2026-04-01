@@ -26,7 +26,7 @@ export interface AttendanceRecord {
   timeOut: string
   hoursWorked: string
   otHours: string
-  status: "present" | "late" | "absent" | "leave" | "holiday" | "restday"
+  status: "present" | "late" | "absent" | "leave" | "holiday" | "restday" | "overtime" | "overbreak" | "undertime"
 }
 
 export interface PayslipData {

@@ -1,9 +1,19 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback, useRef } from "react"
 import { StatusBadge } from "@/components/custom/status-badge"
 import { DtrChangeModal } from "@/components/custom/dtr-change-modal"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import {
   Table,
   TableHeader,
@@ -12,8 +22,15 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { attendanceRecords } from "@/lib/mock-data"
+import type { AttendanceRecord } from "@/lib/types"
 
 const statusVariant: Record<string, "green" | "red" | "amber" | "gray" | "blue" | "purple"> = {
   present: "green",
@@ -22,6 +39,160 @@ const statusVariant: Record<string, "green" | "red" | "amber" | "gray" | "blue" 
   leave: "blue",
   holiday: "purple",
   restday: "gray",
+  overtime: "blue",
+  overbreak: "red",
+  undertime: "amber",
+}
+
+const APPEAL_STATUSES = new Set(["late", "undertime", "overtime", "overbreak"])
+// Time-change is only relevant when clock-in/out caused the issue
+const TIME_CHANGE_STATUSES = new Set(["late", "undertime"])
+
+// ── View Modal ────────────────────────────────────────────────────────────────
+
+function ViewModal({
+  record,
+  note,
+  open,
+  onClose,
+}: {
+  record: AttendanceRecord | null
+  note?: string
+  open: boolean
+  onClose: () => void
+}) {
+  if (!record) return null
+  const rows = [
+    { label: "Date", value: `${record.date} · ${record.day}` },
+    { label: "Time in", value: record.timeIn },
+    { label: "Time out", value: record.timeOut },
+    { label: "Hours worked", value: record.hoursWorked },
+    { label: "OT hours", value: record.otHours !== "—" ? `+${record.otHours}h` : "—" },
+    { label: "Status", value: record.status.charAt(0).toUpperCase() + record.status.slice(1) },
+    ...(note ? [{ label: "Notes", value: note }] : []),
+  ]
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Attendance record</DialogTitle>
+        </DialogHeader>
+        <div className="divide-y divide-border rounded-lg border border-border text-[13px]">
+          {rows.map(({ label, value }) => (
+            <div key={label} className="flex items-center justify-between px-4 py-2.5">
+              <span className="text-muted-foreground">{label}</span>
+              <span className="font-medium tabular-nums">{value}</span>
+            </div>
+          ))}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" size="sm" onClick={onClose}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ── Appeal Modal ──────────────────────────────────────────────────────────────
+
+function AppealModal({
+  record,
+  open,
+  onClose,
+  onSubmit,
+}: {
+  record: AttendanceRecord | null
+  open: boolean
+  onClose: () => void
+  onSubmit: (reason: string) => void
+}) {
+  const [reason, setReason] = useState("")
+  const [changeTime, setChangeTime] = useState(false)
+  const [timeIn, setTimeIn] = useState("")
+  const [timeOut, setTimeOut] = useState("")
+
+  useEffect(() => {
+    if (open && record) {
+      setReason("")
+      setChangeTime(false)
+      setTimeIn(record.timeIn === "—" ? "" : record.timeIn)
+      setTimeOut(record.timeOut === "—" ? "" : record.timeOut)
+    }
+  }, [open, record])
+
+  if (!record) return null
+
+  const canChangeTime = TIME_CHANGE_STATUSES.has(record.status)
+
+  const handleSubmit = () => {
+    onSubmit(reason.trim())
+    onClose()
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>File an appeal</DialogTitle>
+        </DialogHeader>
+        <p className="text-[12px] text-muted-foreground">
+          {record.date} · {record.day} · <span className="capitalize">{record.status}</span>
+        </p>
+        <div className="space-y-4">
+          {/* Checkbox to enable time change — only for late / undertime */}
+          {canChangeTime && (
+            <label className="flex cursor-pointer items-center gap-2.5 text-[13px]">
+              <input
+                type="checkbox"
+                checked={changeTime}
+                onChange={(e) => setChangeTime(e.target.checked)}
+                className="h-3.5 w-3.5 cursor-pointer accent-primary"
+              />
+              <span className="font-medium">Change clock in / clock out</span>
+            </label>
+          )}
+
+          {/* Time fields — visible only when checkbox checked */}
+          {canChangeTime && changeTime && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-[12px]">Correct time in</Label>
+                <Input
+                  value={timeIn}
+                  onChange={(e) => setTimeIn(e.target.value)}
+                  placeholder="e.g. 9:00 AM"
+                  className="h-8 text-[13px]"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-[12px]">Correct time out</Label>
+                <Input
+                  value={timeOut}
+                  onChange={(e) => setTimeOut(e.target.value)}
+                  placeholder="e.g. 6:00 PM"
+                  className="h-8 text-[13px]"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-1.5">
+            <Label className="text-[12px]">Reason</Label>
+            <Textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Describe the reason for your appeal..."
+              className="min-h-20 resize-none text-[13px]"
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
+          <Button size="sm" disabled={!reason.trim()} onClick={handleSubmit}>Submit appeal</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
 }
 
 interface DtrBreak {
@@ -149,12 +320,32 @@ export function DTRSection() {
   const [clockOutTime, setClockOutTime] = useState<Date | null>(null)
   const [breaks, setBreaks] = useState<Record<string, DtrBreak>>(INITIAL_BREAKS)
   const [dtrOpen, setDtrOpen] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const clockCardRef = useRef<HTMLDivElement>(null)
+  const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(null)
+  const [viewOpen, setViewOpen] = useState(false)
+  const [appealOpen, setAppealOpen] = useState(false)
+  const [recordNotes, setRecordNotes] = useState<Record<string, string>>({})
 
   useEffect(() => {
     setNow(new Date())
     const id = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(id)
   }, [])
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement)
+    document.addEventListener("fullscreenchange", handler)
+    return () => document.removeEventListener("fullscreenchange", handler)
+  }, [])
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      clockCardRef.current?.requestFullscreen()
+    } else {
+      document.exitFullscreen()
+    }
+  }
 
   const workSecs = clocked && clockInTime && now
     ? Math.floor((now.getTime() - clockInTime.getTime()) / 1000)
@@ -258,13 +449,53 @@ export function DTRSection() {
       <div className="grid grid-cols-5 gap-4">
 
         {/* ── Clock panel ── */}
-        <div className="col-span-3 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-          <div className={cn("flex flex-col items-center px-6 py-5", !clocked && "h-full justify-center")}>
+        <div
+          ref={clockCardRef}
+          className={cn(
+            "col-span-3 overflow-hidden rounded-xl border border-border bg-card shadow-sm",
+            isFullscreen && "flex items-center justify-center",
+          )}
+        >
+          <div
+            className={cn("flex flex-col items-center px-6 py-5", !clocked && "h-full justify-center", isFullscreen && "w-full max-w-sm")}
+            style={isFullscreen ? { transform: "scale(2.2)", transformOrigin: "center center", gap: "14px" } : undefined}
+          >
 
-            {/* Current time label */}
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Current time
-            </p>
+            {/* Header row: label + fullscreen toggle */}
+            <div className="flex w-full items-center justify-between">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Current time
+              </p>
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={toggleFullscreen}
+                      className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    >
+                      {isFullscreen ? (
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M8 3v3a2 2 0 01-2 2H3" />
+                          <path d="M21 8h-3a2 2 0 01-2-2V3" />
+                          <path d="M3 16h3a2 2 0 012 2v3" />
+                          <path d="M16 21v-3a2 2 0 012-2h3" />
+                        </svg>
+                      ) : (
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M8 3H5a2 2 0 00-2 2v3" />
+                          <path d="M21 8V5a2 2 0 00-2-2h-3" />
+                          <path d="M3 16v3a2 2 0 002 2h3" />
+                          <path d="M16 21h3a2 2 0 002-2v-3" />
+                        </svg>
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    {isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
 
             {/* Big clock */}
             <p className="mt-2 font-bold tabular-nums leading-none" style={{ fontSize: 40, letterSpacing: "-1px" }}>
@@ -499,7 +730,7 @@ export function DTRSection() {
         <Table>
           <TableHeader>
             <TableRow>
-              {["Date", "Day", "Time in", "Time out", "Hours worked", "OT hours", "Status"].map((h) => (
+              {["Date", "Day", "Time in", "Time out", "Hours worked", "OT hours", "Status", "Notes", "Actions"].map((h) => (
                 <TableHead
                   key={h}
                   className={h === "Hours worked" || h === "OT hours" ? "text-right" : undefined}
@@ -510,32 +741,98 @@ export function DTRSection() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {attendanceRecords.map((r, i) => (
-              <TableRow key={i}>
-                <TableCell className="font-medium">{r.date}</TableCell>
-                <TableCell className="text-muted-foreground">{r.day}</TableCell>
-                <TableCell className="tabular-nums">{r.timeIn}</TableCell>
-                <TableCell className="tabular-nums">{r.timeOut}</TableCell>
-                <TableCell className="tabular-nums text-right">{r.hoursWorked}</TableCell>
-                <TableCell className="tabular-nums text-right">
-                  {r.otHours !== "—" ? (
-                    <span className="font-medium text-primary">+{r.otHours}h</span>
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <StatusBadge variant={statusVariant[r.status] ?? "gray"}>
-                    {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
-                  </StatusBadge>
-                </TableCell>
-              </TableRow>
-            ))}
+            {attendanceRecords.map((r, i) => {
+              const note = recordNotes[r.date]
+              return (
+                <TableRow key={i}>
+                  <TableCell className="font-medium">{r.date}</TableCell>
+                  <TableCell className="text-muted-foreground">{r.day}</TableCell>
+                  <TableCell className="tabular-nums">{r.timeIn}</TableCell>
+                  <TableCell className="tabular-nums">{r.timeOut}</TableCell>
+                  <TableCell className="tabular-nums text-right">{r.hoursWorked}</TableCell>
+                  <TableCell className="tabular-nums text-right">
+                    {r.otHours !== "—" ? (
+                      <span className="font-medium text-primary">+{r.otHours}h</span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge variant={statusVariant[r.status] ?? "gray"}>
+                      {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                    </StatusBadge>
+                  </TableCell>
+                  <TableCell className="max-w-45">
+                    {note ? (
+                      <span className="line-clamp-2 text-[12px] text-muted-foreground">{note}</span>
+                    ) : (
+                      <span className="text-[12px] text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <TooltipProvider delayDuration={300}>
+                      <div className="flex items-center gap-1">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                              onClick={() => { setSelectedRecord(r); setViewOpen(true) }}
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
+                                <circle cx="12" cy="12" r="3" />
+                              </svg>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">View record</TooltipContent>
+                        </Tooltip>
+                        {APPEAL_STATUSES.has(r.status) && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0 text-warning hover:bg-warning/10 hover:text-warning"
+                                onClick={() => { setSelectedRecord(r); setAppealOpen(true) }}
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z" />
+                                  <polyline points="14 2 14 8 20 8" />
+                                  <line x1="12" y1="18" x2="12" y2="12" />
+                                  <line x1="9" y1="15" x2="15" y2="15" />
+                                </svg>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">File an appeal</TooltipContent>
+                          </Tooltip>
+                        )}
+                      </div>
+                    </TooltipProvider>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
       </div>
 
       <DtrChangeModal open={dtrOpen} onClose={() => setDtrOpen(false)} />
+      <ViewModal
+        record={selectedRecord}
+        note={selectedRecord ? recordNotes[selectedRecord.date] : undefined}
+        open={viewOpen}
+        onClose={() => setViewOpen(false)}
+      />
+      <AppealModal
+        record={selectedRecord}
+        open={appealOpen}
+        onClose={() => setAppealOpen(false)}
+        onSubmit={(reason) =>
+          selectedRecord && setRecordNotes((prev) => ({ ...prev, [selectedRecord.date]: reason }))
+        }
+      />
     </div>
   )
 }
