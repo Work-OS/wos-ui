@@ -17,6 +17,16 @@ import { roleUsers, roleLabels, sectionTitles } from "@/lib/nav-config"
 import { StatusBadge } from "./status-badge"
 import { cn } from "@/lib/utils"
 import type { Role } from "@/lib/types"
+import { HugeiconsIcon } from "@hugeicons/react"
+import {
+  ArrowLeft01Icon,
+  Sun01Icon,
+  Moon02Icon,
+  UserMultiple02Icon,
+  ArrowDown01Icon,
+  Setting06Icon,
+  Logout01Icon,
+} from "@hugeicons/core-free-icons"
 
 interface TopbarProps {
   clockedIn?: boolean
@@ -45,9 +55,7 @@ export function Topbar({ clockedIn }: TopbarProps) {
           onClick={() => router.back()}
           className="flex items-center gap-1.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M19 12H5M12 5l-7 7 7 7" />
-          </svg>
+          <HugeiconsIcon icon={ArrowLeft01Icon} size={14} strokeWidth={2} />
           Back
         </button>
       )}
@@ -67,14 +75,9 @@ export function Topbar({ clockedIn }: TopbarProps) {
         aria-label="Toggle dark mode"
       >
         {mounted && resolvedTheme === "dark" ? (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-            <circle cx="12" cy="12" r="5" />
-            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-          </svg>
+          <HugeiconsIcon icon={Sun01Icon} size={15} strokeWidth={1.8} />
         ) : (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-          </svg>
+          <HugeiconsIcon icon={Moon02Icon} size={15} strokeWidth={1.8} />
         )}
       </button>
 
@@ -102,18 +105,15 @@ export function Topbar({ clockedIn }: TopbarProps) {
             className="justify-between"
           >
             <span className="flex items-center gap-2">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
-              </svg>
+              <HugeiconsIcon icon={UserMultiple02Icon} size={13} strokeWidth={1.8} />
               Switch role
             </span>
-            <svg
-              width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+            <HugeiconsIcon
+              icon={ArrowDown01Icon}
+              size={12}
+              strokeWidth={2}
               className={cn("transition-transform duration-200", switchRoleOpen && "rotate-180")}
-            >
-              <path d="M6 9l6 6 6-6" />
-            </svg>
+            />
           </DropdownMenuItem>
 
           {switchRoleOpen && (
@@ -134,18 +134,14 @@ export function Topbar({ clockedIn }: TopbarProps) {
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
             <Link href="/dashboard/settings">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="mr-2">
-                <circle cx="12" cy="12" r="3" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2" />
-              </svg>
+              <HugeiconsIcon icon={Setting06Icon} size={13} strokeWidth={1.8} className="mr-2" />
               Settings
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild className="text-destructive focus:text-destructive">
             <Link href="/">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="mr-2">
-                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
-              </svg>
+              <HugeiconsIcon icon={Logout01Icon} size={13} strokeWidth={1.8} className="mr-2" />
               Log out
             </Link>
           </DropdownMenuItem>

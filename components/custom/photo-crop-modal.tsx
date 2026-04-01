@@ -3,6 +3,8 @@
 import { useState, useCallback } from "react"
 import Cropper, { type Area } from "react-easy-crop"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { ZoomInAreaIcon, ZoomOutAreaIcon } from "@hugeicons/core-free-icons"
 import { Button } from "@/components/ui/button"
 
 // ── Canvas crop helper ─────────────────────────────────────────────────────────
@@ -81,9 +83,7 @@ export function PhotoCropModal({ imageSrc, onDone, onCancel }: Props) {
 
         {/* Zoom slider */}
         <div className="flex items-center gap-3 px-5 pt-4 pb-1">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-muted-foreground">
-            <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35M11 8v6M8 11h6" />
-          </svg>
+          <HugeiconsIcon icon={ZoomOutAreaIcon} size={13} strokeWidth={2} className="shrink-0 text-muted-foreground" />
           <input
             type="range"
             min={1}
@@ -93,9 +93,7 @@ export function PhotoCropModal({ imageSrc, onDone, onCancel }: Props) {
             onChange={(e) => setZoom(Number(e.target.value))}
             className="h-1 w-full cursor-pointer appearance-none rounded-full bg-border accent-primary"
           />
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-muted-foreground">
-            <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35M11 8v6M8 11h6M14 11H8" />
-          </svg>
+          <HugeiconsIcon icon={ZoomInAreaIcon} size={13} strokeWidth={2} className="shrink-0 text-muted-foreground" />
         </div>
 
         <DialogFooter className="px-5 py-4">

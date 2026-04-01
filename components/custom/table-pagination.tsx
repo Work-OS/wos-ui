@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons"
 
 export function usePagination<T>(items: T[], defaultPageSize = 5) {
   const [page, setPage] = useState(1)
@@ -76,18 +78,14 @@ export function TablePagination({
             disabled={page <= 1}
             className="flex size-6 items-center justify-center rounded border border-border transition-colors hover:bg-muted disabled:opacity-40"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
+            <HugeiconsIcon icon={ArrowLeft01Icon} size={12} strokeWidth={2} />
           </button>
           <button
             onClick={() => setPage(page + 1)}
             disabled={page >= totalPages}
             className="flex size-6 items-center justify-center rounded border border-border transition-colors hover:bg-muted disabled:opacity-40"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 18l6-6-6-6" />
-            </svg>
+            <HugeiconsIcon icon={ArrowRight01Icon} size={12} strokeWidth={2} />
           </button>
         </div>
       </div>

@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Download01Icon, EyeIcon } from "@hugeicons/core-free-icons"
 import {
   Card,
   CardContent,
@@ -39,19 +41,7 @@ function parseAmt(s: string): number {
 }
 
 const DownloadIcon = ({ className }: { className?: string }) => (
-  <svg
-    width="13"
-    height="13"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    className={className}
-  >
-    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-    <polyline points="7 10 12 15 17 10" />
-    <line x1="12" y1="15" x2="12" y2="3" />
-  </svg>
+  <HugeiconsIcon icon={Download01Icon} size={13} strokeWidth={2} className={className} />
 )
 
 // ── sub-components ────────────────────────────────────────────────────────────
@@ -413,9 +403,7 @@ export function PayrollSection() {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button size="icon-xs" variant="outline" onClick={() => setSelectedPayslip(p)}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
-                                </svg>
+                                <HugeiconsIcon icon={EyeIcon} size={12} strokeWidth={2} />
                                 <span className="sr-only">View payslip</span>
                               </Button>
                             </TooltipTrigger>

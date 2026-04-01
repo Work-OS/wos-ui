@@ -1,6 +1,19 @@
 "use client"
 
 import React, { useState, useEffect, useCallback, useRef } from "react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import {
+  Coffee01Icon,
+  SpoonAndForkIcon,
+  Sun01Icon,
+  Moon01Icon,
+  MaximizeScreenIcon,
+  MinimizeScreenIcon,
+  Clock01Icon,
+  StopCircleIcon,
+  EyeIcon,
+  File01Icon,
+} from "@hugeicons/core-free-icons"
 import { StatusBadge } from "@/components/custom/status-badge"
 import { DtrChangeModal } from "@/components/custom/dtr-change-modal"
 import { Button } from "@/components/ui/button"
@@ -285,34 +298,10 @@ function DtrRingButton({
 }
 
 const BREAK_ICONS: Record<string, (color: string) => React.ReactNode> = {
-  morning: (c) => (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2">
-      <path d="M18 8h1a4 4 0 010 8h-1" />
-      <path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" />
-      <line x1="6" y1="1" x2="6" y2="4" /><line x1="10" y1="1" x2="10" y2="4" /><line x1="14" y1="1" x2="14" y2="4" />
-    </svg>
-  ),
-  lunch: (c) => (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2">
-      <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2" />
-      <line x1="7" y1="2" x2="7" y2="22" />
-      <path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7" />
-    </svg>
-  ),
-  afternoon: (c) => (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2">
-      <circle cx="12" cy="12" r="4" />
-      <line x1="12" y1="2" x2="12" y2="5" /><line x1="12" y1="19" x2="12" y2="22" />
-      <line x1="4.22" y1="4.22" x2="6.34" y2="6.34" /><line x1="17.66" y1="17.66" x2="19.78" y2="19.78" />
-      <line x1="2" y1="12" x2="5" y2="12" /><line x1="19" y1="12" x2="22" y2="12" />
-      <line x1="4.22" y1="19.78" x2="6.34" y2="17.66" /><line x1="17.66" y1="6.34" x2="19.78" y2="4.22" />
-    </svg>
-  ),
-  dinner: (c) => (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2">
-      <path d="M12 3a6 6 0 009 9 9 9 0 11-9-9z" />
-    </svg>
-  ),
+  morning:   (c) => <HugeiconsIcon icon={Coffee01Icon}     size={15} strokeWidth={2} color={c} />,
+  lunch:     (c) => <HugeiconsIcon icon={SpoonAndForkIcon} size={15} strokeWidth={2} color={c} />,
+  afternoon: (c) => <HugeiconsIcon icon={Sun01Icon}        size={15} strokeWidth={2} color={c} />,
+  dinner:    (c) => <HugeiconsIcon icon={Moon01Icon}       size={15} strokeWidth={2} color={c} />,
 }
 
 export function DTRSection() {
@@ -477,21 +466,10 @@ export function DTRSection() {
                       onClick={toggleFullscreen}
                       className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                     >
-                      {isFullscreen ? (
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M8 3v3a2 2 0 01-2 2H3" />
-                          <path d="M21 8h-3a2 2 0 01-2-2V3" />
-                          <path d="M3 16h3a2 2 0 012 2v3" />
-                          <path d="M16 21v-3a2 2 0 012-2h3" />
-                        </svg>
-                      ) : (
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M8 3H5a2 2 0 00-2 2v3" />
-                          <path d="M21 8V5a2 2 0 00-2-2h-3" />
-                          <path d="M3 16v3a2 2 0 002 2h3" />
-                          <path d="M16 21h3a2 2 0 002-2v-3" />
-                        </svg>
-                      )}
+                      {isFullscreen
+                        ? <HugeiconsIcon icon={MinimizeScreenIcon} size={13} strokeWidth={2} />
+                        : <HugeiconsIcon icon={MaximizeScreenIcon} size={13} strokeWidth={2} />
+                      }
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="top">
@@ -517,9 +495,7 @@ export function DTRSection() {
             {/* OT banner */}
             {clocked && otSecs > 0 && (
               <div className="mt-2.5 flex w-full items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-[12px] font-medium text-primary">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
-                </svg>
+                <HugeiconsIcon icon={Clock01Icon} size={14} strokeWidth={2} />
                 OT: {fmtDuration(otSecs)}
               </div>
             )}
@@ -543,25 +519,19 @@ export function DTRSection() {
             >
               {anyBreakActive ? (
                 <>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
-                  </svg>
+                  <HugeiconsIcon icon={Clock01Icon} size={13} strokeWidth={2} />
                   {activeBreakIsOver
                     ? `End Break · ⚠ +${fmtCountdown(activeBreakRemaining!)} over`
                     : `End Break · ${fmtCountdown(activeBreakRemaining!)} left`}
                 </>
               ) : clocked ? (
                 <>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="6" y="6" width="12" height="12" rx="1" />
-                  </svg>
+                  <HugeiconsIcon icon={StopCircleIcon} size={13} strokeWidth={2} />
                   Clock Out
                 </>
               ) : (
                 <>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" />
-                  </svg>
+                  <HugeiconsIcon icon={Clock01Icon} size={13} strokeWidth={2} />
                   Clock In
                 </>
               )}
@@ -784,10 +754,7 @@ export function DTRSection() {
                               className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
                               onClick={() => { setSelectedRecord(r); setViewOpen(true) }}
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
-                                <circle cx="12" cy="12" r="3" />
-                              </svg>
+                              <HugeiconsIcon icon={EyeIcon} size={14} strokeWidth={2} />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent side="top">View record</TooltipContent>
@@ -801,12 +768,7 @@ export function DTRSection() {
                                 className="h-7 w-7 p-0 text-warning hover:bg-warning/10 hover:text-warning"
                                 onClick={() => { setSelectedRecord(r); setAppealOpen(true) }}
                               >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z" />
-                                  <polyline points="14 2 14 8 20 8" />
-                                  <line x1="12" y1="18" x2="12" y2="12" />
-                                  <line x1="9" y1="15" x2="15" y2="15" />
-                                </svg>
+                                <HugeiconsIcon icon={File01Icon} size={14} strokeWidth={2} />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent side="top">File an appeal</TooltipContent>

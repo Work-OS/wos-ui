@@ -18,6 +18,14 @@ import {
   TableCell,
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
+import { HugeiconsIcon } from "@hugeicons/react"
+import {
+  Calendar01Icon,
+  Briefcase01Icon,
+  File01Icon,
+  Clock01Icon,
+  ClockPlusIcon,
+} from "@hugeicons/core-free-icons"
 
 // ── request type cards ────────────────────────────────────────────────────────
 
@@ -243,66 +251,35 @@ export function RequestSection() {
           title="Leave request"
           description="Vacation, sick, emergency or maternity/paternity"
           onClick={() => setLeaveOpen(true)}
-          icon={
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <rect x="3" y="4" width="18" height="18" rx="2" />
-              <path d="M16 2v4M8 2v4M3 10h18" />
-            </svg>
-          }
+          icon={<HugeiconsIcon icon={Calendar01Icon} size={18} strokeWidth={1.8} />}
         />
         <RequestTypeCard
           accent="success"
           title="Official business"
           description="Request time off for work-related activities"
           onClick={() => setObOpen(true)}
-          icon={
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <rect x="2" y="7" width="20" height="14" rx="2" />
-              <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
-              <line x1="12" y1="12" x2="12" y2="16" />
-              <line x1="10" y1="14" x2="14" y2="14" />
-            </svg>
-          }
+          icon={<HugeiconsIcon icon={Briefcase01Icon} size={18} strokeWidth={1.8} />}
         />
         <RequestTypeCard
           accent="violet"
           title="Certificate of employment"
           description="Request an official COE document"
           onClick={() => setCoeOpen(true)}
-          icon={
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="16" y1="13" x2="8" y2="13" />
-              <line x1="16" y1="17" x2="8" y2="17" />
-              <polyline points="10 9 9 9 8 9" />
-            </svg>
-          }
+          icon={<HugeiconsIcon icon={File01Icon} size={18} strokeWidth={1.8} />}
         />
         <RequestTypeCard
           accent="warning"
           title="Change time in/out"
           description="Request a correction to your DTR record"
           onClick={() => setDtrOpen(true)}
-          icon={
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 6v6l4 2" />
-            </svg>
-          }
+          icon={<HugeiconsIcon icon={Clock01Icon} size={18} strokeWidth={1.8} />}
         />
         <RequestTypeCard
           accent="danger"
           title="Overtime request"
           description="File pre-approved overtime hours for compensation"
           onClick={() => setOtOpen(true)}
-          icon={
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-              <path d="M17.5 17.5l3 3M20.5 17.5l-3 3" />
-            </svg>
-          }
+          icon={<HugeiconsIcon icon={ClockPlusIcon} size={18} strokeWidth={1.8} />}
         />
       </div>
 

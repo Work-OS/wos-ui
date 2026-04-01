@@ -1,5 +1,7 @@
 "use client"
 
+import { HugeiconsIcon } from "@hugeicons/react"
+import { CheckmarkCircle01Icon, Cancel01Icon } from "@hugeicons/core-free-icons"
 import { StatusBadge } from "@/components/custom/status-badge"
 import { Button } from "@/components/ui/button"
 import { usePagination, TablePagination } from "@/components/custom/table-pagination"
@@ -67,9 +69,7 @@ export function LeaveSection() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button size="icon-xs" variant="outline" className="border-success-border text-success hover:bg-gbg">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <path d="M20 6L9 17l-5-5" />
-                          </svg>
+                          <HugeiconsIcon icon={CheckmarkCircle01Icon} size={12} strokeWidth={2.5} />
                           <span className="sr-only">Approve</span>
                         </Button>
                       </TooltipTrigger>
@@ -78,9 +78,7 @@ export function LeaveSection() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button size="icon-xs" variant="outline" className="border-danger-border text-danger hover:bg-rbg">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <path d="M18 6L6 18M6 6l12 12" />
-                          </svg>
+                          <HugeiconsIcon icon={Cancel01Icon} size={12} strokeWidth={2.5} />
                           <span className="sr-only">Decline</span>
                         </Button>
                       </TooltipTrigger>

@@ -1,5 +1,7 @@
 "use client"
 
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Search01Icon, Edit01Icon, Cancel01Icon } from "@hugeicons/core-free-icons"
 import { StatusBadge } from "@/components/custom/status-badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,9 +29,7 @@ export function UsersSection() {
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <div className="relative flex-1">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-            <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
-          </svg>
+          <HugeiconsIcon icon={Search01Icon} size={14} strokeWidth={2} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input className="pl-9" placeholder="Search users…" />
         </div>
         <Button size="sm">Add user</Button>
@@ -76,10 +76,7 @@ export function UsersSection() {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button size="icon-xs" variant="outline">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                        </svg>
+                        <HugeiconsIcon icon={Edit01Icon} size={12} strokeWidth={2} />
                         <span className="sr-only">Edit user</span>
                       </Button>
                     </TooltipTrigger>
@@ -88,9 +85,7 @@ export function UsersSection() {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button size="icon-xs" variant="outline" className="border-danger-border text-danger hover:bg-rbg">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-                        </svg>
+                        <HugeiconsIcon icon={Cancel01Icon} size={12} strokeWidth={2} />
                         <span className="sr-only">Disable user</span>
                       </Button>
                     </TooltipTrigger>
