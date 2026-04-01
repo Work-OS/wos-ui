@@ -1,4 +1,7 @@
+import type { Metadata } from "next"
 import { AppearanceSection } from "@/components/dashboard/settings/appearance"
+
+export const metadata: Metadata = { title: "Appearance" }
 
 export default function SettingsAppearancePage() {
   return (

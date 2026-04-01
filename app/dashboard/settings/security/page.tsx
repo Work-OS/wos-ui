@@ -1,4 +1,7 @@
+import type { Metadata } from "next"
 import { SecuritySection } from "@/components/dashboard/settings/security"
+
+export const metadata: Metadata = { title: "Security" }
 
 export default function SettingsSecurityPage() {
   return (

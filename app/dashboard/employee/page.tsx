@@ -1,4 +1,7 @@
+import type { Metadata } from "next"
 import { OverviewSection } from "@/components/dashboard/employee"
+
+export const metadata: Metadata = { title: "Overview" }
 
 export default function EmployeeOverviewPage() {
   return (

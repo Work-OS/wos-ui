@@ -1,4 +1,7 @@
+import type { Metadata } from "next"
 import { OverviewSection } from "@/components/dashboard/admin"
+
+export const metadata: Metadata = { title: "Admin Overview" }
 
 export default function AdminOverviewPage() {
   return (

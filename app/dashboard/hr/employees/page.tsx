@@ -1,4 +1,7 @@
+import type { Metadata } from "next"
 import { EmployeesSection } from "@/components/dashboard/hr/employees"
+
+export const metadata: Metadata = { title: "Employees" }
 
 export default function EmployeesPage() {
   return (

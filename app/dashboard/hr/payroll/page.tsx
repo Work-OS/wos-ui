@@ -1,3 +1,7 @@
+import type { Metadata } from "next"
+
+export const metadata: Metadata = { title: "Payroll" }
+
 export default function HRPayrollPage() {
   return (
     <div className="flex h-64 flex-col items-center justify-center text-muted-foreground">

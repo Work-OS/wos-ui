@@ -1,3 +1,7 @@
+import type { Metadata } from "next"
+
+export const metadata: Metadata = { title: "Attendance" }
+
 export default function AttendancePage() {
   return (
     <div className="flex h-64 flex-col items-center justify-center text-muted-foreground">

@@ -1,4 +1,7 @@
+import type { Metadata } from "next"
 import { LeaveSection } from "@/components/dashboard/hr/leave"
+
+export const metadata: Metadata = { title: "Leave Requests" }
 
 export default function HRLeavePage() {
   return (
