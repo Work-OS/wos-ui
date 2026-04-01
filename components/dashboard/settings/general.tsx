@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { StatusBadge } from "@/components/custom/status-badge"
+import { PhotoCropModal } from "@/components/custom/photo-crop-modal"
 import { CURRENT_USER } from "@/lib/mock-data"
 
 const PERSONAL_FIELDS = [
@@ -33,14 +34,26 @@ const DOCUMENTS = [
 
 export function GeneralSection() {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
+  const [cropSrc, setCropSrc] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) setPhotoUrl(URL.createObjectURL(file))
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => setCropSrc(reader.result as string)
+    reader.readAsDataURL(file)
+    // reset so re-selecting same file triggers onChange
+    e.target.value = ""
   }
 
   return (
+    <>
+    <PhotoCropModal
+      imageSrc={cropSrc}
+      onDone={(url) => { setPhotoUrl(url); setCropSrc(null) }}
+      onCancel={() => setCropSrc(null)}
+    />
     <div className="mx-auto max-w-2xl space-y-8">
 
       {/* ── Account ── */}
@@ -79,7 +92,7 @@ export function GeneralSection() {
               variant="ghost"
               size="sm"
               className="ml-2 text-destructive hover:text-destructive"
-              onClick={() => { setPhotoUrl(null); if (fileRef.current) fileRef.current.value = "" }}
+              onClick={() => setPhotoUrl(null)}
             >
               Remove
             </Button>
@@ -181,5 +194,6 @@ export function GeneralSection() {
       </div>
 
     </div>
+    </>
   )
 }
