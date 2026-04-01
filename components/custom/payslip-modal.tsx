@@ -30,7 +30,7 @@ export function PayslipModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="p-0 overflow-hidden max-w-[480px] gap-0" showCloseButton={false}>
+      <DialogContent className="p-0 overflow-hidden max-w-120 gap-0" showCloseButton={false}>
         <DialogTitle className="sr-only">Payslip — {data.period}</DialogTitle>
         {/* Blue header */}
         <div className="bg-primary px-6 py-5 text-primary-foreground">

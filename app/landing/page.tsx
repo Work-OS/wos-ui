@@ -24,7 +24,7 @@ export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       {/* Nav */}
-      <nav className="sticky top-0 z-10 flex h-[60px] items-center border-b border-border bg-background/80 backdrop-blur-sm px-12 gap-4">
+      <nav className="sticky top-0 z-10 flex h-15 items-center border-b border-border bg-background/80 backdrop-blur-sm px-12 gap-4">
         <div className="flex-1">
           <Logo />
         </div>

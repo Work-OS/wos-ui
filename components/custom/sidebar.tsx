@@ -105,7 +105,7 @@ export function Sidebar() {
   return (
     <aside className="flex w-64 shrink-0 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
       {/* Logo */}
-      <div className="flex h-[60px] shrink-0 items-center gap-2 border-b border-border px-5">
+      <div className="flex h-15 shrink-0 items-center gap-2 border-b border-border px-5">
         <Logo />
         <StatusBadge variant={roleVariant[role]} dot={false} className="ml-auto text-[10px]">
           {roleLabel}
@@ -147,7 +147,7 @@ export function Sidebar() {
               {item.badge != null && item.badge > 0 && (
                 <span
                   className={cn(
-                    "flex min-w-[18px] items-center justify-center rounded-full px-1.5 py-px text-[10px] font-semibold",
+                    "flex min-w-4.5 items-center justify-center rounded-full px-1.5 py-px text-[10px] font-semibold",
                     isActive ? "bg-white/20 text-white" : "bg-red-500 text-white",
                   )}
                 >
