@@ -55,8 +55,8 @@ export function LeaveSection() {
               <TableCell className="text-right">
                 {r.status === "pending" && (
                   <div className="flex justify-end gap-1">
-                    <Button size="xs" variant="outline" className="border-green-200 text-green-600 dark:border-green-900 dark:text-green-400">✓</Button>
-                    <Button size="xs" variant="outline" className="border-red-200 text-red-600 dark:border-red-900 dark:text-red-400">✕</Button>
+                    <Button size="xs" variant="outline" className="border-success-border text-success">✓</Button>
+                    <Button size="xs" variant="outline" className="border-danger-border text-danger">✕</Button>
                   </div>
                 )}
               </TableCell>

@@ -193,7 +193,7 @@ export function DTRSection() {
               className={cn(
                 "mt-3 w-full justify-center",
                 clocked
-                  ? "border border-red-200 bg-red-50 text-red-700 shadow-none hover:bg-red-100 dark:border-red-900 dark:bg-red-950/50 dark:text-red-400 dark:hover:bg-red-950"
+                  ? "border border-danger-border bg-danger-light text-danger shadow-none hover:bg-rt"
                   : "",
               )}
               variant={clocked ? "ghost" : "default"}
@@ -233,8 +233,8 @@ export function DTRSection() {
                           key={type}
                           className={cn(
                             "flex items-center justify-between rounded-lg border px-2.5 py-2 transition-colors",
-                            b.active && !isOverbreak && "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30",
-                            b.active && isOverbreak && "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30",
+                            b.active && !isOverbreak && "border-success-border bg-success-light",
+                            b.active && isOverbreak && "border-danger-border bg-danger-light",
                             !b.active && "border-border bg-muted/40",
                           )}
                         >
@@ -242,7 +242,7 @@ export function DTRSection() {
                             <div className="flex items-center gap-1.5">
                               <p className="text-[12px] font-medium">{b.label} break</p>
                               {b.otOnly && (
-                                <span className="rounded bg-amber-100 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
+                                <span className="rounded bg-warning-light px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-warning">
                                   OT only
                                 </span>
                               )}
@@ -253,9 +253,7 @@ export function DTRSection() {
                                 <span
                                   className={cn(
                                     "ml-1 font-semibold tabular-nums",
-                                    isOverbreak
-                                      ? "text-red-600 dark:text-red-400"
-                                      : "text-green-600 dark:text-green-400",
+                                    isOverbreak ? "text-danger" : "text-success",
                                   )}
                                 >
                                   · {isOverbreak ? "⚠ " : ""}{fmtCountdown(remaining)}
@@ -265,9 +263,7 @@ export function DTRSection() {
                                 <span
                                   className={cn(
                                     "ml-1 tabular-nums",
-                                    b.elapsed > b.allowMins * 60
-                                      ? "text-red-500 dark:text-red-400"
-                                      : "",
+                                    b.elapsed > b.allowMins * 60 ? "text-danger" : "",
                                   )}
                                 >
                                   · {fmtDuration(b.elapsed)} used
@@ -283,8 +279,8 @@ export function DTRSection() {
                               b.done && "cursor-not-allowed opacity-40",
                               isDisabled && !b.done && "cursor-not-allowed opacity-30",
                               !isDisabled && !b.done && !b.active && "bg-secondary text-foreground hover:bg-accent",
-                              !isDisabled && !b.done && b.active && !isOverbreak && "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-950/50 dark:text-green-400",
-                              !isDisabled && !b.done && b.active && isOverbreak && "animate-pulse bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-950/50 dark:text-red-400",
+                              !isDisabled && !b.done && b.active && !isOverbreak && "bg-success-light text-success hover:bg-gt",
+                              !isDisabled && !b.done && b.active && isOverbreak && "animate-pulse bg-danger-light text-danger hover:bg-rt",
                             )}
                           >
                             {b.done ? "Done" : b.active ? "End break" : "Start break"}
@@ -335,8 +331,8 @@ export function DTRSection() {
               </div>
               {otSecs > 0 && (
                 <div className="flex items-center justify-between text-[13px]">
-                  <span className="text-amber-600 dark:text-amber-400">Overtime</span>
-                  <span className="font-semibold tabular-nums text-amber-600 dark:text-amber-400">
+                  <span className="text-warning">Overtime</span>
+                  <span className="font-semibold tabular-nums text-warning">
                     +{fmtDuration(otSecs)}
                   </span>
                 </div>
@@ -371,7 +367,7 @@ export function DTRSection() {
                     <span
                       className={cn(
                         "font-medium tabular-nums",
-                        used > b.allowMins * 60 ? "text-red-600 dark:text-red-400" : "",
+                        used > b.allowMins * 60 ? "text-danger" : "",
                       )}
                     >
                       {used > 0 ? fmtDuration(used) : "—"}

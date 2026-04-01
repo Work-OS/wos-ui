@@ -12,11 +12,11 @@ interface StatCardProps {
 }
 
 const accentBar: Record<string, string> = {
-  blue: "bg-primary",
-  green: "bg-green-500",
-  amber: "bg-amber-500",
-  red: "bg-red-500",
-  purple: "bg-purple-500",
+  blue:   "bg-primary",
+  green:  "bg-success",
+  amber:  "bg-warning",
+  red:    "bg-danger",
+  purple: "bg-violet",
 }
 
 export function StatCard({
@@ -62,7 +62,7 @@ export function StatCard({
         <p
           className={cn(
             "mt-1 flex items-center gap-1 text-xs",
-            deltaUp ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400",
+            deltaUp ? "text-success" : "text-danger",
           )}
         >
           <span>{deltaUp ? "↑" : "↓"}</span>

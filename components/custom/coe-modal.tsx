@@ -90,7 +90,7 @@ export function CoeModal({ open, onClose }: CoeModalProps) {
             <Textarea id="coe-notes" placeholder="Special instructions…" rows={2} className="resize-none" />
           </div>
 
-          <div className="rounded-lg border border-purple-200 bg-purple-50 px-3 py-2.5 text-[12px] text-purple-700 dark:border-purple-900 dark:bg-purple-950/30 dark:text-purple-400">
+          <div className="rounded-lg border border-violet-border bg-violet-light px-3 py-2.5 text-[12px] text-violet">
             COE requests are typically processed within 3–5 business days. You will be notified once ready.
           </div>
         </div>

@@ -72,7 +72,7 @@ export function ObModal({ open, onClose }: ObModalProps) {
             <Textarea id="ob-notes" placeholder="Add any relevant context…" rows={2} className="resize-none" />
           </div>
 
-          <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2.5 text-[12px] text-green-700 dark:border-green-900 dark:bg-green-950/30 dark:text-green-400">
+          <div className="rounded-lg border border-success-border bg-success-light px-3 py-2.5 text-[12px] text-success">
             Official business days do not count against your leave balance
           </div>
         </div>

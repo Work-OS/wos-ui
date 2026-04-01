@@ -87,7 +87,7 @@ export function DtrChangeModal({ open, onClose }: DtrChangeModalProps) {
             <Textarea id="dtr-reason" placeholder="Briefly explain why the correction is needed…" rows={2} className="resize-none" />
           </div>
 
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-[12px] text-amber-700 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-400">
+          <div className="rounded-lg border border-warning-border bg-warning-light px-3 py-2.5 text-[12px] text-warning">
             DTR corrections require HR approval and may affect your attendance record and salary computation.
           </div>
         </div>

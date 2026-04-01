@@ -12,13 +12,13 @@ import { cn } from "@/lib/utils"
 
 const LEAVE_BALANCES = [
   { label: "Vacation", days: 8, max: 12, indicatorClassName: "bg-primary" },
-  { label: "Sick", days: 4, max: 12, indicatorClassName: "bg-green-500" },
-  { label: "Emergency", days: 2, max: 12, indicatorClassName: "bg-amber-500" },
+  { label: "Sick", days: 4, max: 12, indicatorClassName: "bg-success" },
+  { label: "Emergency", days: 2, max: 12, indicatorClassName: "bg-warning" },
 ]
 
 const ACTIVITIES = [
   {
-    dot: "bg-green-500",
+    dot: "bg-success",
     title: "Leave request approved",
     meta: "Jun 14–16 vacation · approved by Sandra R.",
     time: "2d ago",
@@ -30,7 +30,7 @@ const ACTIVITIES = [
     time: "Jun 1",
   },
   {
-    dot: "bg-amber-500",
+    dot: "bg-warning",
     title: "DTR correction pending",
     meta: "May 28 · missed clock-out · under review",
     time: "May 30",
@@ -111,7 +111,7 @@ export function OverviewSection() {
         <StatCard
           title="Total hours late"
           value={
-            <span className="text-red-500">
+            <span className="text-danger">
               3.5{" "}
               <span className="text-sm font-normal text-muted-foreground">hrs</span>
             </span>
