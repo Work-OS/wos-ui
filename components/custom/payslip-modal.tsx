@@ -4,6 +4,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  DialogClose,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import type { PayslipData } from "@/lib/types"
@@ -29,7 +30,7 @@ export function PayslipModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="p-0 overflow-hidden max-w-[480px] gap-0">
+      <DialogContent className="p-0 overflow-hidden max-w-[480px] gap-0" showCloseButton={false}>
         <DialogTitle className="sr-only">Payslip — {data.period}</DialogTitle>
         {/* Blue header */}
         <div className="bg-primary px-6 py-5 text-primary-foreground">
@@ -40,19 +41,29 @@ export function PayslipModal({
               </p>
               <p className="mt-1 text-xl font-bold">{data.period}</p>
             </div>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="bg-white/15 text-white hover:bg-white/25 border border-white/30 rounded-lg text-xs"
-              onClick={() => alert("PDF download started")}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-              PDF
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="bg-white/15 text-white hover:bg-white/25 border border-white/30 rounded-lg text-xs"
+                onClick={() => alert("PDF download started")}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                PDF
+              </Button>
+              <DialogClose asChild>
+                <button className="flex size-7 items-center justify-center rounded-lg bg-white/15 text-white hover:bg-white/25 transition-colors">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                  <span className="sr-only">Close</span>
+                </button>
+              </DialogClose>
+            </div>
           </div>
           <p className="mt-2 text-[13px] opacity-80">
             {employeeName} · {position} · {employeeId}
