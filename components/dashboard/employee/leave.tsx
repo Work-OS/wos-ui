@@ -1,96 +1,363 @@
 "use client"
 
 import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { StatCard } from "@/components/custom/stat-card"
 import { StatusBadge } from "@/components/custom/status-badge"
 import { LeaveModal } from "@/components/custom/leave-modal"
+import { ObModal } from "@/components/custom/ob-modal"
 import { CoeModal } from "@/components/custom/coe-modal"
 import { DtrChangeModal } from "@/components/custom/dtr-change-modal"
-import { ObModal } from "@/components/custom/ob-modal"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { leaveBalances } from "@/lib/mock-data"
+import { OvertimeModal } from "@/components/custom/overtime-modal"
+import { cn } from "@/lib/utils"
+
+// ── request type cards ────────────────────────────────────────────────────────
+
+type Accent = "primary" | "success" | "violet" | "warning" | "danger"
+
+const accentStyles: Record<
+  Accent,
+  { card: string; icon: string; iconStroke: string }
+> = {
+  primary: {
+    card: "hover:border-primary/60 hover:bg-primary/5",
+    icon: "bg-primary/10",
+    iconStroke: "text-primary",
+  },
+  success: {
+    card: "hover:border-success hover:bg-success-light",
+    icon: "bg-success-light",
+    iconStroke: "text-success",
+  },
+  violet: {
+    card: "hover:border-violet hover:bg-violet-light",
+    icon: "bg-violet-light",
+    iconStroke: "text-violet",
+  },
+  warning: {
+    card: "hover:border-warning hover:bg-warning-light",
+    icon: "bg-warning-light",
+    iconStroke: "text-warning",
+  },
+  danger: {
+    card: "hover:border-danger hover:bg-danger-light",
+    icon: "bg-danger-light",
+    iconStroke: "text-danger",
+  },
+}
+
+function RequestTypeCard({
+  icon,
+  title,
+  description,
+  accent,
+  onClick,
+}: {
+  icon: React.ReactNode
+  title: string
+  description: string
+  accent: Accent
+  onClick: () => void
+}) {
+  const s = accentStyles[accent]
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "group w-full rounded-xl border border-border bg-card p-4 text-left shadow-sm transition-all duration-150",
+        "hover:-translate-y-0.5 hover:shadow-md",
+        s.card,
+      )}
+    >
+      <div
+        className={cn(
+          "mb-2.5 flex size-9 items-center justify-center rounded-lg",
+          s.icon,
+          s.iconStroke,
+        )}
+      >
+        {icon}
+      </div>
+      <p className="text-[13px] font-semibold text-foreground">{title}</p>
+      <p className="mt-0.5 text-[12px] text-muted-foreground">{description}</p>
+    </button>
+  )
+}
+
+// ── request history ───────────────────────────────────────────────────────────
+
+type RequestType = "leave" | "ob" | "coe" | "dtr" | "ot"
+type RequestStatus = "approved" | "pending" | "declined"
+
+interface RequestRecord {
+  type: RequestType
+  title: string
+  meta: string
+  filed: string
+  forDate: string
+  status: RequestStatus
+  remarks: string
+}
+
+const REQUEST_HISTORY: RequestRecord[] = [
+  {
+    type: "leave",
+    title: "Vacation leave",
+    meta: "Jun 14–16 · 3 days · Family trip",
+    filed: "Jun 7",
+    forDate: "Jun 14–16",
+    status: "approved",
+    remarks: "Approved by Sandra R.",
+  },
+  {
+    type: "ob",
+    title: "Client meeting — Makati",
+    meta: "Full day · off-site",
+    filed: "Jun 5",
+    forDate: "Jun 6",
+    status: "approved",
+    remarks: "Approved by Sandra R.",
+  },
+  {
+    type: "coe",
+    title: "Certificate of employment",
+    meta: "For loan application",
+    filed: "May 30",
+    forDate: "—",
+    status: "pending",
+    remarks: "Under HR review",
+  },
+  {
+    type: "dtr",
+    title: "Missed clock-out",
+    meta: "May 28 · Requested time out: 18:00",
+    filed: "May 30",
+    forDate: "May 28",
+    status: "pending",
+    remarks: "Awaiting HR approval",
+  },
+  {
+    type: "leave",
+    title: "Sick leave",
+    meta: "May 22 · 1 day · Flu",
+    filed: "May 22",
+    forDate: "May 22",
+    status: "approved",
+    remarks: "Auto-approved",
+  },
+  {
+    type: "ob",
+    title: "Training — BGC",
+    meta: "Half day AM",
+    filed: "May 10",
+    forDate: "May 15",
+    status: "declined",
+    remarks: "Scheduling conflict",
+  },
+]
+
+const typeLabel: Record<RequestType, string> = {
+  leave: "Leave",
+  ob: "Official biz",
+  coe: "COE",
+  dtr: "DTR change",
+  ot: "Overtime",
+}
+
+const typeVariant: Record<RequestType, "blue" | "green" | "purple" | "amber" | "red"> = {
+  leave: "blue",
+  ob: "green",
+  coe: "purple",
+  dtr: "amber",
+  ot: "red",
+}
+
+const statusVariant: Record<RequestStatus, "green" | "amber" | "red"> = {
+  approved: "green",
+  pending: "amber",
+  declined: "red",
+}
+
+// ── main component ────────────────────────────────────────────────────────────
 
 export function LeaveSection() {
   const [leaveOpen, setLeaveOpen] = useState(false)
   const [obOpen, setObOpen] = useState(false)
   const [coeOpen, setCoeOpen] = useState(false)
   const [dtrOpen, setDtrOpen] = useState(false)
+  const [otOpen, setOtOpen] = useState(false)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+
+      {/* ── Header ── */}
       <div>
-        <h3 className="mb-3 font-semibold">Leave balance</h3>
-        <div className="grid grid-cols-4 gap-3">
-          {leaveBalances.map((b) => (
-            <div key={b.type} className="rounded-xl border border-border bg-card p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                {b.type.replace(" Leave", "")}
-              </p>
-              <p className="mt-2 text-2xl font-bold text-foreground">{b.remaining}</p>
-              <p className="text-[11px] text-muted-foreground">of {b.total} days</p>
-              <Progress value={(b.remaining / b.total) * 100} className="mt-3 h-1" />
-            </div>
-          ))}
-        </div>
+        <p className="text-[15px] font-semibold">Requests</p>
+        <p className="text-sm text-muted-foreground">
+          File and track all your workplace requests
+        </p>
       </div>
 
-      <div>
-        <h3 className="mb-3 font-semibold">Quick actions</h3>
-        <div className="flex flex-wrap gap-2">
-          <Button size="sm" onClick={() => setLeaveOpen(true)}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1.5">
-              <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+      {/* ── 4 stat cards ── */}
+      <div className="grid grid-cols-4 gap-4">
+        <StatCard
+          title="Leave balance"
+          value={
+            <>14 <span className="text-sm font-normal text-muted-foreground">days</span></>
+          }
+          meta="8 vacation · 4 sick · 2 emergency"
+          accent="blue"
+        />
+        <StatCard
+          title="Pending requests"
+          value={<span className="text-warning">2</span>}
+          meta="Awaiting HR action"
+          accent="amber"
+        />
+        <StatCard
+          title="Approved this year"
+          value={<span className="text-success">7</span>}
+          meta="Across all types"
+          accent="green"
+        />
+        <StatCard
+          title="Declined"
+          value={<span className="text-danger">1</span>}
+          meta="This year"
+          accent="red"
+        />
+      </div>
+
+      {/* ── Request type cards ── */}
+      <div className="grid grid-cols-5 gap-3">
+        <RequestTypeCard
+          accent="primary"
+          title="Leave request"
+          description="Vacation, sick, emergency or maternity/paternity"
+          onClick={() => setLeaveOpen(true)}
+          icon={
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <path d="M16 2v4M8 2v4M3 10h18" />
             </svg>
-            File leave
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => setObOpen(true)}>Official business</Button>
-          <Button size="sm" variant="outline" onClick={() => setCoeOpen(true)}>Request COE</Button>
-          <Button size="sm" variant="outline" onClick={() => setDtrOpen(true)}>DTR correction</Button>
-        </div>
+          }
+        />
+        <RequestTypeCard
+          accent="success"
+          title="Official business"
+          description="Request time off for work-related activities"
+          onClick={() => setObOpen(true)}
+          icon={
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <rect x="2" y="7" width="20" height="14" rx="2" />
+              <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
+              <line x1="12" y1="12" x2="12" y2="16" />
+              <line x1="10" y1="14" x2="14" y2="14" />
+            </svg>
+          }
+        />
+        <RequestTypeCard
+          accent="violet"
+          title="Certificate of employment"
+          description="Request an official COE document"
+          onClick={() => setCoeOpen(true)}
+          icon={
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
+            </svg>
+          }
+        />
+        <RequestTypeCard
+          accent="warning"
+          title="Change time in/out"
+          description="Request a correction to your DTR record"
+          onClick={() => setDtrOpen(true)}
+          icon={
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+          }
+        />
+        <RequestTypeCard
+          accent="danger"
+          title="Overtime request"
+          description="File pre-approved overtime hours for compensation"
+          onClick={() => setOtOpen(true)}
+          icon={
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+              <path d="M17.5 17.5l3 3M20.5 17.5l-3 3" />
+            </svg>
+          }
+        />
       </div>
 
-      <div>
-        <h3 className="mb-3 font-semibold">Leave history</h3>
-        <div className="overflow-x-auto rounded-xl border border-border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b border-border bg-muted/50">
-                {["Type", "From", "To", "Days", "Filed", "Status"].map((h) => (
-                  <th key={h} className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { type: "Vacation leave", from: "Jun 14, 2025", to: "Jun 16, 2025", days: 3, filed: "Apr 1, 2025", status: "pending" },
-                { type: "Sick leave", from: "Mar 5, 2025", to: "Mar 5, 2025", days: 1, filed: "Mar 5, 2025", status: "approved" },
-                { type: "Vacation leave", from: "Mar 25, 2025", to: "Mar 26, 2025", days: 2, filed: "Mar 19, 2025", status: "approved" },
-                { type: "Emergency leave", from: "Jan 10, 2025", to: "Jan 10, 2025", days: 1, filed: "Jan 9, 2025", status: "approved" },
-              ].map((r, i) => (
-                <tr key={i} className="border-b border-border last:border-0 hover:bg-muted/30">
-                  <td className="px-4 py-3 font-medium">{r.type}</td>
-                  <td className="px-4 py-3 tabular-nums text-muted-foreground">{r.from}</td>
-                  <td className="px-4 py-3 tabular-nums text-muted-foreground">{r.to}</td>
-                  <td className="px-4 py-3 text-center">{r.days}</td>
-                  <td className="px-4 py-3 tabular-nums text-muted-foreground">{r.filed}</td>
-                  <td className="px-4 py-3">
-                    <StatusBadge variant={r.status === "approved" ? "green" : r.status === "pending" ? "amber" : "red"}>
-                      {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
-                    </StatusBadge>
-                  </td>
+      {/* ── Request history ── */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Request history</CardTitle>
+          <p className="text-[12px] text-muted-foreground">All time</p>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto rounded-lg border border-border">
+            <table className="w-full text-[13px]">
+              <thead>
+                <tr className="border-b border-border bg-muted/50">
+                  {["Type", "Details", "Date filed", "For date", "Status", "Remarks"].map((h) => (
+                    <th
+                      key={h}
+                      className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+                    >
+                      {h}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+              </thead>
+              <tbody>
+                {REQUEST_HISTORY.map((r, i) => (
+                  <tr
+                    key={i}
+                    className="border-b border-border last:border-0 transition-colors hover:bg-muted/30"
+                  >
+                    <td className="px-4 py-3">
+                      <StatusBadge variant={typeVariant[r.type]}>
+                        {typeLabel[r.type]}
+                      </StatusBadge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="font-medium">{r.title}</p>
+                      <p className="text-[12px] text-muted-foreground">{r.meta}</p>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{r.filed}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{r.forDate}</td>
+                    <td className="px-4 py-3">
+                      <StatusBadge variant={statusVariant[r.status]}>
+                        {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                      </StatusBadge>
+                    </td>
+                    <td className="px-4 py-3 text-[12px] text-muted-foreground">
+                      {r.remarks}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
 
+      {/* ── Modals ── */}
       <LeaveModal open={leaveOpen} onClose={() => setLeaveOpen(false)} />
       <ObModal open={obOpen} onClose={() => setObOpen(false)} />
       <CoeModal open={coeOpen} onClose={() => setCoeOpen(false)} />
       <DtrChangeModal open={dtrOpen} onClose={() => setDtrOpen(false)} />
+      <OvertimeModal open={otOpen} onClose={() => setOtOpen(false)} />
     </div>
   )
 }

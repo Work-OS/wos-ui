@@ -5,7 +5,7 @@ export const navConfig: Record<Role, NavItem[]> = {
     { label: "My Dashboard", section: "overview" },
     { label: "Daily Time Record", section: "dtr", badge: 1 },
     { label: "My Payroll", section: "payroll" },
-    { label: "Leave & Requests", section: "leave", badge: 2 },
+    { label: "Leave", section: "leave", badge: 2 },
     { label: "My Profile", section: "profile" },
   ],
   hr: [
