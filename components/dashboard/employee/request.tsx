@@ -188,7 +188,7 @@ const statusVariant: Record<RequestStatus, "green" | "amber" | "red"> = {
 
 // ── main component ────────────────────────────────────────────────────────────
 
-export function LeaveSection() {
+export function RequestSection() {
   const [leaveOpen, setLeaveOpen] = useState(false)
   const [obOpen, setObOpen] = useState(false)
   const [coeOpen, setCoeOpen] = useState(false)

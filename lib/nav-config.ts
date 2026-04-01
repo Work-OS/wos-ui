@@ -5,7 +5,7 @@ export const navConfig: Record<Role, NavItem[]> = {
     { label: "My Dashboard", section: "overview" },
     { label: "Daily Time Record", section: "dtr", badge: 1 },
     { label: "My Payroll", section: "payroll" },
-    { label: "Leave", section: "leave", badge: 2 },
+    { label: "My Request", section: "request", badge: 2 },
     { label: "My Profile", section: "profile" },
   ],
   hr: [
@@ -67,6 +67,7 @@ export const sectionTitles: Record<string, string> = {
   overview: "Overview",
   dtr: "Daily Time Record",
   payroll: "Payroll",
+  request: "My Request",
   leave: "Leave & Requests",
   profile: "My Profile",
   employees: "Employees",
