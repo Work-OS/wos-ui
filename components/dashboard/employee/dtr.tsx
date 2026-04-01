@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { StatusBadge } from "@/components/custom/status-badge"
 import { DtrChangeModal } from "@/components/custom/dtr-change-modal"
 import { Button } from "@/components/ui/button"
@@ -41,14 +41,6 @@ const INITIAL_BREAKS: Record<string, DtrBreak> = {
   dinner: { label: "Dinner", allowMins: 30, elapsed: 0, active: false, startTime: null, done: false, otOnly: true },
 }
 
-/** "10:49" countdown or "+1:00" for overbreak */
-function fmtCountdown(secs: number): string {
-  const abs = Math.abs(secs)
-  const m = Math.floor(abs / 60)
-  const s = abs % 60
-  return (secs < 0 ? "+" : "") + m + ":" + String(s).padStart(2, "0")
-}
-
 function fmtDuration(secs: number): string {
   const h = Math.floor(secs / 3600)
   const m = Math.floor((secs % 3600) / 60)
@@ -57,6 +49,87 @@ function fmtDuration(secs: number): string {
 
 function fmtTime(date: Date): string {
   return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
+}
+
+// ── Ring button ───────────────────────────────────────────────────────────────
+
+function DtrRingButton({
+  size, progress, ringColor, onClick, disabled, children, label, sublabel, pulse,
+}: {
+  size: number
+  progress: number
+  ringColor: string
+  onClick: () => void
+  disabled?: boolean
+  children: React.ReactNode
+  label: string
+  sublabel?: string
+  pulse?: boolean
+}) {
+  const sw = 3
+  const r = (size - sw * 2) / 2
+  const circ = 2 * Math.PI * r
+  const offset = circ * (1 - Math.min(1, Math.max(0, progress)))
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <button
+        onClick={onClick}
+        disabled={disabled}
+        className={cn(
+          "relative flex items-center justify-center rounded-full bg-muted/50 transition-all duration-150",
+          "hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40",
+          pulse && "animate-pulse",
+        )}
+        style={{ width: size, height: size }}
+      >
+        <svg className="absolute inset-0" width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--bdr)" strokeWidth={sw} />
+          <circle
+            cx={size / 2} cy={size / 2} r={r} fill="none"
+            stroke={ringColor} strokeWidth={sw} strokeLinecap="round"
+            strokeDasharray={circ} strokeDashoffset={offset}
+            style={{ transition: "stroke-dashoffset 1s linear, stroke 0.3s" }}
+          />
+        </svg>
+        <span className="relative z-10">{children}</span>
+      </button>
+      <div className="text-center leading-tight">
+        <p className="text-[11px] font-semibold text-foreground">{label}</p>
+        {sublabel && <p className="text-[10px] text-muted-foreground">{sublabel}</p>}
+      </div>
+    </div>
+  )
+}
+
+const BREAK_ICONS: Record<string, (color: string) => React.ReactNode> = {
+  morning: (c) => (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2">
+      <path d="M18 8h1a4 4 0 010 8h-1" />
+      <path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" />
+      <line x1="6" y1="1" x2="6" y2="4" /><line x1="10" y1="1" x2="10" y2="4" /><line x1="14" y1="1" x2="14" y2="4" />
+    </svg>
+  ),
+  lunch: (c) => (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2">
+      <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2" />
+      <line x1="7" y1="2" x2="7" y2="22" />
+      <path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7" />
+    </svg>
+  ),
+  afternoon: (c) => (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2">
+      <circle cx="12" cy="12" r="4" />
+      <line x1="12" y1="2" x2="12" y2="5" /><line x1="12" y1="19" x2="12" y2="22" />
+      <line x1="4.22" y1="4.22" x2="6.34" y2="6.34" /><line x1="17.66" y1="17.66" x2="19.78" y2="19.78" />
+      <line x1="2" y1="12" x2="5" y2="12" /><line x1="19" y1="12" x2="22" y2="12" />
+      <line x1="4.22" y1="19.78" x2="6.34" y2="17.66" /><line x1="17.66" y1="6.34" x2="19.78" y2="4.22" />
+    </svg>
+  ),
+  dinner: (c) => (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2">
+      <path d="M12 3a6 6 0 009 9 9 9 0 11-9-9z" />
+    </svg>
+  ),
 }
 
 export function DTRSection() {
@@ -153,19 +226,16 @@ export function DTRSection() {
       <div className="grid grid-cols-5 gap-4">
 
         {/* ── Clock panel ── */}
-        <div className="col-span-3 rounded-xl border border-border bg-card shadow-sm">
-          <div className="flex flex-col items-center px-6 py-5">
+        <div className="col-span-3 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          <div className={cn("flex flex-col items-center px-6 py-5", !clocked && "h-full justify-center")}>
 
-            {/* Label */}
+            {/* Current time label */}
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
               Current time
             </p>
 
             {/* Big clock */}
-            <p
-              className="mt-2 font-bold tabular-nums leading-none"
-              style={{ fontSize: 40, letterSpacing: "-1px" }}
-            >
+            <p className="mt-2 font-bold tabular-nums leading-none" style={{ fontSize: 40, letterSpacing: "-1px" }}>
               {timeStr}
             </p>
 
@@ -183,112 +253,81 @@ export function DTRSection() {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
                 </svg>
-                <span>OT: {fmtDuration(otSecs)}</span>
+                OT: {fmtDuration(otSecs)}
               </div>
             )}
 
             {/* Clock in/out button */}
-            <Button
+            <button
               onClick={handleClockToggle}
               className={cn(
-                "mt-3 w-full justify-center",
+                "mt-3 flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all duration-150",
                 clocked
-                  ? "border border-danger-border bg-danger-light text-danger shadow-none hover:bg-rt"
-                  : "",
+                  ? "border border-danger-border bg-danger-light text-danger hover:bg-rt"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90",
               )}
-              variant={clocked ? "ghost" : "default"}
             >
               {clocked ? (
                 <>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" className="mr-2">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
                     <rect x="6" y="6" width="12" height="12" rx="1" />
                   </svg>
-                  Clock out
+                  Clock Out
                 </>
               ) : (
                 <>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-2">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" />
                   </svg>
-                  Clock in
+                  Clock In
                 </>
               )}
-            </Button>
+            </button>
 
-            {/* Break panel — revealed when clocked in */}
+            {/* Break controls — only when clocked in */}
             {clocked && (
               <>
                 <div className="my-4 h-px w-full bg-border" />
-                <div className="w-full">
-                  <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    Break controls
-                  </p>
-                  <div className="flex flex-col gap-1.5">
-                    {Object.entries(breaks).map(([type, b]) => {
-                      const remaining = getBreakRemaining(b)
-                      const isOverbreak = remaining < 0
-                      const isDisabled = !!b.otOnly && otSecs === 0
-                      return (
-                        <div
-                          key={type}
-                          className={cn(
-                            "flex items-center justify-between rounded-lg border px-2.5 py-2 transition-colors",
-                            b.active && !isOverbreak && "border-success-border bg-success-light",
-                            b.active && isOverbreak && "border-danger-border bg-danger-light",
-                            !b.active && "border-border bg-muted/40",
-                          )}
-                        >
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <p className="text-[12px] font-medium">{b.label} break</p>
-                              {b.otOnly && (
-                                <span className="rounded bg-warning-light px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-warning">
-                                  OT only
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-[10px] text-muted-foreground">
-                              {b.allowMins} min allowance
-                              {b.active && (
-                                <span
-                                  className={cn(
-                                    "ml-1 font-semibold tabular-nums",
-                                    isOverbreak ? "text-danger" : "text-success",
-                                  )}
-                                >
-                                  · {isOverbreak ? "⚠ " : ""}{fmtCountdown(remaining)}
-                                </span>
-                              )}
-                              {!b.active && b.elapsed > 0 && (
-                                <span
-                                  className={cn(
-                                    "ml-1 tabular-nums",
-                                    b.elapsed > b.allowMins * 60 ? "text-danger" : "",
-                                  )}
-                                >
-                                  · {fmtDuration(b.elapsed)} used
-                                </span>
-                              )}
-                            </p>
-                          </div>
-                          <button
-                            disabled={isDisabled || b.done}
-                            onClick={() => !isDisabled && toggleBreak(type)}
-                            className={cn(
-                              "rounded-md px-2.5 py-1 text-[11px] font-semibold transition-all",
-                              b.done && "cursor-not-allowed opacity-40",
-                              isDisabled && !b.done && "cursor-not-allowed opacity-30",
-                              !isDisabled && !b.done && !b.active && "bg-secondary text-foreground hover:bg-accent",
-                              !isDisabled && !b.done && b.active && !isOverbreak && "bg-success-light text-success hover:bg-gt",
-                              !isDisabled && !b.done && b.active && isOverbreak && "animate-pulse bg-danger-light text-danger hover:bg-rt",
-                            )}
-                          >
-                            {b.done ? "Done" : b.active ? "End break" : "Start break"}
-                          </button>
-                        </div>
-                      )
-                    })}
-                  </div>
+                <p className="mb-3 w-full text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Break controls
+                </p>
+                <div className="flex w-full items-start justify-around">
+                  {Object.entries(breaks).map(([type, b]) => {
+                    const remaining = getBreakRemaining(b)
+                    const isOverbreak = remaining < 0
+                    const isDisabled = !!b.otOnly && otSecs === 0
+                    const hasStarted = b.elapsed > 0 || b.active
+                    const breakProgress = Math.max(0, remaining / (b.allowMins * 60))
+                    const ringColor = isDisabled || !hasStarted
+                      ? "transparent"
+                      : isOverbreak ? "var(--red)" : "var(--green)"
+                    const iconColor = b.active
+                      ? isOverbreak ? "var(--red)" : "var(--green)"
+                      : isDisabled ? "var(--tx3)" : hasStarted ? "var(--tx3)" : "var(--tx2)"
+
+                    return (
+                      <DtrRingButton
+                        key={type}
+                        size={56}
+                        progress={hasStarted ? breakProgress : 1}
+                        ringColor={ringColor}
+                        onClick={() => !isDisabled && !b.done && toggleBreak(type)}
+                        disabled={isDisabled || b.done}
+                        label={b.label}
+                        sublabel={
+                          b.otOnly && isDisabled ? "OT only" :
+                          b.done ? "Done" :
+                          b.active
+                            ? isOverbreak ? `⚠ +${Math.ceil(Math.abs(remaining) / 60)}m` : `${Math.ceil(remaining / 60)}m left`
+                            : b.elapsed > 0 ? `${Math.round(b.elapsed / 60)}m used`
+                            : `${b.allowMins}m`
+                        }
+                        pulse={b.active && isOverbreak}
+                      >
+                        {BREAK_ICONS[type]?.(iconColor)}
+                      </DtrRingButton>
+                    )
+                  })}
                 </div>
               </>
             )}
@@ -384,9 +423,7 @@ export function DTRSection() {
             </div>
 
             <div className="flex items-center justify-between pt-1">
-              <StatusBadge variant={clocked ? "green" : clockOutTime ? "blue" : "gray"}>
-                {clocked ? "Online" : clockOutTime ? "Clocked out" : "Offline"}
-              </StatusBadge>
+              <StatusBadge variant={clockStatus}>{clockLabel}</StatusBadge>
               <Button
                 size="sm"
                 variant="outline"

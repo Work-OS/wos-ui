@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import { StatusBadge } from "./status-badge"
 
-interface Break {
+// ── types ─────────────────────────────────────────────────────────────────────
+
+interface BreakState {
   label: string
   allowMins: number
   elapsed: number
@@ -13,217 +14,244 @@ interface Break {
   startTime: number | null
 }
 
-const BREAKS: Record<string, Break> = {
-  morning: { label: "Morning", allowMins: 15, elapsed: 0, active: false, startTime: null },
-  lunch: { label: "Lunch", allowMins: 60, elapsed: 0, active: false, startTime: null },
+const INIT_BREAKS: Record<string, BreakState> = {
+  morning:   { label: "Morning",   allowMins: 15, elapsed: 0, active: false, startTime: null },
+  lunch:     { label: "Lunch",     allowMins: 60, elapsed: 0, active: false, startTime: null },
   afternoon: { label: "Afternoon", allowMins: 15, elapsed: 0, active: false, startTime: null },
 }
 
-function fmt(secs: number): string {
-  const abs = Math.abs(secs)
-  const m = Math.floor(abs / 60)
-  const s = abs % 60
-  return (secs < 0 ? "+" : "") + m + ":" + String(s).padStart(2, "0")
-}
+// ── helpers ───────────────────────────────────────────────────────────────────
 
-function fmtTime(date: Date): string {
+function fmtTime(date: Date) {
   return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
 }
 
-function fmtDuration(secs: number): string {
-  const h = Math.floor(secs / 3600)
-  const m = Math.floor((secs % 3600) / 60)
-  return `${h}h ${String(m).padStart(2, "0")}m`
+// ── RingButton ────────────────────────────────────────────────────────────────
+
+function RingButton({
+  size, progress, ringColor, onClick, children, label, sublabel, pulse,
+}: {
+  size: number
+  progress: number
+  ringColor: string
+  onClick: () => void
+  children: React.ReactNode
+  label: string
+  sublabel?: string
+  pulse?: boolean
+}) {
+  const sw = 3
+  const r = (size - sw * 2) / 2
+  const circ = 2 * Math.PI * r
+  const offset = circ * (1 - Math.min(1, Math.max(0, progress)))
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <button
+        onClick={onClick}
+        className={cn(
+          "relative flex items-center justify-center rounded-full bg-muted/50 transition-all duration-150 hover:bg-muted",
+          pulse && "animate-pulse",
+        )}
+        style={{ width: size, height: size }}
+      >
+        <svg className="absolute inset-0" width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--bdr)" strokeWidth={sw} />
+          <circle
+            cx={size / 2} cy={size / 2} r={r} fill="none"
+            stroke={ringColor} strokeWidth={sw} strokeLinecap="round"
+            strokeDasharray={circ} strokeDashoffset={offset}
+            style={{ transition: "stroke-dashoffset 1s linear, stroke 0.3s" }}
+          />
+        </svg>
+        <span className="relative z-10">{children}</span>
+      </button>
+      <div className="text-center leading-tight">
+        <p className="text-[11px] font-semibold text-foreground">{label}</p>
+        {sublabel && <p className="text-[10px] text-muted-foreground">{sublabel}</p>}
+      </div>
+    </div>
+  )
 }
+
+// ── icons ─────────────────────────────────────────────────────────────────────
+
+const BREAK_ICON: Record<string, (color: string) => React.ReactNode> = {
+  morning: (c) => (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2">
+      <path d="M18 8h1a4 4 0 010 8h-1" />
+      <path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" />
+      <line x1="6" y1="1" x2="6" y2="4" /><line x1="10" y1="1" x2="10" y2="4" /><line x1="14" y1="1" x2="14" y2="4" />
+    </svg>
+  ),
+  lunch: (c) => (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2">
+      <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2" />
+      <line x1="7" y1="2" x2="7" y2="22" />
+      <path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7" />
+    </svg>
+  ),
+  afternoon: (c) => (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2">
+      <circle cx="12" cy="12" r="4" />
+      <line x1="12" y1="2" x2="12" y2="5" /><line x1="12" y1="19" x2="12" y2="22" />
+      <line x1="4.22" y1="4.22" x2="6.34" y2="6.34" /><line x1="17.66" y1="17.66" x2="19.78" y2="19.78" />
+      <line x1="2" y1="12" x2="5" y2="12" /><line x1="19" y1="12" x2="22" y2="12" />
+      <line x1="4.22" y1="19.78" x2="6.34" y2="17.66" /><line x1="17.66" y1="6.34" x2="19.78" y2="4.22" />
+    </svg>
+  ),
+}
+
+// ── ClockWidget ───────────────────────────────────────────────────────────────
 
 export function ClockWidget() {
   const [now, setNow] = useState<Date | null>(null)
   const [clocked, setClocked] = useState(false)
   const [clockInTime, setClockInTime] = useState<Date | null>(null)
-  const [breaks, setBreaks] = useState<Record<string, Break>>(BREAKS)
-  const [activeBreak, setActiveBreak] = useState<string | null>(null)
-  const [tick, setTick] = useState(0)
+  const [breaks, setBreaks] = useState<Record<string, BreakState>>(INIT_BREAKS)
 
   useEffect(() => {
     setNow(new Date())
-    const id = setInterval(() => {
-      setNow(new Date())
-      setTick((t) => t + 1)
-    }, 1000)
+    const id = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(id)
   }, [])
-
-  const workSecs = clocked && clockInTime && now
-    ? Math.floor((now.getTime() - clockInTime.getTime()) / 1000)
-    : 0
-
-  const breakSecs = Object.values(breaks).reduce((sum, b) => {
-    if (b.active && b.startTime && now) {
-      return sum + Math.floor((now.getTime() - b.startTime) / 1000)
-    }
-    return sum + b.elapsed
-  }, 0)
-
-  const netSecs = Math.max(0, workSecs - breakSecs)
-
-  const handleClockToggle = () => {
-    if (!clocked) {
-      setClocked(true)
-      setClockInTime(new Date())
-      setBreaks(BREAKS)
-      setActiveBreak(null)
-    } else {
-      setClocked(false)
-      setClockInTime(null)
-      setActiveBreak(null)
-    }
-  }
 
   const toggleBreak = useCallback((type: string) => {
     setBreaks((prev) => {
       const b = prev[type]
       if (!b) return prev
       if (!b.active) {
-        // end any other active break first
-        const updated = Object.fromEntries(
-          Object.entries(prev).map(([k, v]) => {
-            if (v.active && v.startTime) {
-              return [k, { ...v, elapsed: v.elapsed + Math.floor((Date.now() - v.startTime) / 1000), active: false, startTime: null }]
-            }
-            return [k, v]
-          })
+        const next = Object.fromEntries(
+          Object.entries(prev).map(([k, v]) =>
+            v.active && v.startTime
+              ? [k, { ...v, elapsed: v.elapsed + Math.floor((Date.now() - v.startTime) / 1000), active: false, startTime: null }]
+              : [k, v]
+          )
         )
-        updated[type] = { ...b, active: true, startTime: Date.now() }
-        setActiveBreak(type)
-        return updated
+        next[type] = { ...b, active: true, startTime: Date.now() }
+        return next
       } else {
         const elapsed = b.elapsed + (b.startTime ? Math.floor((Date.now() - b.startTime) / 1000) : 0)
-        setActiveBreak(null)
         return { ...prev, [type]: { ...b, elapsed, active: false, startTime: null } }
       }
     })
   }, [])
 
-  const getBreakRemaining = (b: Break): number => {
-    const totalElapsed = b.active && b.startTime && now
+  const getBreakData = (b: BreakState) => {
+    const used = b.active && b.startTime && now
       ? b.elapsed + Math.floor((now.getTime() - b.startTime) / 1000)
       : b.elapsed
-    return b.allowMins * 60 - totalElapsed
+    const remaining = b.allowMins * 60 - used
+    const isOver = remaining < 0
+    const progress = Math.max(0, remaining / (b.allowMins * 60))
+    return { remaining, isOver, progress }
   }
 
-  return (
-    <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className={cn(
-        "px-6 py-5 transition-colors",
-        clocked ? "bg-primary" : "bg-muted/50"
-      )}>
-        <div className="flex items-start justify-between">
-          <div>
-            <p className={cn("text-xs font-semibold uppercase tracking-widest", clocked ? "text-primary-foreground/70" : "text-muted-foreground")}>
-              {clocked ? "Currently working" : "Ready to clock in"}
-            </p>
-            <p className={cn("mt-1 text-3xl font-bold tabular-nums tracking-tight", clocked ? "text-primary-foreground" : "text-foreground")}>
-              {now?.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", second: "2-digit", hour12: true }) ?? "—"}
-            </p>
-            <p className={cn("mt-0.5 text-sm", clocked ? "text-primary-foreground/70" : "text-muted-foreground")}>
-              {now?.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }) ?? ""}
-            </p>
-          </div>
-          {clocked && (
-            <div className="text-right">
-              <p className="text-xs text-primary-foreground/70">Clocked in</p>
-              <p className="text-sm font-semibold text-primary-foreground">{clockInTime ? fmtTime(clockInTime) : "—"}</p>
-              <p className="mt-1 text-xs text-primary-foreground/70">Net time</p>
-              <p className="text-base font-bold tabular-nums text-primary-foreground">{fmtDuration(netSecs)}</p>
-            </div>
-          )}
-        </div>
-      </div>
+  const timeStr = now?.toLocaleTimeString("en-US", {
+    hour: "numeric", minute: "2-digit", second: "2-digit", hour12: true,
+  }) ?? "—"
+  const dateStr = now?.toLocaleDateString("en-US", {
+    weekday: "long", month: "long", day: "numeric",
+  }) ?? ""
 
-      {/* Clock button */}
-      <div className="px-6 py-4 border-b border-border">
-        <Button
-          onClick={handleClockToggle}
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+      <div className="flex flex-col items-center px-6 py-5">
+
+        {/* Current time label */}
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          Current time
+        </p>
+
+        {/* Big clock */}
+        <p className="mt-2 font-bold tabular-nums leading-none" style={{ fontSize: 40, letterSpacing: "-1px" }}>
+          {timeStr}
+        </p>
+
+        {/* Date */}
+        <p className="mt-1 text-[12px] text-muted-foreground">{dateStr}</p>
+
+        {/* Status badge */}
+        <div className="mt-3">
+          <StatusBadge variant={clocked ? "green" : "gray"}>
+            {clocked ? `Clocked in · ${clockInTime ? fmtTime(clockInTime) : ""}` : "Not clocked in"}
+          </StatusBadge>
+        </div>
+
+        {/* Clock in/out button */}
+        <button
+          onClick={() => {
+            if (!clocked) {
+              setClocked(true)
+              setClockInTime(new Date())
+              setBreaks(INIT_BREAKS)
+            } else {
+              setClocked(false)
+              setClockInTime(null)
+            }
+          }}
           className={cn(
-            "w-full justify-center rounded-lg text-sm font-semibold transition-all duration-150",
+            "mt-3 flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all duration-150",
             clocked
               ? "border border-danger-border bg-danger-light text-danger hover:bg-rt"
               : "bg-primary text-primary-foreground hover:bg-primary/90",
           )}
-          variant="ghost"
         >
           {clocked ? (
             <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="mr-2">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
                 <rect x="6" y="6" width="12" height="12" rx="1" />
               </svg>
               Clock Out
             </>
           ) : (
             <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-2">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" />
               </svg>
               Clock In
             </>
           )}
-        </Button>
-      </div>
+        </button>
 
-      {/* Breaks */}
-      {clocked && (
-        <div className="px-6 py-4">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Breaks
-          </p>
-          <div className="space-y-2">
-            {Object.entries(breaks).map(([type, b]) => {
-              const remaining = getBreakRemaining(b)
-              const isOverbreak = remaining < 0
-              const isActive = b.active
+        {/* Break controls — only when clocked in */}
+        {clocked && (
+          <>
+            <div className="my-4 h-px w-full bg-border" />
+            <p className="mb-3 w-full text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Break controls
+            </p>
+            <div className="flex w-full items-start justify-around">
+              {Object.entries(breaks).map(([type, b]) => {
+                const { remaining, isOver, progress } = getBreakData(b)
+                const hasStarted = b.elapsed > 0 || b.active
+                const ringColor = !hasStarted ? "transparent" : isOver ? "var(--red)" : "var(--green)"
+                const iconColor = b.active
+                  ? isOver ? "var(--red)" : "var(--green)"
+                  : hasStarted ? "var(--tx3)" : "var(--tx2)"
+                const sublabel = b.active
+                  ? isOver ? `⚠ +${Math.ceil(Math.abs(remaining) / 60)}m` : `${Math.ceil(remaining / 60)}m left`
+                  : b.elapsed > 0 ? `${Math.round(b.elapsed / 60)}m used` : `${b.allowMins}m`
 
-              return (
-                <div
-                  key={type}
-                  id={`brk-row-${type}`}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg border p-2.5 transition-colors",
-                    isActive && !isOverbreak && "border-success-border bg-success-light",
-                    isActive && isOverbreak && "border-danger-border bg-danger-light",
-                    !isActive && "border-border bg-muted/30"
-                  )}
-                >
-                  <div className="flex-1">
-                    <p className="text-[12px] font-medium text-foreground">{b.label}</p>
-                    <p className="text-[11px] text-muted-foreground">{b.allowMins} min allowed</p>
-                  </div>
-                  {isActive && (
-                    <span className={cn(
-                      "text-[12px] font-mono font-semibold tabular-nums",
-                      isOverbreak ? "text-danger" : "text-success"
-                    )}>
-                      {isOverbreak ? "⚠ " : ""}{fmt(remaining)}
-                    </span>
-                  )}
-                  <button
+                return (
+                  <RingButton
+                    key={type}
+                    size={56}
+                    progress={hasStarted ? progress : 1}
+                    ringColor={ringColor}
                     onClick={() => toggleBreak(type)}
-                    className={cn(
-                      "rounded-md px-2.5 py-1 text-[11px] font-semibold transition-all",
-                      isActive
-                        ? "bg-foreground/10 text-foreground hover:bg-foreground/20"
-                        : "bg-primary/10 text-primary hover:bg-primary/20",
-                      isOverbreak && isActive && "animate-pulse bg-danger-light text-danger"
-                    )}
+                    label={b.label}
+                    sublabel={sublabel}
+                    pulse={b.active && isOver}
                   >
-                    {isActive ? "End" : "Start"}
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
+                    {BREAK_ICON[type]?.(iconColor)}
+                  </RingButton>
+                )
+              })}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   )
 }
