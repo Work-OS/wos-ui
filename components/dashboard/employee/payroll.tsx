@@ -1,74 +1,433 @@
 "use client"
 
 import { useState } from "react"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardAction,
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
 import { StatCard } from "@/components/custom/stat-card"
 import { StatusBadge } from "@/components/custom/status-badge"
 import { PayslipModal } from "@/components/custom/payslip-modal"
-import { Button } from "@/components/ui/button"
-import { payslips } from "@/lib/mock-data"
+import { payslips, CURRENT_USER } from "@/lib/mock-data"
 import type { PayslipData } from "@/lib/types"
+import { cn } from "@/lib/utils"
+
+// ── helpers ──────────────────────────────────────────────────────────────────
+
+function parseAmt(s: string): number {
+  return parseFloat(s.replace(/[₱,]/g, "")) || 0
+}
+
+const DownloadIcon = ({ className }: { className?: string }) => (
+  <svg
+    width="13"
+    height="13"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    className={className}
+  >
+    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />
+  </svg>
+)
+
+// ── sub-components ────────────────────────────────────────────────────────────
+
+function SectionBand({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="-mx-6 bg-muted px-6 py-2">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        {children}
+      </p>
+    </div>
+  )
+}
+
+function SlipRow({
+  label,
+  value,
+  labelClass,
+  valueClass,
+}: {
+  label: string
+  value: string
+  labelClass?: string
+  valueClass?: string
+}) {
+  return (
+    <div className="flex items-center justify-between border-b border-border py-2.5 last:border-0">
+      <span className={cn("text-[13px]", labelClass ?? "text-foreground")}>{label}</span>
+      <span className={cn("text-[13px] font-medium tabular-nums", valueClass ?? "text-foreground")}>
+        {value}
+      </span>
+    </div>
+  )
+}
+
+function BreakdownBar({
+  label,
+  value,
+  pct,
+  indicatorClassName,
+  valueClass,
+}: {
+  label: string
+  value: string
+  pct: number
+  indicatorClassName: string
+  valueClass?: string
+}) {
+  return (
+    <div>
+      <div className="mb-1.5 flex items-center justify-between">
+        <span className="text-[13px]">{label}</span>
+        <span className={cn("text-[13px] font-semibold tabular-nums", valueClass)}>{value}</span>
+      </div>
+      <Progress value={pct} className="h-1.5" indicatorClassName={indicatorClassName} />
+    </div>
+  )
+}
+
+function YtdCard({
+  label,
+  value,
+  meta,
+  valueClass,
+}: {
+  label: string
+  value: string
+  meta?: string
+  valueClass?: string
+}) {
+  return (
+    <div className="rounded-lg border border-border bg-muted/40 p-3">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        {label}
+      </p>
+      <p className={cn("mt-1 text-lg font-bold tabular-nums", valueClass)}>{value}</p>
+      {meta && <p className="mt-0.5 text-[11px] text-muted-foreground">{meta}</p>}
+    </div>
+  )
+}
+
+// ── main component ────────────────────────────────────────────────────────────
+
+const latest = payslips.find((p) => p.status === "released") ?? payslips[1]
 
 export function PayrollSection() {
   const [selectedPayslip, setSelectedPayslip] = useState<PayslipData | null>(null)
 
+  const basicAmt = parseAmt(latest.basic)
+  const otAmt = parseAmt(latest.ot)
+  const grossAmt = parseAmt(latest.gross)
+  const ssAmt = parseAmt(latest.sss)
+  const phAmt = parseAmt(latest.philhealth)
+  const taxAmt = parseAmt(latest.tax)
+  const dedAmt = parseAmt(latest.deductions)
+
+  const month = latest.period.split(" ")[0]
+
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-4">
-        <StatCard title="Current period" value="₱41,951.88" meta="March 2025 · Net pay" accent="green" />
-        <StatCard title="YTD earnings" value="₱124,322" meta="Jan – Mar 2025" accent="blue" />
-        <StatCard title="YTD deductions" value="₱16,350" meta="SSS · PhilHealth · Tax" accent="amber" />
+    <div className="space-y-5">
+
+      {/* ── 4 stat cards ── */}
+      <div className="grid grid-cols-4 gap-4">
+        <StatCard
+          title="Basic salary"
+          value="₱45,000"
+          meta="Monthly base"
+          accent="blue"
+        />
+        <StatCard
+          title={`Total earnings (${month})`}
+          value={latest.gross}
+          delta={`Incl. ${latest.otHrs} hrs overtime`}
+          deltaUp={true}
+          accent="green"
+        />
+        <StatCard
+          title="Total deductions"
+          value={
+            <span className="text-red-600 dark:text-red-400">{latest.deductions}</span>
+          }
+          meta="SSS · PhilHealth · Tax"
+          accent="red"
+        />
+        <StatCard
+          title={`Net pay (${month})`}
+          value={
+            <span className="text-green-600 dark:text-green-400">{latest.net}</span>
+          }
+          delta="+₱575 vs prior month"
+          deltaUp={true}
+          accent="green"
+        />
       </div>
 
-      <div>
-        <h3 className="mb-3 font-semibold">Payslip history</h3>
-        <div className="overflow-x-auto rounded-xl border border-border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b border-border bg-muted/50">
-                {["Period", "Basic", "OT", "Gross", "Deductions", "Net Pay", "Status", ""].map((h) => (
-                  <th key={h} className={`px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ${h === "" || h === "Net Pay" ? "text-right" : "text-left"}`}>
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {payslips.map((p, i) => (
-                <tr
-                  key={i}
-                  className="cursor-pointer border-b border-border last:border-0 transition-colors hover:bg-muted/30"
-                  onClick={() => setSelectedPayslip(p)}
-                >
-                  <td className="px-4 py-3 font-medium">{p.period}</td>
-                  <td className="px-4 py-3 tabular-nums text-muted-foreground">{p.basic}</td>
-                  <td className="px-4 py-3 tabular-nums">
-                    {p.ot !== "—" ? (
-                      <span className="text-green-600 dark:text-green-400">+{p.ot}</span>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 tabular-nums">{p.gross}</td>
-                  <td className="px-4 py-3 tabular-nums text-red-600 dark:text-red-400">-{p.deductions}</td>
-                  <td className="px-4 py-3 tabular-nums text-right font-semibold">{p.net}</td>
-                  <td className="px-4 py-3">
-                    <StatusBadge variant={p.status === "released" ? "green" : "amber"}>
-                      {p.status === "released" ? "Released" : "Pending"}
-                    </StatusBadge>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Button size="xs" variant="ghost" onClick={(e) => { e.stopPropagation(); setSelectedPayslip(p) }}>
-                      View
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* ── Latest payslip + Pay breakdown ── */}
+      <div className="grid grid-cols-2 gap-4">
+
+        {/* Latest payslip — custom blue header, no Card wrapper */}
+        <div className="overflow-hidden rounded-xl border border-border shadow-sm">
+          {/* Blue header */}
+          <div className="bg-primary px-6 py-5 text-primary-foreground">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-widest opacity-70">
+                  Latest payslip
+                </p>
+                <p className="mt-0.5 text-xl font-bold">{latest.period}</p>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="border border-white/30 bg-white/15 text-white hover:bg-white/25 hover:text-white"
+                onClick={() => setSelectedPayslip(latest)}
+              >
+                <DownloadIcon className="mr-1" />
+                Download PDF
+              </Button>
+            </div>
+            <p className="mt-2.5 text-[13px] opacity-80">
+              {CURRENT_USER.name} · {CURRENT_USER.title} · {CURRENT_USER.employeeId}
+            </p>
+          </div>
+
+          {/* Slip body */}
+          <div className="px-6 pb-4">
+            <SectionBand>Earnings</SectionBand>
+            <SlipRow label="Basic salary" value={latest.basic} />
+            {latest.ot !== "—" && (
+              <SlipRow
+                label={`Overtime — ${latest.otHrs} hrs`}
+                value={`+${latest.ot}`}
+                labelClass="text-muted-foreground"
+                valueClass="text-green-600 dark:text-green-400"
+              />
+            )}
+            <SectionBand>Deductions</SectionBand>
+            <SlipRow label="SSS contribution" value={`-${latest.sss}`} labelClass="text-muted-foreground" valueClass="text-red-600 dark:text-red-400" />
+            <SlipRow label="PhilHealth" value={`-${latest.philhealth}`} labelClass="text-muted-foreground" valueClass="text-red-600 dark:text-red-400" />
+            <SlipRow label="Pag-IBIG" value={`-${latest.pagibig}`} labelClass="text-muted-foreground" valueClass="text-red-600 dark:text-red-400" />
+            <SlipRow label="Withholding tax" value={`-${latest.tax}`} labelClass="text-muted-foreground" valueClass="text-red-600 dark:text-red-400" />
+            <div className="mt-3 flex items-center justify-between rounded-lg bg-muted px-4 py-3">
+              <span className="text-[13px] font-bold">Net pay</span>
+              <span className="text-lg font-bold text-green-600 dark:text-green-400">
+                {latest.net}
+              </span>
+            </div>
+          </div>
         </div>
+
+        {/* Pay breakdown */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Pay breakdown</CardTitle>
+            <CardDescription>{latest.period} composition</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Earnings bars */}
+            <BreakdownBar
+              label="Basic salary"
+              value={latest.basic.replace(".00", "")}
+              pct={(basicAmt / grossAmt) * 100}
+              indicatorClassName="bg-primary"
+            />
+            {latest.ot !== "—" && (
+              <BreakdownBar
+                label="Overtime"
+                value={`+${latest.ot.replace(".00", "")}`}
+                pct={(otAmt / grossAmt) * 100}
+                indicatorClassName="bg-green-500"
+                valueClass="text-green-600 dark:text-green-400"
+              />
+            )}
+
+            {/* Deduction bars */}
+            <div className="space-y-3 border-t border-border pt-4">
+              <BreakdownBar
+                label="SSS"
+                value={`-${latest.sss.replace(".00", "")}`}
+                pct={(ssAmt / dedAmt) * 100}
+                indicatorClassName="bg-red-500"
+                valueClass="text-red-600 dark:text-red-400"
+              />
+              <BreakdownBar
+                label="PhilHealth"
+                value={`-${latest.philhealth.replace(".00", "")}`}
+                pct={(phAmt / dedAmt) * 100}
+                indicatorClassName="bg-red-500"
+                valueClass="text-red-600 dark:text-red-400"
+              />
+              <BreakdownBar
+                label="Withholding tax"
+                value={`-${latest.tax.replace(".00", "")}`}
+                pct={(taxAmt / dedAmt) * 100}
+                indicatorClassName="bg-red-400"
+                valueClass="text-red-600 dark:text-red-400"
+              />
+            </div>
+
+            {/* Net total */}
+            <div className="flex items-center justify-between border-t border-border pt-3">
+              <span className="text-[13px] font-semibold">Net pay</span>
+              <span className="text-base font-bold text-green-600 dark:text-green-400">
+                {latest.net.replace(".00", "")}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <PayslipModal open={!!selectedPayslip} onClose={() => setSelectedPayslip(null)} data={selectedPayslip} />
+      {/* ── Payroll history ── */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Payroll history</CardTitle>
+          <CardDescription>Year to date · 2025</CardDescription>
+          <CardAction>
+            <Button size="sm" variant="outline">
+              <DownloadIcon className="mr-1.5" />
+              Export all
+            </Button>
+          </CardAction>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto rounded-lg border border-border">
+            <table className="w-full text-[13px]">
+              <thead>
+                <tr className="border-b border-border bg-muted/50">
+                  {[
+                    { label: "Period", right: false },
+                    { label: "Basic", right: true },
+                    { label: "Overtime", right: true },
+                    { label: "Gross", right: true },
+                    { label: "Deductions", right: true },
+                    { label: "Net pay", right: true },
+                    { label: "Released", right: false },
+                    { label: "Status", right: false },
+                    { label: "Actions", right: false },
+                  ].map(({ label, right }) => (
+                    <th
+                      key={label}
+                      className={cn(
+                        "px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground",
+                        right ? "text-right" : "text-left",
+                      )}
+                    >
+                      {label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {payslips.map((p, i) => {
+                  const isUpcoming = p.status === "upcoming"
+                  return (
+                    <tr
+                      key={i}
+                      className="border-b border-border last:border-0 transition-colors hover:bg-muted/30"
+                    >
+                      <td className="px-4 py-3 font-medium">{p.period}</td>
+                      <td className="px-4 py-3 tabular-nums text-right text-muted-foreground">
+                        {isUpcoming ? <span className="text-muted-foreground">—</span> : p.basic}
+                      </td>
+                      <td className="px-4 py-3 tabular-nums text-right">
+                        {p.ot !== "—" ? (
+                          <span className="text-green-600 dark:text-green-400">+{p.ot}</span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 tabular-nums text-right">
+                        {isUpcoming ? <span className="text-muted-foreground">—</span> : p.gross}
+                      </td>
+                      <td className="px-4 py-3 tabular-nums text-right">
+                        {p.deductions !== "—" ? (
+                          <span className="text-red-600 dark:text-red-400">-{p.deductions}</span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 tabular-nums text-right font-bold">
+                        {isUpcoming ? (
+                          <span className="font-normal text-muted-foreground">Pending</span>
+                        ) : (
+                          p.net
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">{p.released}</td>
+                      <td className="px-4 py-3">
+                        <StatusBadge variant={isUpcoming ? "amber" : "green"}>
+                          {isUpcoming ? "Upcoming" : "Released"}
+                        </StatusBadge>
+                      </td>
+                      <td className="px-4 py-3">
+                        {isUpcoming ? (
+                          <span className="text-[12px] text-muted-foreground">—</span>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <Button
+                              size="xs"
+                              variant="ghost"
+                              onClick={() => setSelectedPayslip(p)}
+                            >
+                              View
+                            </Button>
+                            <Button
+                              size="xs"
+                              variant="default"
+                              onClick={() => setSelectedPayslip(p)}
+                            >
+                              <DownloadIcon />
+                              PDF
+                            </Button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* YTD summary */}
+          <div className="mt-5 grid grid-cols-4 gap-3 border-t border-border pt-5">
+            <YtdCard label="YTD gross earnings" value="₱233,325" />
+            <YtdCard
+              label="YTD overtime pay"
+              value="₱8,325"
+              valueClass="text-green-600 dark:text-green-400"
+              meta="31.25 hrs total"
+            />
+            <YtdCard
+              label="YTD deductions"
+              value="₱29,000"
+              valueClass="text-red-600 dark:text-red-400"
+            />
+            <YtdCard
+              label="YTD net pay"
+              value="₱204,325"
+              valueClass="text-green-600 dark:text-green-400"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <PayslipModal
+        open={!!selectedPayslip}
+        onClose={() => setSelectedPayslip(null)}
+        data={selectedPayslip}
+      />
     </div>
   )
 }
