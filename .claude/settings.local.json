@@ -6,7 +6,9 @@
       "Bash(pnpm build:*)",
       "Bash(npx shadcn@latest add table --yes)",
       "Bash(npx shadcn@latest add tooltip --yes)",
-      "Bash(pnpm add:*)"
+      "Bash(pnpm add:*)",
+      "Bash(npx shadcn@latest add \"https://ui.aceternity.com/registry/typewriter-effect.json\" --yes)",
+      "Bash(xargs grep:*)"
     ]
   }
 }
