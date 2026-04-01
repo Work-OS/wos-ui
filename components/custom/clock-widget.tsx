@@ -26,15 +26,26 @@ function fmtTime(date: Date) {
   return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
 }
 
+function isBreakInWindow(type: string, now: Date | null): boolean {
+  if (!now) return false
+  const mins = now.getHours() * 60 + now.getMinutes()
+  if (type === "morning")   return mins >= 6 * 60 && mins < 12 * 60       // 6:00 – 11:59
+  if (type === "lunch")     return mins >= 12 * 60 && mins <= 13 * 60     // 12:00 – 1:00 PM
+  if (type === "afternoon") return mins > 13 * 60 && mins < 18 * 60       // 1:01 – 5:59 PM
+  if (type === "dinner")    return mins >= 18 * 60                         // 6:00 PM+
+  return false
+}
+
 // ── RingButton ────────────────────────────────────────────────────────────────
 
 function RingButton({
-  size, progress, ringColor, onClick, children, label, sublabel, pulse,
+  size, progress, ringColor, onClick, disabled, children, label, sublabel, pulse,
 }: {
   size: number
   progress: number
   ringColor: string
   onClick: () => void
+  disabled?: boolean
   children: React.ReactNode
   label: string
   sublabel?: string
@@ -49,8 +60,11 @@ function RingButton({
     <div className="flex flex-col items-center gap-2">
       <button
         onClick={onClick}
+        disabled={disabled}
         className={cn(
-          "relative flex items-center justify-center rounded-full bg-muted/50 transition-all duration-150 hover:bg-muted",
+          "relative flex items-center justify-center rounded-full bg-muted/50 transition-all duration-150",
+          !disabled && "hover:bg-muted",
+          disabled && "cursor-not-allowed opacity-40",
           pulse && "animate-pulse",
         )}
         style={{ width: size, height: size }}
@@ -147,6 +161,28 @@ export function ClockWidget() {
     return { remaining, isOver, progress }
   }
 
+  const activeBreakEntry = Object.entries(breaks).find(([, b]) => b.active) ?? null
+  const anyBreakActive = activeBreakEntry !== null
+
+  // Countdown for the active break (seconds remaining, negative = overbreak)
+  const activeBreakRemaining = activeBreakEntry
+    ? (() => {
+        const b = activeBreakEntry[1]
+        const used = b.startTime && now
+          ? b.elapsed + Math.floor((now.getTime() - b.startTime) / 1000)
+          : b.elapsed
+        return b.allowMins * 60 - used
+      })()
+    : null
+  const activeBreakIsOver = activeBreakRemaining !== null && activeBreakRemaining < 0
+
+  const fmtCountdown = (secs: number) => {
+    const abs = Math.abs(secs)
+    const m = Math.floor(abs / 60)
+    const s = abs % 60
+    return `${m}:${String(s).padStart(2, "0")}`
+  }
+
   const timeStr = now?.toLocaleTimeString("en-US", {
     hour: "numeric", minute: "2-digit", second: "2-digit", hour12: true,
   }) ?? "—"
@@ -178,10 +214,12 @@ export function ClockWidget() {
           </StatusBadge>
         </div>
 
-        {/* Clock in/out button */}
+        {/* Clock in/out / End break button */}
         <button
           onClick={() => {
-            if (!clocked) {
+            if (anyBreakActive && activeBreakEntry) {
+              toggleBreak(activeBreakEntry[0])
+            } else if (!clocked) {
               setClocked(true)
               setClockInTime(new Date())
               setBreaks(INIT_BREAKS)
@@ -192,12 +230,22 @@ export function ClockWidget() {
           }}
           className={cn(
             "mt-3 flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all duration-150",
-            clocked
-              ? "border border-danger-border bg-danger-light text-danger hover:bg-rt"
-              : "bg-primary text-primary-foreground hover:bg-primary/90",
+            !clocked && "bg-primary text-primary-foreground hover:bg-primary/90",
+            clocked && !anyBreakActive && "border border-danger-border bg-danger-light text-danger hover:bg-rt",
+            anyBreakActive && !activeBreakIsOver && "border border-success-border bg-success-light text-success hover:bg-gt",
+            anyBreakActive && activeBreakIsOver && "animate-pulse border border-danger-border bg-danger-light text-danger hover:bg-rt",
           )}
         >
-          {clocked ? (
+          {anyBreakActive ? (
+            <>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
+              </svg>
+              {activeBreakIsOver
+                ? `End Break · ⚠ +${fmtCountdown(activeBreakRemaining!)} over`
+                : `End Break · ${fmtCountdown(activeBreakRemaining!)} left`}
+            </>
+          ) : clocked ? (
             <>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
                 <rect x="6" y="6" width="12" height="12" rx="1" />
@@ -225,13 +273,21 @@ export function ClockWidget() {
               {Object.entries(breaks).map(([type, b]) => {
                 const { remaining, isOver, progress } = getBreakData(b)
                 const hasStarted = b.elapsed > 0 || b.active
-                const ringColor = !hasStarted ? "transparent" : isOver ? "var(--red)" : "var(--green)"
+                const inWindow = isBreakInWindow(type, now)
+                const exhausted = !b.active && b.elapsed >= b.allowMins * 60
+                const isDisabled = exhausted || (!b.active && !inWindow)
+                const ringColor = isDisabled || !hasStarted ? "transparent" : isOver ? "var(--red)" : "var(--green)"
                 const iconColor = b.active
                   ? isOver ? "var(--red)" : "var(--green)"
-                  : hasStarted ? "var(--tx3)" : "var(--tx2)"
-                const sublabel = b.active
+                  : isDisabled ? "var(--tx3)" : hasStarted ? "var(--tx3)" : "var(--tx2)"
+                const minsLeft = Math.ceil((b.allowMins * 60 - b.elapsed) / 60)
+                const sublabel = exhausted
+                  ? "Overbreak"
+                  : !inWindow && !b.active
+                  ? "Not available"
+                  : b.active
                   ? isOver ? `⚠ +${Math.ceil(Math.abs(remaining) / 60)}m` : `${Math.ceil(remaining / 60)}m left`
-                  : b.elapsed > 0 ? `${Math.round(b.elapsed / 60)}m used` : `${b.allowMins}m`
+                  : b.elapsed > 0 ? `${minsLeft}m left` : `${b.allowMins}m left`
 
                 return (
                   <RingButton
@@ -240,6 +296,7 @@ export function ClockWidget() {
                     progress={hasStarted ? progress : 1}
                     ringColor={ringColor}
                     onClick={() => toggleBreak(type)}
+                    disabled={isDisabled}
                     label={b.label}
                     sublabel={sublabel}
                     pulse={b.active && isOver}

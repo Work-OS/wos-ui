@@ -51,6 +51,16 @@ function fmtTime(date: Date): string {
   return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
 }
 
+function isBreakInWindow(type: string, now: Date | null): boolean {
+  if (!now) return false
+  const mins = now.getHours() * 60 + now.getMinutes()
+  if (type === "morning")   return mins >= 6 * 60 && mins < 12 * 60
+  if (type === "lunch")     return mins >= 12 * 60 && mins <= 13 * 60
+  if (type === "afternoon") return mins > 13 * 60 && mins < 18 * 60
+  if (type === "dinner")    return mins >= 18 * 60
+  return false
+}
+
 // ── Ring button ───────────────────────────────────────────────────────────────
 
 function DtrRingButton({
@@ -191,7 +201,8 @@ export function DTRSection() {
         return updated
       } else {
         const elapsed = b.elapsed + (b.startTime ? Math.floor((Date.now() - b.startTime) / 1000) : 0)
-        return { ...prev, [type]: { ...b, elapsed, active: false, startTime: null, done: true } }
+        const done = elapsed >= b.allowMins * 60  // only lock out if overbreak consumed
+        return { ...prev, [type]: { ...b, elapsed, active: false, startTime: null, done } }
       }
     })
   }, [])
@@ -216,6 +227,27 @@ export function DTRSection() {
   const dateStr = now
     ? now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
     : ""
+
+  const activeBreakEntry = Object.entries(breaks).find(([, b]) => b.active) ?? null
+  const anyBreakActive = activeBreakEntry !== null
+
+  const activeBreakRemaining = activeBreakEntry
+    ? (() => {
+        const b = activeBreakEntry[1]
+        const used = b.startTime && now
+          ? b.elapsed + Math.floor((now.getTime() - b.startTime) / 1000)
+          : b.elapsed
+        return b.allowMins * 60 - used
+      })()
+    : null
+  const activeBreakIsOver = activeBreakRemaining !== null && activeBreakRemaining < 0
+
+  const fmtCountdown = (secs: number) => {
+    const abs = Math.abs(secs)
+    const m = Math.floor(abs / 60)
+    const s = abs % 60
+    return `${m}:${String(s).padStart(2, "0")}`
+  }
 
   const clockStatus = clocked ? "green" : clockOutTime ? "blue" : "gray"
   const clockLabel = clocked ? "Clocked in" : clockOutTime ? "Complete" : "Not clocked in"
@@ -257,17 +289,33 @@ export function DTRSection() {
               </div>
             )}
 
-            {/* Clock in/out button */}
+            {/* Clock in / Clock out / End break button */}
             <button
-              onClick={handleClockToggle}
+              onClick={() => {
+                if (anyBreakActive && activeBreakEntry) {
+                  toggleBreak(activeBreakEntry[0])
+                } else {
+                  handleClockToggle()
+                }
+              }}
               className={cn(
                 "mt-3 flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all duration-150",
-                clocked
-                  ? "border border-danger-border bg-danger-light text-danger hover:bg-rt"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90",
+                !clocked && "bg-primary text-primary-foreground hover:bg-primary/90",
+                clocked && !anyBreakActive && "border border-danger-border bg-danger-light text-danger hover:bg-rt",
+                anyBreakActive && !activeBreakIsOver && "border border-success-border bg-success-light text-success hover:bg-gt",
+                anyBreakActive && activeBreakIsOver && "animate-pulse border border-danger-border bg-danger-light text-danger hover:bg-rt",
               )}
             >
-              {clocked ? (
+              {anyBreakActive ? (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
+                  </svg>
+                  {activeBreakIsOver
+                    ? `End Break · ⚠ +${fmtCountdown(activeBreakRemaining!)} over`
+                    : `End Break · ${fmtCountdown(activeBreakRemaining!)} left`}
+                </>
+              ) : clocked ? (
                 <>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
                     <rect x="6" y="6" width="12" height="12" rx="1" />
@@ -295,7 +343,9 @@ export function DTRSection() {
                   {Object.entries(breaks).map(([type, b]) => {
                     const remaining = getBreakRemaining(b)
                     const isOverbreak = remaining < 0
-                    const isDisabled = !!b.otOnly && otSecs === 0
+                    const inWindow = isBreakInWindow(type, now)
+                    const exhausted = b.done  // done=true only when overbreak consumed
+                    const isDisabled = exhausted || (!b.active && (!inWindow || (!!b.otOnly && otSecs === 0)))
                     const hasStarted = b.elapsed > 0 || b.active
                     const breakProgress = Math.max(0, remaining / (b.allowMins * 60))
                     const ringColor = isDisabled || !hasStarted
@@ -311,16 +361,17 @@ export function DTRSection() {
                         size={56}
                         progress={hasStarted ? breakProgress : 1}
                         ringColor={ringColor}
-                        onClick={() => !isDisabled && !b.done && toggleBreak(type)}
-                        disabled={isDisabled || b.done}
+                        onClick={() => !isDisabled && toggleBreak(type)}
+                        disabled={isDisabled}
                         label={b.label}
                         sublabel={
-                          b.otOnly && isDisabled ? "OT only" :
-                          b.done ? "Done" :
+                          exhausted ? "Overbreak" :
+                          b.otOnly && otSecs === 0 ? "OT only" :
+                          !inWindow && !b.active ? "Not available" :
                           b.active
                             ? isOverbreak ? `⚠ +${Math.ceil(Math.abs(remaining) / 60)}m` : `${Math.ceil(remaining / 60)}m left`
-                            : b.elapsed > 0 ? `${Math.round(b.elapsed / 60)}m used`
-                            : `${b.allowMins}m`
+                            : b.elapsed > 0 ? `${Math.ceil((b.allowMins * 60 - b.elapsed) / 60)}m left`
+                            : `${b.allowMins}m left`
                         }
                         pulse={b.active && isOverbreak}
                       >
