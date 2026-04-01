@@ -1,8 +1,14 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { cn } from "@/lib/utils"
 import { StatusBadge } from "./status-badge"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 // ── types ─────────────────────────────────────────────────────────────────────
 
@@ -18,6 +24,7 @@ const INIT_BREAKS: Record<string, BreakState> = {
   morning:   { label: "Morning",   allowMins: 15, elapsed: 0, active: false, startTime: null },
   lunch:     { label: "Lunch",     allowMins: 60, elapsed: 0, active: false, startTime: null },
   afternoon: { label: "Afternoon", allowMins: 15, elapsed: 0, active: false, startTime: null },
+  dinner:    { label: "Dinner",    allowMins: 30, elapsed: 0, active: false, startTime: null },
 }
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -114,6 +121,11 @@ const BREAK_ICON: Record<string, (color: string) => React.ReactNode> = {
       <line x1="4.22" y1="19.78" x2="6.34" y2="17.66" /><line x1="17.66" y1="6.34" x2="19.78" y2="4.22" />
     </svg>
   ),
+  dinner: (c) => (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2">
+      <path d="M12 3a6 6 0 009 9 9 9 0 11-9-9z" />
+    </svg>
+  ),
 }
 
 // ── ClockWidget ───────────────────────────────────────────────────────────────
@@ -123,12 +135,28 @@ export function ClockWidget() {
   const [clocked, setClocked] = useState(false)
   const [clockInTime, setClockInTime] = useState<Date | null>(null)
   const [breaks, setBreaks] = useState<Record<string, BreakState>>(INIT_BREAKS)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setNow(new Date())
     const id = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(id)
   }, [])
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement)
+    document.addEventListener("fullscreenchange", handler)
+    return () => document.removeEventListener("fullscreenchange", handler)
+  }, [])
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      cardRef.current?.requestFullscreen()
+    } else {
+      document.exitFullscreen()
+    }
+  }
 
   const toggleBreak = useCallback((type: string) => {
     setBreaks((prev) => {
@@ -191,13 +219,53 @@ export function ClockWidget() {
   }) ?? ""
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-      <div className="flex flex-col items-center px-6 py-5">
+    <div
+      ref={cardRef}
+      className={cn(
+        "overflow-hidden rounded-xl border border-border bg-card shadow-sm",
+        isFullscreen && "flex items-center justify-center",
+      )}
+    >
+      <div
+        className={cn("flex flex-col items-center px-6 py-5", isFullscreen && "w-full max-w-sm")}
+        style={isFullscreen ? { transform: "scale(2.2)", transformOrigin: "center center", gap: "14px" } : undefined}
+      >
 
-        {/* Current time label */}
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-          Current time
-        </p>
+        {/* Header row: label + fullscreen toggle */}
+        <div className="flex w-full items-center justify-between">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+            Current time
+          </p>
+          <TooltipProvider delayDuration={300}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={toggleFullscreen}
+                  className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  {isFullscreen ? (
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M8 3v3a2 2 0 01-2 2H3" />
+                      <path d="M21 8h-3a2 2 0 01-2-2V3" />
+                      <path d="M3 16h3a2 2 0 012 2v3" />
+                      <path d="M16 21v-3a2 2 0 012-2h3" />
+                    </svg>
+                  ) : (
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M8 3H5a2 2 0 00-2 2v3" />
+                      <path d="M21 8V5a2 2 0 00-2-2h-3" />
+                      <path d="M3 16v3a2 2 0 002 2h3" />
+                      <path d="M16 21h3a2 2 0 002-2v-3" />
+                    </svg>
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                {isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
 
         {/* Big clock */}
         <p className="mt-2 font-bold tabular-nums leading-none" style={{ fontSize: 40, letterSpacing: "-1px" }}>
