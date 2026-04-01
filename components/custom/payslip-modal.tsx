@@ -3,7 +3,7 @@
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import type { PayslipData } from "@/lib/types"
@@ -30,6 +30,7 @@ export function PayslipModal({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="p-0 overflow-hidden max-w-[480px] gap-0">
+        <DialogTitle className="sr-only">Payslip — {data.period}</DialogTitle>
         {/* Blue header */}
         <div className="bg-primary px-6 py-5 text-primary-foreground">
           <div className="flex items-start justify-between">

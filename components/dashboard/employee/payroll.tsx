@@ -15,6 +15,11 @@ import { StatCard } from "@/components/custom/stat-card"
 import { StatusBadge } from "@/components/custom/status-badge"
 import { PayslipModal } from "@/components/custom/payslip-modal"
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
   Table,
   TableHeader,
   TableBody,
@@ -350,7 +355,36 @@ export function PayrollSection() {
                     </TableCell>
                     <TableCell className="tabular-nums text-right">
                       {p.deductions !== "—" ? (
-                        <span className="text-danger">-{p.deductions}</span>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-default text-danger underline decoration-dashed underline-offset-2">
+                              -{p.deductions}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side="left"
+                            showArrow={false}
+                            className="min-w-50 flex-col items-stretch rounded-xl border border-border bg-card p-3 text-foreground shadow-raised"
+                          >
+                            <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              Deduction breakdown
+                            </p>
+                            {[
+                              { label: "SSS", value: p.sss },
+                              { label: "PhilHealth", value: p.philhealth },
+                              { label: "Pag-IBIG", value: p.pagibig },
+                              { label: "Withholding tax", value: p.tax },
+                            ].map(({ label, value }) => (
+                              <div
+                                key={label}
+                                className="flex justify-between gap-6 border-b border-border py-1 text-[12px] last:border-0"
+                              >
+                                <span className="text-muted-foreground">{label}</span>
+                                <span className="font-medium text-danger">{value}</span>
+                              </div>
+                            ))}
+                          </TooltipContent>
+                        </Tooltip>
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
