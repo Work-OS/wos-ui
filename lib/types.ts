@@ -41,7 +41,8 @@ export interface PayslipData {
   tax: string
   deductions: string
   net: string
-  status: "released" | "pending"
+  released: string
+  status: "released" | "upcoming"
 }
 
 export interface LeaveBalance {
