@@ -158,24 +158,6 @@ export function Sidebar() {
           )
         })}
 
-        {/* Role switcher */}
-        <div className="mt-6">
-          <p className="mb-1 px-2 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-            Switch role
-          </p>
-          {(["employee", "hr", "admin", "settings"] as Role[]).map((r) => {
-            if (r === role) return null
-            return (
-              <Link
-                key={r}
-                href={`/dashboard/${r}`}
-                className="mb-0.5 flex items-center gap-2.5 rounded-lg border border-transparent px-2.5 py-2 text-[12px] text-muted-foreground/60 transition-all hover:border-border hover:bg-muted hover:text-muted-foreground"
-              >
-                {roleLabels[r]}
-              </Link>
-            )
-          })}
-        </div>
       </nav>
     </aside>
   )
