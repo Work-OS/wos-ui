@@ -36,7 +36,7 @@ export function Topbar({ clockedIn }: TopbarProps) {
     section.charAt(0).toUpperCase() + section.slice(1)
 
   return (
-    <div className="flex h-[60px] shrink-0 items-center gap-3 rounded-2xl border border-border bg-card px-5 shadow-sm">
+    <div className="flex h-15 shrink-0 items-center gap-3 rounded-2xl border border-border bg-card px-5 shadow-sm">
       <span className="flex-1 text-[15px] font-semibold text-foreground">
         {title}
       </span>
