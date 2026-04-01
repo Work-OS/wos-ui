@@ -1,5 +1,7 @@
 "use client"
 
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Search01Icon, Download01Icon } from "@hugeicons/core-free-icons"
 import { StatusBadge } from "@/components/custom/status-badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -28,15 +30,11 @@ export function AuditSection() {
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <div className="relative flex-1">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-            <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
-          </svg>
+          <HugeiconsIcon icon={Search01Icon} size={14} strokeWidth={2} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input className="pl-9" placeholder="Filter audit log…" />
         </div>
         <Button size="sm" variant="outline">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1.5">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
+          <HugeiconsIcon icon={Download01Icon} size={13} strokeWidth={2} className="mr-1.5" />
           Export
         </Button>
       </div>

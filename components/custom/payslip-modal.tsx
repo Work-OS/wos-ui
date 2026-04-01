@@ -7,6 +7,8 @@ import {
   DialogClose,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Download01Icon, Cancel01Icon } from "@hugeicons/core-free-icons"
 import type { PayslipData } from "@/lib/types"
 
 interface PayslipModalProps {
@@ -48,18 +50,12 @@ export function PayslipModal({
                 className="bg-white/15 text-white hover:bg-white/25 border border-white/30 rounded-lg text-xs"
                 onClick={() => alert("PDF download started")}
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1">
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
+                <HugeiconsIcon icon={Download01Icon} size={13} strokeWidth={2} className="mr-1" />
                 PDF
               </Button>
               <DialogClose asChild>
                 <button className="flex size-7 items-center justify-center rounded-lg bg-white/15 text-white hover:bg-white/25 transition-colors">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M18 6L6 18M6 6l12 12" />
-                  </svg>
+                  <HugeiconsIcon icon={Cancel01Icon} size={13} strokeWidth={2.5} />
                   <span className="sr-only">Close</span>
                 </button>
               </DialogClose>

@@ -9,6 +9,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { HugeiconsIcon } from "@hugeicons/react"
+import {
+  Coffee01Icon,
+  SpoonAndForkIcon,
+  Sun01Icon,
+  Moon01Icon,
+  MaximizeScreenIcon,
+  MinimizeScreenIcon,
+  Clock01Icon,
+  StopCircleIcon,
+} from "@hugeicons/core-free-icons"
 
 // ── types ─────────────────────────────────────────────────────────────────────
 
@@ -98,34 +109,10 @@ function RingButton({
 // ── icons ─────────────────────────────────────────────────────────────────────
 
 const BREAK_ICON: Record<string, (color: string) => React.ReactNode> = {
-  morning: (c) => (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2">
-      <path d="M18 8h1a4 4 0 010 8h-1" />
-      <path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" />
-      <line x1="6" y1="1" x2="6" y2="4" /><line x1="10" y1="1" x2="10" y2="4" /><line x1="14" y1="1" x2="14" y2="4" />
-    </svg>
-  ),
-  lunch: (c) => (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2">
-      <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2" />
-      <line x1="7" y1="2" x2="7" y2="22" />
-      <path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7" />
-    </svg>
-  ),
-  afternoon: (c) => (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2">
-      <circle cx="12" cy="12" r="4" />
-      <line x1="12" y1="2" x2="12" y2="5" /><line x1="12" y1="19" x2="12" y2="22" />
-      <line x1="4.22" y1="4.22" x2="6.34" y2="6.34" /><line x1="17.66" y1="17.66" x2="19.78" y2="19.78" />
-      <line x1="2" y1="12" x2="5" y2="12" /><line x1="19" y1="12" x2="22" y2="12" />
-      <line x1="4.22" y1="19.78" x2="6.34" y2="17.66" /><line x1="17.66" y1="6.34" x2="19.78" y2="4.22" />
-    </svg>
-  ),
-  dinner: (c) => (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2">
-      <path d="M12 3a6 6 0 009 9 9 9 0 11-9-9z" />
-    </svg>
-  ),
+  morning:   (c) => <HugeiconsIcon icon={Coffee01Icon}      size={15} strokeWidth={2} color={c} />,
+  lunch:     (c) => <HugeiconsIcon icon={SpoonAndForkIcon}  size={15} strokeWidth={2} color={c} />,
+  afternoon: (c) => <HugeiconsIcon icon={Sun01Icon}         size={15} strokeWidth={2} color={c} />,
+  dinner:    (c) => <HugeiconsIcon icon={Moon01Icon}        size={15} strokeWidth={2} color={c} />,
 }
 
 // ── ClockWidget ───────────────────────────────────────────────────────────────
@@ -244,19 +231,9 @@ export function ClockWidget() {
                   className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 >
                   {isFullscreen ? (
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M8 3v3a2 2 0 01-2 2H3" />
-                      <path d="M21 8h-3a2 2 0 01-2-2V3" />
-                      <path d="M3 16h3a2 2 0 012 2v3" />
-                      <path d="M16 21v-3a2 2 0 012-2h3" />
-                    </svg>
+                    <HugeiconsIcon icon={MinimizeScreenIcon} size={13} strokeWidth={2} />
                   ) : (
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M8 3H5a2 2 0 00-2 2v3" />
-                      <path d="M21 8V5a2 2 0 00-2-2h-3" />
-                      <path d="M3 16v3a2 2 0 002 2h3" />
-                      <path d="M16 21h3a2 2 0 002-2v-3" />
-                    </svg>
+                    <HugeiconsIcon icon={MaximizeScreenIcon} size={13} strokeWidth={2} />
                   )}
                 </button>
               </TooltipTrigger>
@@ -306,25 +283,19 @@ export function ClockWidget() {
         >
           {anyBreakActive ? (
             <>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
-              </svg>
+              <HugeiconsIcon icon={Clock01Icon} size={13} strokeWidth={2} />
               {activeBreakIsOver
                 ? `End Break · ⚠ +${fmtCountdown(activeBreakRemaining!)} over`
                 : `End Break · ${fmtCountdown(activeBreakRemaining!)} left`}
             </>
           ) : clocked ? (
             <>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                <rect x="6" y="6" width="12" height="12" rx="1" />
-              </svg>
+              <HugeiconsIcon icon={StopCircleIcon} size={13} strokeWidth={2} />
               Clock Out
             </>
           ) : (
             <>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" />
-              </svg>
+              <HugeiconsIcon icon={Clock01Icon} size={13} strokeWidth={2} />
               Clock In
             </>
           )}
