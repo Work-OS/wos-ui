@@ -3,11 +3,26 @@
 import { useEffect, useState } from "react"
 import { useTheme } from "next-themes"
 import { Separator } from "@/components/ui/separator"
+import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
+
+const TIMEZONES = [
+  "Asia/Manila (UTC+8)",
+  "Asia/Singapore (UTC+8)",
+  "Asia/Tokyo (UTC+9)",
+  "America/New_York (UTC-5)",
+  "America/Los_Angeles (UTC-8)",
+  "Europe/London (UTC+0)",
+  "Europe/Paris (UTC+1)",
+]
+
+const LANGUAGES = ["English (US)", "English (UK)", "Filipino", "Japanese", "Spanish"]
 
 export function AppearanceSection() {
   const { resolvedTheme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const [timezone, setTimezone] = useState("Asia/Manila (UTC+8)")
+  const [language, setLanguage] = useState("English (US)")
   useEffect(() => setMounted(true), [])
 
   const themes = [
@@ -20,7 +35,7 @@ export function AppearanceSection() {
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
         <h3 className="text-[15px] font-semibold">Appearance</h3>
-        <p className="text-[13px] text-muted-foreground">Customize how WorkOS looks on your device</p>
+        <p className="text-[13px] text-muted-foreground">Customize how WorkOS looks and feels on your device</p>
       </div>
       <Separator />
 
@@ -42,7 +57,7 @@ export function AppearanceSection() {
                 "mb-2 h-12 rounded-lg border",
                 t.value === "dark" ? "border-zinc-700 bg-zinc-900" :
                 t.value === "light" ? "border-zinc-200 bg-white" :
-                "border-zinc-300 bg-gradient-to-br from-white to-zinc-900"
+                "border-zinc-300 bg-linear-to-br from-white to-zinc-900"
               )} />
               <p className="text-[13px] font-medium">{t.label}</p>
               <p className="text-[11px] text-muted-foreground">{t.desc}</p>
@@ -52,6 +67,35 @@ export function AppearanceSection() {
         <p className="mt-3 text-[11px] text-muted-foreground">
           Tip: press <kbd className="rounded border border-border bg-muted px-1 text-[10px]">D</kbd> anywhere to toggle dark mode
         </p>
+      </div>
+
+      <Separator />
+
+      <div>
+        <p className="mb-1 text-[13px] font-medium">Locale &amp; language</p>
+        <p className="mb-4 text-[12px] text-muted-foreground">Controls date formats, time display, and UI language</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label>Timezone</Label>
+            <select
+              value={timezone}
+              onChange={(e) => setTimezone(e.target.value)}
+              className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              {TIMEZONES.map((tz) => <option key={tz}>{tz}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Language</Label>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              {LANGUAGES.map((l) => <option key={l}>{l}</option>)}
+            </select>
+          </div>
+        </div>
       </div>
     </div>
   )
