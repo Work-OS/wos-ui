@@ -31,6 +31,8 @@ import {
 import { cn } from "@/lib/utils"
 import { attendanceRecords } from "@/lib/mock-data"
 import type { AttendanceRecord } from "@/lib/types"
+import { usePagination, TablePagination } from "@/components/custom/table-pagination"
+import { AttendanceHeatmap } from "@/components/custom/attendance-heatmap"
 
 const statusVariant: Record<string, "green" | "red" | "amber" | "gray" | "blue" | "purple"> = {
   present: "green",
@@ -326,6 +328,8 @@ export function DTRSection() {
   const [viewOpen, setViewOpen] = useState(false)
   const [appealOpen, setAppealOpen] = useState(false)
   const [recordNotes, setRecordNotes] = useState<Record<string, string>>({})
+  const { paginated, page, setPage, pageSize, setPageSize, total, totalPages } =
+    usePagination(attendanceRecords)
 
   useEffect(() => {
     setNow(new Date())
@@ -741,7 +745,7 @@ export function DTRSection() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {attendanceRecords.map((r, i) => {
+            {paginated.map((r, i) => {
               const note = recordNotes[r.date]
               return (
                 <TableRow key={i}>
@@ -816,7 +820,17 @@ export function DTRSection() {
             })}
           </TableBody>
         </Table>
+        <TablePagination
+          page={page}
+          totalPages={totalPages}
+          total={total}
+          pageSize={pageSize}
+          setPage={setPage}
+          setPageSize={setPageSize}
+        />
       </div>
+
+      <AttendanceHeatmap />
 
       <DtrChangeModal open={dtrOpen} onClose={() => setDtrOpen(false)} />
       <ViewModal

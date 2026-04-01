@@ -28,6 +28,7 @@ import {
   TableCell,
 } from "@/components/ui/table"
 import { payslips, CURRENT_USER } from "@/lib/mock-data"
+import { usePagination, TablePagination } from "@/components/custom/table-pagination"
 import type { PayslipData } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -138,6 +139,8 @@ const latest = payslips.find((p) => p.status === "released") ?? payslips[1]
 
 export function PayrollSection() {
   const [selectedPayslip, setSelectedPayslip] = useState<PayslipData | null>(null)
+  const { paginated, page, setPage, pageSize, setPageSize, total, totalPages } =
+    usePagination(payslips)
 
   const basicAmt = parseAmt(latest.basic)
   const otAmt = parseAmt(latest.ot)
@@ -335,7 +338,7 @@ export function PayrollSection() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {payslips.map((p, i) => {
+              {paginated.map((p, i) => {
                 const isUpcoming = p.status === "upcoming"
                 return (
                   <TableRow key={i}>
@@ -435,6 +438,14 @@ export function PayrollSection() {
               })}
             </TableBody>
           </Table>
+          <TablePagination
+            page={page}
+            totalPages={totalPages}
+            total={total}
+            pageSize={pageSize}
+            setPage={setPage}
+            setPageSize={setPageSize}
+          />
 
           {/* YTD summary */}
           <div className="mt-5 grid grid-cols-4 gap-3 border-t border-border pt-5">

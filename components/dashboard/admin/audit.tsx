@@ -3,6 +3,7 @@
 import { StatusBadge } from "@/components/custom/status-badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { usePagination, TablePagination } from "@/components/custom/table-pagination"
 import {
   Table,
   TableHeader,
@@ -20,6 +21,9 @@ const severityVariant: Record<string, "red" | "amber" | "gray"> = {
 }
 
 export function AuditSection() {
+  const { paginated, page, setPage, pageSize, setPageSize, total, totalPages } =
+    usePagination(auditLogs)
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
@@ -46,7 +50,7 @@ export function AuditSection() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {auditLogs.map((log) => (
+          {paginated.map((log) => (
             <TableRow key={log.id}>
               <TableCell className="font-mono text-[11px] text-muted-foreground">{log.id}</TableCell>
               <TableCell>
@@ -70,6 +74,14 @@ export function AuditSection() {
           ))}
         </TableBody>
       </Table>
+      <TablePagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        pageSize={pageSize}
+        setPage={setPage}
+        setPageSize={setPageSize}
+      />
     </div>
   )
 }
