@@ -14,6 +14,14 @@ import { Progress } from "@/components/ui/progress"
 import { StatCard } from "@/components/custom/stat-card"
 import { StatusBadge } from "@/components/custom/status-badge"
 import { PayslipModal } from "@/components/custom/payslip-modal"
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table"
 import { payslips, CURRENT_USER } from "@/lib/mock-data"
 import type { PayslipData } from "@/lib/types"
 import { cn } from "@/lib/utils"
@@ -301,104 +309,93 @@ export function PayrollSection() {
           </CardAction>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto rounded-lg border border-border">
-            <table className="w-full text-[13px]">
-              <thead>
-                <tr className="border-b border-border bg-muted/50">
-                  {[
-                    { label: "Period", right: false },
-                    { label: "Basic", right: true },
-                    { label: "Overtime", right: true },
-                    { label: "Gross", right: true },
-                    { label: "Deductions", right: true },
-                    { label: "Net pay", right: true },
-                    { label: "Released", right: false },
-                    { label: "Status", right: false },
-                    { label: "Actions", right: false },
-                  ].map(({ label, right }) => (
-                    <th
-                      key={label}
-                      className={cn(
-                        "px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground",
-                        right ? "text-right" : "text-left",
+          <Table>
+            <TableHeader>
+              <TableRow>
+                {[
+                  { label: "Period", right: false },
+                  { label: "Basic", right: true },
+                  { label: "Overtime", right: true },
+                  { label: "Gross", right: true },
+                  { label: "Deductions", right: true },
+                  { label: "Net pay", right: true },
+                  { label: "Released", right: false },
+                  { label: "Status", right: false },
+                  { label: "Actions", right: false },
+                ].map(({ label, right }) => (
+                  <TableHead key={label} className={right ? "text-right" : undefined}>
+                    {label}
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {payslips.map((p, i) => {
+                const isUpcoming = p.status === "upcoming"
+                return (
+                  <TableRow key={i}>
+                    <TableCell className="font-medium">{p.period}</TableCell>
+                    <TableCell className="tabular-nums text-right text-muted-foreground">
+                      {isUpcoming ? <span className="text-muted-foreground">—</span> : p.basic}
+                    </TableCell>
+                    <TableCell className="tabular-nums text-right">
+                      {p.ot !== "—" ? (
+                        <span className="text-green-600 dark:text-green-400">+{p.ot}</span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
                       )}
-                    >
-                      {label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {payslips.map((p, i) => {
-                  const isUpcoming = p.status === "upcoming"
-                  return (
-                    <tr
-                      key={i}
-                      className="border-b border-border last:border-0 transition-colors hover:bg-muted/30"
-                    >
-                      <td className="px-4 py-3 font-medium">{p.period}</td>
-                      <td className="px-4 py-3 tabular-nums text-right text-muted-foreground">
-                        {isUpcoming ? <span className="text-muted-foreground">—</span> : p.basic}
-                      </td>
-                      <td className="px-4 py-3 tabular-nums text-right">
-                        {p.ot !== "—" ? (
-                          <span className="text-green-600 dark:text-green-400">+{p.ot}</span>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 tabular-nums text-right">
-                        {isUpcoming ? <span className="text-muted-foreground">—</span> : p.gross}
-                      </td>
-                      <td className="px-4 py-3 tabular-nums text-right">
-                        {p.deductions !== "—" ? (
-                          <span className="text-red-600 dark:text-red-400">-{p.deductions}</span>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 tabular-nums text-right font-bold">
-                        {isUpcoming ? (
-                          <span className="font-normal text-muted-foreground">Pending</span>
-                        ) : (
-                          p.net
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">{p.released}</td>
-                      <td className="px-4 py-3">
-                        <StatusBadge variant={isUpcoming ? "amber" : "green"}>
-                          {isUpcoming ? "Upcoming" : "Released"}
-                        </StatusBadge>
-                      </td>
-                      <td className="px-4 py-3">
-                        {isUpcoming ? (
-                          <span className="text-[12px] text-muted-foreground">—</span>
-                        ) : (
-                          <div className="flex items-center gap-1.5">
-                            <Button
-                              size="xs"
-                              variant="ghost"
-                              onClick={() => setSelectedPayslip(p)}
-                            >
-                              View
-                            </Button>
-                            <Button
-                              size="xs"
-                              variant="default"
-                              onClick={() => setSelectedPayslip(p)}
-                            >
-                              <DownloadIcon />
-                              PDF
-                            </Button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+                    </TableCell>
+                    <TableCell className="tabular-nums text-right">
+                      {isUpcoming ? <span className="text-muted-foreground">—</span> : p.gross}
+                    </TableCell>
+                    <TableCell className="tabular-nums text-right">
+                      {p.deductions !== "—" ? (
+                        <span className="text-red-600 dark:text-red-400">-{p.deductions}</span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="tabular-nums text-right font-bold">
+                      {isUpcoming ? (
+                        <span className="font-normal text-muted-foreground">Pending</span>
+                      ) : (
+                        p.net
+                      )}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{p.released}</TableCell>
+                    <TableCell>
+                      <StatusBadge variant={isUpcoming ? "amber" : "green"}>
+                        {isUpcoming ? "Upcoming" : "Released"}
+                      </StatusBadge>
+                    </TableCell>
+                    <TableCell>
+                      {isUpcoming ? (
+                        <span className="text-[12px] text-muted-foreground">—</span>
+                      ) : (
+                        <div className="flex items-center gap-1.5">
+                          <Button
+                            size="xs"
+                            variant="ghost"
+                            onClick={() => setSelectedPayslip(p)}
+                          >
+                            View
+                          </Button>
+                          <Button
+                            size="xs"
+                            variant="default"
+                            onClick={() => setSelectedPayslip(p)}
+                          >
+                            <DownloadIcon />
+                            PDF
+                          </Button>
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
 
           {/* YTD summary */}
           <div className="mt-5 grid grid-cols-4 gap-3 border-t border-border pt-5">

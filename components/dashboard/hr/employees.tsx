@@ -20,6 +20,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table"
 import { employees } from "@/lib/mock-data"
 
 function AddEmployeeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -111,47 +119,43 @@ export function EmployeesSection() {
         </Button>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-border">
-        <table className="w-full text-[13px]">
-          <thead>
-            <tr className="border-b border-border bg-muted/50">
-              {["Employee", "Department", "Position", "Start date", "Status", ""].map((h) => (
-                <th key={h} className={`px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ${h === "" ? "text-right" : "text-left"}`}>
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((emp) => (
-              <tr key={emp.id} className="border-b border-border last:border-0 cursor-pointer transition-colors hover:bg-muted/30">
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
-                      {emp.initials}
-                    </div>
-                    <div>
-                      <p className="font-medium">{emp.name}</p>
-                      <p className="text-[11px] text-muted-foreground">{emp.email}</p>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">{emp.department}</td>
-                <td className="px-4 py-3">{emp.position}</td>
-                <td className="px-4 py-3 tabular-nums text-muted-foreground">{emp.startDate}</td>
-                <td className="px-4 py-3">
-                  <StatusBadge variant={emp.status === "active" ? "green" : emp.status === "on-leave" ? "amber" : "gray"}>
-                    {emp.status === "on-leave" ? "On leave" : emp.status.charAt(0).toUpperCase() + emp.status.slice(1)}
-                  </StatusBadge>
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <Button size="xs" variant="ghost">View</Button>
-                </td>
-              </tr>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            {["Employee", "Department", "Position", "Start date", "Status", ""].map((h) => (
+              <TableHead key={h} className={h === "" ? "text-right" : undefined}>{h}</TableHead>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {filtered.map((emp) => (
+            <TableRow key={emp.id} className="cursor-pointer">
+              <TableCell>
+                <div className="flex items-center gap-2.5">
+                  <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
+                    {emp.initials}
+                  </div>
+                  <div>
+                    <p className="font-medium">{emp.name}</p>
+                    <p className="text-[11px] text-muted-foreground">{emp.email}</p>
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell className="text-muted-foreground">{emp.department}</TableCell>
+              <TableCell>{emp.position}</TableCell>
+              <TableCell className="tabular-nums text-muted-foreground">{emp.startDate}</TableCell>
+              <TableCell>
+                <StatusBadge variant={emp.status === "active" ? "green" : emp.status === "on-leave" ? "amber" : "gray"}>
+                  {emp.status === "on-leave" ? "On leave" : emp.status.charAt(0).toUpperCase() + emp.status.slice(1)}
+                </StatusBadge>
+              </TableCell>
+              <TableCell className="text-right">
+                <Button size="xs" variant="ghost">View</Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
 
       <AddEmployeeModal open={addOpen} onClose={() => setAddOpen(false)} />
     </div>

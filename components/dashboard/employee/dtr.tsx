@@ -4,6 +4,14 @@ import { useState, useEffect, useCallback } from "react"
 import { StatusBadge } from "@/components/custom/status-badge"
 import { DtrChangeModal } from "@/components/custom/dtr-change-modal"
 import { Button } from "@/components/ui/button"
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table"
 import { cn } from "@/lib/utils"
 import { attendanceRecords } from "@/lib/mock-data"
 
@@ -404,51 +412,43 @@ export function DTRSection() {
             March – April 2025 · 22 days worked · 1 late · 2 on leave
           </p>
         </div>
-        <div className="overflow-x-auto rounded-xl border border-border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b border-border bg-muted/50">
-                {["Date", "Day", "Time in", "Time out", "Hours worked", "OT hours", "Status"].map((h) => (
-                  <th
-                    key={h}
-                    className={cn(
-                      "px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground",
-                      h === "Hours worked" || h === "OT hours" ? "text-right" : "text-left",
-                    )}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {attendanceRecords.map((r, i) => (
-                <tr
-                  key={i}
-                  className="border-b border-border last:border-0 transition-colors hover:bg-muted/30"
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {["Date", "Day", "Time in", "Time out", "Hours worked", "OT hours", "Status"].map((h) => (
+                <TableHead
+                  key={h}
+                  className={h === "Hours worked" || h === "OT hours" ? "text-right" : undefined}
                 >
-                  <td className="px-4 py-3 font-medium">{r.date}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{r.day}</td>
-                  <td className="px-4 py-3 tabular-nums">{r.timeIn}</td>
-                  <td className="px-4 py-3 tabular-nums">{r.timeOut}</td>
-                  <td className="px-4 py-3 tabular-nums text-right">{r.hoursWorked}</td>
-                  <td className="px-4 py-3 tabular-nums text-right">
-                    {r.otHours !== "—" ? (
-                      <span className="font-medium text-primary">+{r.otHours}h</span>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <StatusBadge variant={statusVariant[r.status] ?? "gray"}>
-                      {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
-                    </StatusBadge>
-                  </td>
-                </tr>
+                  {h}
+                </TableHead>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {attendanceRecords.map((r, i) => (
+              <TableRow key={i}>
+                <TableCell className="font-medium">{r.date}</TableCell>
+                <TableCell className="text-muted-foreground">{r.day}</TableCell>
+                <TableCell className="tabular-nums">{r.timeIn}</TableCell>
+                <TableCell className="tabular-nums">{r.timeOut}</TableCell>
+                <TableCell className="tabular-nums text-right">{r.hoursWorked}</TableCell>
+                <TableCell className="tabular-nums text-right">
+                  {r.otHours !== "—" ? (
+                    <span className="font-medium text-primary">+{r.otHours}h</span>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <StatusBadge variant={statusVariant[r.status] ?? "gray"}>
+                    {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                  </StatusBadge>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
 
       <DtrChangeModal open={dtrOpen} onClose={() => setDtrOpen(false)} />

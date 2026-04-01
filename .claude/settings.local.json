@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npx shadcn@latest add input label select textarea dialog tabs separator avatar dropdown-menu badge card progress --yes)",
       "Bash(pnpm typecheck:*)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(npx shadcn@latest add table --yes)"
     ]
   }
 }

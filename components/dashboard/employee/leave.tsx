@@ -9,6 +9,14 @@ import { ObModal } from "@/components/custom/ob-modal"
 import { CoeModal } from "@/components/custom/coe-modal"
 import { DtrChangeModal } from "@/components/custom/dtr-change-modal"
 import { OvertimeModal } from "@/components/custom/overtime-modal"
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table"
 import { cn } from "@/lib/utils"
 
 // ── request type cards ────────────────────────────────────────────────────────
@@ -305,50 +313,40 @@ export function LeaveSection() {
           <p className="text-[12px] text-muted-foreground">All time</p>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto rounded-lg border border-border">
-            <table className="w-full text-[13px]">
-              <thead>
-                <tr className="border-b border-border bg-muted/50">
-                  {["Type", "Details", "Date filed", "For date", "Status", "Remarks"].map((h) => (
-                    <th
-                      key={h}
-                      className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {REQUEST_HISTORY.map((r, i) => (
-                  <tr
-                    key={i}
-                    className="border-b border-border last:border-0 transition-colors hover:bg-muted/30"
-                  >
-                    <td className="px-4 py-3">
-                      <StatusBadge variant={typeVariant[r.type]}>
-                        {typeLabel[r.type]}
-                      </StatusBadge>
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="font-medium">{r.title}</p>
-                      <p className="text-[12px] text-muted-foreground">{r.meta}</p>
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">{r.filed}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{r.forDate}</td>
-                    <td className="px-4 py-3">
-                      <StatusBadge variant={statusVariant[r.status]}>
-                        {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
-                      </StatusBadge>
-                    </td>
-                    <td className="px-4 py-3 text-[12px] text-muted-foreground">
-                      {r.remarks}
-                    </td>
-                  </tr>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                {["Type", "Details", "Date filed", "For date", "Status", "Remarks"].map((h) => (
+                  <TableHead key={h}>{h}</TableHead>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {REQUEST_HISTORY.map((r, i) => (
+                <TableRow key={i}>
+                  <TableCell>
+                    <StatusBadge variant={typeVariant[r.type]}>
+                      {typeLabel[r.type]}
+                    </StatusBadge>
+                  </TableCell>
+                  <TableCell>
+                    <p className="font-medium">{r.title}</p>
+                    <p className="text-[12px] text-muted-foreground">{r.meta}</p>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{r.filed}</TableCell>
+                  <TableCell className="text-muted-foreground">{r.forDate}</TableCell>
+                  <TableCell>
+                    <StatusBadge variant={statusVariant[r.status]}>
+                      {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                    </StatusBadge>
+                  </TableCell>
+                  <TableCell className="text-[12px] text-muted-foreground">
+                    {r.remarks}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
 

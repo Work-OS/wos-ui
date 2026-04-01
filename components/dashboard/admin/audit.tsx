@@ -3,6 +3,14 @@
 import { StatusBadge } from "@/components/custom/status-badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table"
 import { auditLogs } from "@/lib/mock-data"
 
 const severityVariant: Record<string, "red" | "amber" | "gray"> = {
@@ -29,41 +37,39 @@ export function AuditSection() {
         </Button>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-border">
-        <table className="w-full text-[13px]">
-          <thead>
-            <tr className="border-b border-border bg-muted/50">
-              {["ID", "User", "Action", "Target", "IP Address", "Timestamp", "Severity"].map((h) => (
-                <th key={h} className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {auditLogs.map((log) => (
-              <tr key={log.id} className="border-b border-border last:border-0 hover:bg-muted/30">
-                <td className="px-4 py-3 font-mono text-[11px] text-muted-foreground">{log.id}</td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-semibold">
-                      {log.initials}
-                    </div>
-                    <span>{log.user}</span>
-                  </div>
-                </td>
-                <td className="px-4 py-3 font-medium">{log.action}</td>
-                <td className="max-w-[200px] truncate px-4 py-3 text-muted-foreground">{log.target}</td>
-                <td className="px-4 py-3 font-mono text-[11px] text-muted-foreground">{log.ip}</td>
-                <td className="px-4 py-3 text-[11px] text-muted-foreground">{log.timestamp}</td>
-                <td className="px-4 py-3">
-                  <StatusBadge variant={severityVariant[log.severity]}>
-                    {log.severity.charAt(0).toUpperCase() + log.severity.slice(1)}
-                  </StatusBadge>
-                </td>
-              </tr>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            {["ID", "User", "Action", "Target", "IP Address", "Timestamp", "Severity"].map((h) => (
+              <TableHead key={h}>{h}</TableHead>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {auditLogs.map((log) => (
+            <TableRow key={log.id}>
+              <TableCell className="font-mono text-[11px] text-muted-foreground">{log.id}</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-semibold">
+                    {log.initials}
+                  </div>
+                  <span>{log.user}</span>
+                </div>
+              </TableCell>
+              <TableCell className="font-medium">{log.action}</TableCell>
+              <TableCell className="max-w-50 truncate text-muted-foreground">{log.target}</TableCell>
+              <TableCell className="font-mono text-[11px] text-muted-foreground">{log.ip}</TableCell>
+              <TableCell className="text-[11px] text-muted-foreground">{log.timestamp}</TableCell>
+              <TableCell>
+                <StatusBadge variant={severityVariant[log.severity]}>
+                  {log.severity.charAt(0).toUpperCase() + log.severity.slice(1)}
+                </StatusBadge>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   )
 }
