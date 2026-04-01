@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
 import Link from "next/link"
 import {
@@ -25,6 +25,7 @@ interface TopbarProps {
 export function Topbar({ clockedIn }: TopbarProps) {
   const pathname = usePathname()
   const { resolvedTheme, setTheme } = useTheme()
+  const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [switchRoleOpen, setSwitchRoleOpen] = useState(false)
   useEffect(() => setMounted(true), [])
@@ -39,6 +40,17 @@ export function Topbar({ clockedIn }: TopbarProps) {
 
   return (
     <div className="flex h-15 shrink-0 items-center gap-3 rounded-2xl border border-border bg-card px-5 shadow-sm">
+      {role === "settings" && (
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-1.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M19 12H5M12 5l-7 7 7 7" />
+          </svg>
+          Back
+        </button>
+      )}
       <span className="flex-1 text-[15px] font-semibold text-foreground">
         {title}
       </span>

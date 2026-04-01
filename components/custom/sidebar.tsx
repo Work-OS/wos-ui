@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -97,8 +98,23 @@ function NavIcon({ section }: { section: string }) {
 export function Sidebar() {
   const pathname = usePathname()
 
-  const role = (pathname.split("/")[2] as Role) ?? "employee"
+  const rawRole = (pathname.split("/")[2] as Role) ?? "employee"
+  const isSettings = rawRole === "settings"
   const activeSection = pathname.split("/")[3]
+
+  const [sidebarRole, setSidebarRole] = useState<Role>(isSettings ? "employee" : rawRole)
+
+  useEffect(() => {
+    if (isSettings) {
+      const stored = sessionStorage.getItem("wos_last_role") as Role | null
+      if (stored && stored !== "settings") setSidebarRole(stored)
+    } else {
+      sessionStorage.setItem("wos_last_role", rawRole)
+      setSidebarRole(rawRole)
+    }
+  }, [rawRole, isSettings])
+
+  const role = sidebarRole
   const items = navConfig[role] ?? navConfig.employee
   const roleLabel = roleLabels[role]
 
