@@ -406,22 +406,27 @@ export function PayrollSection() {
                       {isUpcoming ? (
                         <span className="text-[12px] text-muted-foreground">—</span>
                       ) : (
-                        <div className="flex items-center gap-1.5">
-                          <Button
-                            size="xs"
-                            variant="ghost"
-                            onClick={() => setSelectedPayslip(p)}
-                          >
-                            View
-                          </Button>
-                          <Button
-                            size="xs"
-                            variant="default"
-                            onClick={() => setSelectedPayslip(p)}
-                          >
-                            <DownloadIcon />
-                            PDF
-                          </Button>
+                        <div className="flex items-center gap-1">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button size="icon-xs" variant="outline" onClick={() => setSelectedPayslip(p)}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <span className="sr-only">View payslip</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>View payslip</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button size="icon-xs" variant="default" onClick={() => setSelectedPayslip(p)}>
+                                <DownloadIcon />
+                                <span className="sr-only">Download PDF</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Download PDF</TooltipContent>
+                          </Tooltip>
                         </div>
                       )}
                     </TableCell>

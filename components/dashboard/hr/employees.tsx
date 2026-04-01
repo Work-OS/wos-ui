@@ -28,6 +28,11 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { employees } from "@/lib/mock-data"
 
 function AddEmployeeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -150,7 +155,17 @@ export function EmployeesSection() {
                 </StatusBadge>
               </TableCell>
               <TableCell className="text-right">
-                <Button size="xs" variant="ghost">View</Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button size="icon-xs" variant="outline">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+                      </svg>
+                      <span className="sr-only">View profile</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>View profile</TooltipContent>
+                </Tooltip>
               </TableCell>
             </TableRow>
           ))}

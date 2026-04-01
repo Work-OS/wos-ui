@@ -11,6 +11,11 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { employees } from "@/lib/mock-data"
 
 export function UsersSection() {
@@ -64,8 +69,29 @@ export function UsersSection() {
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-1">
-                  <Button size="xs" variant="ghost">Edit</Button>
-                  <Button size="xs" variant="ghost" className="text-destructive">Disable</Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="icon-xs" variant="outline">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                        <span className="sr-only">Edit user</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Edit user</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="icon-xs" variant="outline" className="border-danger-border text-danger hover:bg-rbg">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                        </svg>
+                        <span className="sr-only">Disable user</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Disable user</TooltipContent>
+                  </Tooltip>
                 </div>
               </TableCell>
             </TableRow>
