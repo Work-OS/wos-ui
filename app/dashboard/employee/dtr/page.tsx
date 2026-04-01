@@ -1,4 +1,7 @@
+import type { Metadata } from "next"
 import { DTRSection } from "@/components/dashboard/employee/dtr"
+
+export const metadata: Metadata = { title: "Daily Time Record" }
 
 export default function DTRPage() {
   return (

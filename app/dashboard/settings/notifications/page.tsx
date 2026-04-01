@@ -1,4 +1,7 @@
+import type { Metadata } from "next"
 import { NotificationsSection } from "@/components/dashboard/settings/notifications"
+
+export const metadata: Metadata = { title: "Notifications" }
 
 export default function SettingsNotificationsPage() {
   return (

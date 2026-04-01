@@ -1,4 +1,7 @@
+import type { Metadata } from "next"
 import { AuditSection } from "@/components/dashboard/admin/audit"
+
+export const metadata: Metadata = { title: "Audit Log" }
 
 export default function AdminAuditPage() {
   return (

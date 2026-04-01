@@ -1,4 +1,7 @@
+import type { Metadata } from "next"
 import { ConfigSection } from "@/components/dashboard/admin/config"
+
+export const metadata: Metadata = { title: "Configuration" }
 
 export default function AdminConfigPage() {
   return (

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Background rounded square -->
+  <rect width="32" height="32" rx="7" fill="#2563EB"/>
+  <!-- 4 rounded squares (2x2 grid) matching the logo -->
+  <rect x="5"  y="5"  width="9" height="9" rx="2.5" fill="white"/>
+  <rect x="18" y="5"  width="9" height="9" rx="2.5" fill="white" opacity="0.7"/>
+  <rect x="5"  y="18" width="9" height="9" rx="2.5" fill="white" opacity="0.7"/>
+  <rect x="18" y="18" width="9" height="9" rx="2.5" fill="white" opacity="0.4"/>
+  <!-- Cyan accent circle -->
+  <circle cx="28" cy="28" r="5" fill="#22D3EE" opacity="0.75"/>
+</svg>
