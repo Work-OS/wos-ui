@@ -165,7 +165,7 @@ export function PayrollSection() {
         <StatCard
           title="Total deductions"
           value={
-            <span className="text-red-600 dark:text-red-400">{latest.deductions}</span>
+            <span className="text-danger">{latest.deductions}</span>
           }
           meta="SSS · PhilHealth · Tax"
           accent="red"
@@ -173,7 +173,7 @@ export function PayrollSection() {
         <StatCard
           title={`Net pay (${month})`}
           value={
-            <span className="text-green-600 dark:text-green-400">{latest.net}</span>
+            <span className="text-success">{latest.net}</span>
           }
           delta="+₱575 vs prior month"
           deltaUp={true}
@@ -219,17 +219,17 @@ export function PayrollSection() {
                 label={`Overtime — ${latest.otHrs} hrs`}
                 value={`+${latest.ot}`}
                 labelClass="text-muted-foreground"
-                valueClass="text-green-600 dark:text-green-400"
+                valueClass="text-success"
               />
             )}
             <SectionBand>Deductions</SectionBand>
-            <SlipRow label="SSS contribution" value={`-${latest.sss}`} labelClass="text-muted-foreground" valueClass="text-red-600 dark:text-red-400" />
-            <SlipRow label="PhilHealth" value={`-${latest.philhealth}`} labelClass="text-muted-foreground" valueClass="text-red-600 dark:text-red-400" />
-            <SlipRow label="Pag-IBIG" value={`-${latest.pagibig}`} labelClass="text-muted-foreground" valueClass="text-red-600 dark:text-red-400" />
-            <SlipRow label="Withholding tax" value={`-${latest.tax}`} labelClass="text-muted-foreground" valueClass="text-red-600 dark:text-red-400" />
+            <SlipRow label="SSS contribution" value={`-${latest.sss}`} labelClass="text-muted-foreground" valueClass="text-danger" />
+            <SlipRow label="PhilHealth" value={`-${latest.philhealth}`} labelClass="text-muted-foreground" valueClass="text-danger" />
+            <SlipRow label="Pag-IBIG" value={`-${latest.pagibig}`} labelClass="text-muted-foreground" valueClass="text-danger" />
+            <SlipRow label="Withholding tax" value={`-${latest.tax}`} labelClass="text-muted-foreground" valueClass="text-danger" />
             <div className="mt-3 flex items-center justify-between rounded-lg bg-muted px-4 py-3">
               <span className="text-[13px] font-bold">Net pay</span>
-              <span className="text-lg font-bold text-green-600 dark:text-green-400">
+              <span className="text-lg font-bold text-success">
                 {latest.net}
               </span>
             </div>
@@ -256,7 +256,7 @@ export function PayrollSection() {
                 value={`+${latest.ot.replace(".00", "")}`}
                 pct={(otAmt / grossAmt) * 100}
                 indicatorClassName="bg-green-500"
-                valueClass="text-green-600 dark:text-green-400"
+                valueClass="text-success"
               />
             )}
 
@@ -267,28 +267,28 @@ export function PayrollSection() {
                 value={`-${latest.sss.replace(".00", "")}`}
                 pct={(ssAmt / dedAmt) * 100}
                 indicatorClassName="bg-red-500"
-                valueClass="text-red-600 dark:text-red-400"
+                valueClass="text-danger"
               />
               <BreakdownBar
                 label="PhilHealth"
                 value={`-${latest.philhealth.replace(".00", "")}`}
                 pct={(phAmt / dedAmt) * 100}
                 indicatorClassName="bg-red-500"
-                valueClass="text-red-600 dark:text-red-400"
+                valueClass="text-danger"
               />
               <BreakdownBar
                 label="Withholding tax"
                 value={`-${latest.tax.replace(".00", "")}`}
                 pct={(taxAmt / dedAmt) * 100}
                 indicatorClassName="bg-red-400"
-                valueClass="text-red-600 dark:text-red-400"
+                valueClass="text-danger"
               />
             </div>
 
             {/* Net total */}
             <div className="flex items-center justify-between border-t border-border pt-3">
               <span className="text-[13px] font-semibold">Net pay</span>
-              <span className="text-base font-bold text-green-600 dark:text-green-400">
+              <span className="text-base font-bold text-success">
                 {latest.net.replace(".00", "")}
               </span>
             </div>
@@ -340,7 +340,7 @@ export function PayrollSection() {
                     </TableCell>
                     <TableCell className="tabular-nums text-right">
                       {p.ot !== "—" ? (
-                        <span className="text-green-600 dark:text-green-400">+{p.ot}</span>
+                        <span className="text-success">+{p.ot}</span>
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
@@ -350,7 +350,7 @@ export function PayrollSection() {
                     </TableCell>
                     <TableCell className="tabular-nums text-right">
                       {p.deductions !== "—" ? (
-                        <span className="text-red-600 dark:text-red-400">-{p.deductions}</span>
+                        <span className="text-danger">-{p.deductions}</span>
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
@@ -403,18 +403,18 @@ export function PayrollSection() {
             <YtdCard
               label="YTD overtime pay"
               value="₱8,325"
-              valueClass="text-green-600 dark:text-green-400"
+              valueClass="text-success"
               meta="31.25 hrs total"
             />
             <YtdCard
               label="YTD deductions"
               value="₱29,000"
-              valueClass="text-red-600 dark:text-red-400"
+              valueClass="text-danger"
             />
             <YtdCard
               label="YTD net pay"
               value="₱204,325"
-              valueClass="text-green-600 dark:text-green-400"
+              valueClass="text-success"
             />
           </div>
         </CardContent>

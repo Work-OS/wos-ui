@@ -70,7 +70,7 @@ export function PayslipModal({
             <SlipRow
               label={`${data.otHrs} hrs overtime`}
               value={`+${data.ot}`}
-              valueClass="text-green-600 dark:text-green-400"
+              valueClass="text-success"
             />
           )}
 
@@ -80,15 +80,15 @@ export function PayslipModal({
               Deductions
             </p>
           </div>
-          <SlipRow label="SSS contribution" value={`-${data.sss}`} valueClass="text-red-600 dark:text-red-400" />
-          <SlipRow label="PhilHealth" value={`-${data.philhealth}`} valueClass="text-red-600 dark:text-red-400" />
-          <SlipRow label="Pag-IBIG" value={`-${data.pagibig}`} valueClass="text-red-600 dark:text-red-400" />
-          <SlipRow label="Withholding tax" value={`-${data.tax}`} valueClass="text-red-600 dark:text-red-400" />
+          <SlipRow label="SSS contribution" value={`-${data.sss}`} valueClass="text-danger" />
+          <SlipRow label="PhilHealth" value={`-${data.philhealth}`} valueClass="text-danger" />
+          <SlipRow label="Pag-IBIG" value={`-${data.pagibig}`} valueClass="text-danger" />
+          <SlipRow label="Withholding tax" value={`-${data.tax}`} valueClass="text-danger" />
 
           {/* Net */}
           <div className="mt-4 flex items-center justify-between rounded-lg bg-muted p-4">
             <span className="text-sm font-bold text-foreground">Net pay</span>
-            <span className="text-lg font-bold text-green-600 dark:text-green-400">
+            <span className="text-lg font-bold text-success">
               {data.net}
             </span>
           </div>

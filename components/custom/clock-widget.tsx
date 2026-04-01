@@ -148,7 +148,7 @@ export function ClockWidget() {
           className={cn(
             "w-full justify-center rounded-lg text-sm font-semibold transition-all duration-150",
             clocked
-              ? "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 dark:bg-red-950/50 dark:text-red-400 dark:border-red-900 dark:hover:bg-red-950"
+              ? "border border-danger-border bg-danger-light text-danger hover:bg-rt"
               : "bg-primary text-primary-foreground hover:bg-primary/90",
           )}
           variant="ghost"
@@ -189,8 +189,8 @@ export function ClockWidget() {
                   id={`brk-row-${type}`}
                   className={cn(
                     "flex items-center gap-3 rounded-lg border p-2.5 transition-colors",
-                    isActive && !isOverbreak && "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30",
-                    isActive && isOverbreak && "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30",
+                    isActive && !isOverbreak && "border-success-border bg-success-light",
+                    isActive && isOverbreak && "border-danger-border bg-danger-light",
                     !isActive && "border-border bg-muted/30"
                   )}
                 >
@@ -201,7 +201,7 @@ export function ClockWidget() {
                   {isActive && (
                     <span className={cn(
                       "text-[12px] font-mono font-semibold tabular-nums",
-                      isOverbreak ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
+                      isOverbreak ? "text-danger" : "text-success"
                     )}>
                       {isOverbreak ? "⚠ " : ""}{fmt(remaining)}
                     </span>
@@ -213,7 +213,7 @@ export function ClockWidget() {
                       isActive
                         ? "bg-foreground/10 text-foreground hover:bg-foreground/20"
                         : "bg-primary/10 text-primary hover:bg-primary/20",
-                      isOverbreak && isActive && "animate-pulse bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400"
+                      isOverbreak && isActive && "animate-pulse bg-danger-light text-danger"
                     )}
                   >
                     {isActive ? "End" : "Start"}

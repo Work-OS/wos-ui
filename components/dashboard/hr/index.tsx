@@ -34,10 +34,10 @@ export function OverviewSection() {
                   </p>
                 </div>
                 <div className="flex gap-1.5">
-                  <Button size="xs" variant="outline" className="border-green-200 text-green-600 hover:bg-green-50 dark:border-green-900 dark:text-green-400 dark:hover:bg-green-950/30">
+                  <Button size="xs" variant="outline" className="border-success-border text-success hover:bg-gbg">
                     Approve
                   </Button>
-                  <Button size="xs" variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30">
+                  <Button size="xs" variant="outline" className="border-danger-border text-danger hover:bg-rbg">
                     Reject
                   </Button>
                 </div>
