@@ -18,6 +18,7 @@ export const navConfig: Record<Role, NavItem[]> = {
   admin: [
     { label: "Overview", section: "overview" },
     { label: "System Users", section: "users" },
+    { label: "Roles & Permissions", section: "roles" },
     { label: "Audit Log", section: "audit" },
     { label: "Configuration", section: "config" },
   ],
@@ -74,6 +75,7 @@ export const sectionTitles: Record<string, string> = {
   "leave-mgmt": "Leave Management",
   recruitment: "Recruitment",
   users: "System Users",
+  roles: "Roles & Permissions",
   audit: "Audit Log",
   config: "Configuration",
   security: "Security",

@@ -1,0 +1,448 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { Logo } from "@/components/custom/logo"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { AttendanceCameraCapture } from "@/components/custom/attendance-camera-capture"
+import { cn } from "@/lib/utils"
+import { HugeiconsIcon } from "@hugeicons/react"
+import {
+  User03Icon,
+  Shield01Icon,
+  Clock01Icon,
+  Login01Icon,
+  Logout01Icon,
+  CheckmarkBadge01Icon,
+  Cancel01Icon,
+  Camera01Icon,
+} from "@hugeicons/core-free-icons"
+
+type Role = "employee" | "admin"
+type PunchType = "in" | "out"
+
+const ROLES: { value: Role; label: string; description: string; icon: React.ComponentProps<typeof HugeiconsIcon>["icon"] }[] = [
+  { value: "employee", label: "Employee", description: "Attendance, payslips & leaves", icon: User03Icon },
+  { value: "admin", label: "Administrator", description: "Full system access & config", icon: Shield01Icon },
+]
+
+// ── Live clock ────────────────────────────────────────────────────────────
+
+function useClock() {
+  const [now, setNow] = useState(new Date())
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(id)
+  }, [])
+  return now
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────
+
+export default function LoginPage() {
+  const router = useRouter()
+  const [showPassword, setShowPassword] = useState(false)
+  const [remember, setRemember] = useState(false)
+  const [showRoleModal, setShowRoleModal] = useState(false)
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null)
+  const [showQuickPunch, setShowQuickPunch] = useState(false)
+
+  const handleLogin = () => setShowRoleModal(true)
+  const handleRoleSelect = (role: Role) => setSelectedRole(role)
+  const handleRoleContinue = () => { if (selectedRole) router.push(`/dashboard/${selectedRole}`) }
+
+  return (
+    <>
+      <div className="flex min-h-screen">
+        {/* ── Left panel ── */}
+        <div className="relative flex w-full flex-col lg:w-[55%]">
+          {/* Top bar */}
+          <div className="flex items-center justify-between px-8 pt-8">
+            <Logo />
+            <p className="text-[13px] text-muted-foreground">
+              Don&apos;t have an account?{" "}
+              <Link href="/auth/register" className="font-medium text-primary hover:underline">
+                Register
+              </Link>
+            </p>
+          </div>
+
+          {/* Form */}
+          <div className="flex flex-1 items-center justify-center px-8 py-12">
+            <div className="w-full max-w-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <h1 className="text-[28px] font-bold tracking-tight text-foreground">Welcome back</h1>
+              <p className="mt-1.5 text-[14px] text-muted-foreground">
+                Sign in to your WorkOS account to continue.
+              </p>
+
+              <div className="mt-7 space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="email">Work email</Label>
+                  <Input id="email" type="email" placeholder="you@company.com" className="h-11" />
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                    <Link href="/auth/forgot-password" className="text-[12px] text-primary hover:underline">
+                      Forgot password?
+                    </Link>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      className="h-11 pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {showPassword ? (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </svg>
+                      ) : (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <label className="flex cursor-pointer items-center gap-2.5">
+                  <div
+                    onClick={() => setRemember((v) => !v)}
+                    className={cn(
+                      "flex size-4 shrink-0 items-center justify-center rounded border transition-colors",
+                      remember ? "border-primary bg-primary" : "border-border bg-background",
+                    )}
+                  >
+                    {remember && (
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="text-primary-foreground">
+                        <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </div>
+                  <span className="text-[13px] text-muted-foreground">Remember me</span>
+                </label>
+              </div>
+
+              <Button
+                className="mt-6 h-11 w-full justify-center gap-2 text-[14px] font-semibold"
+                onClick={handleLogin}
+              >
+                Sign in
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              </Button>
+
+              {/* Divider */}
+              <div className="mt-6 flex items-center gap-3">
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-[11px] text-muted-foreground">or</span>
+                <div className="h-px flex-1 bg-border" />
+              </div>
+
+              {/* Quick Time In button */}
+              <button
+                onClick={() => setShowQuickPunch(true)}
+                className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-background text-[13px] font-medium text-foreground transition-colors hover:bg-muted"
+              >
+                <HugeiconsIcon icon={Clock01Icon} size={15} strokeWidth={1.8} className="text-muted-foreground" />
+                Quick Time In / Out
+              </button>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between border-t border-border px-8 py-4">
+            <p className="text-[11px] text-muted-foreground">
+              &copy; {new Date().getFullYear()} WorkOS. All rights reserved.
+            </p>
+            <div className="flex items-center gap-4">
+              <a href="#" className="text-[11px] text-muted-foreground hover:text-foreground">Privacy</a>
+              <a href="#" className="text-[11px] text-muted-foreground hover:text-foreground">Terms</a>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Right panel ── */}
+        <div className="hidden lg:flex lg:w-[45%] lg:flex-col">
+          <AuthPanel />
+        </div>
+      </div>
+
+      {/* ── Role modal ── */}
+      {showRoleModal && (
+        <Modal onClose={() => setShowRoleModal(false)}>
+          <h2 className="text-[16px] font-semibold text-foreground">Select your role</h2>
+          <p className="mt-1 text-[13px] text-muted-foreground">
+            Your account has multiple roles. Choose how you&apos;d like to continue.
+          </p>
+
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            {ROLES.map((r) => (
+              <button
+                key={r.value}
+                onClick={() => handleRoleSelect(r.value)}
+                className={cn(
+                  "flex flex-col items-center gap-3 rounded-xl border p-4 text-center transition-all duration-150",
+                  selectedRole === r.value
+                    ? "border-primary bg-primary/5 shadow-sm"
+                    : "border-border bg-background hover:bg-muted",
+                )}
+              >
+                <div className={cn(
+                  "flex size-14 items-center justify-center rounded-2xl transition-colors",
+                  selectedRole === r.value ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                )}>
+                  <HugeiconsIcon icon={r.icon} size={28} strokeWidth={1.5} />
+                </div>
+                <div>
+                  <p className="text-[13px] font-semibold text-foreground">{r.label}</p>
+                  <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">{r.description}</p>
+                </div>
+                <div className={cn(
+                  "mt-auto flex size-4 items-center justify-center rounded-full border-2 transition-colors",
+                  selectedRole === r.value ? "border-primary bg-primary" : "border-muted-foreground/30",
+                )}>
+                  {selectedRole === r.value && <div className="size-1.5 rounded-full bg-primary-foreground" />}
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-4 flex gap-2">
+            <button
+              onClick={() => setShowRoleModal(false)}
+              className="flex h-10 flex-1 items-center justify-center rounded-lg border border-border text-[13px] font-medium text-foreground transition-colors hover:bg-muted"
+            >
+              Cancel
+            </button>
+            <Button className="h-10 flex-1 text-[13px]" disabled={!selectedRole} onClick={handleRoleContinue}>
+              Continue
+            </Button>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── Quick punch modal ── */}
+      {showQuickPunch && <QuickPunchModal onClose={() => setShowQuickPunch(false)} />}
+    </>
+  )
+}
+
+// ── Shared backdrop modal wrapper ──────────────────────────────────────────
+
+function Modal({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md animate-in fade-in zoom-in-95 duration-200 rounded-2xl border border-border bg-card p-6 shadow-xl">
+        {children}
+      </div>
+    </div>
+  )
+}
+
+type PunchStep = "form" | "camera" | "done"
+
+// ── Quick punch modal ──────────────────────────────────────────────────────
+
+function QuickPunchModal({ onClose }: { onClose: () => void }) {
+  const now = useClock()
+  const [step, setStep] = useState<PunchStep>("form")
+  const [employeeId, setEmployeeId] = useState("")
+  const [punchType, setPunchType] = useState<PunchType>("in")
+  const [capturedAt, setCapturedAt] = useState("")
+
+  const timeStr = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+  const dateStr = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
+
+  function handleFormNext() {
+    if (!employeeId.trim()) return
+    setStep("camera")
+  }
+
+  function handleCaptureDone(time: string) {
+    setCapturedAt(time)
+    setStep("done")
+  }
+
+  function handleAnother() {
+    setStep("form")
+    setEmployeeId("")
+    setPunchType("in")
+    setCapturedAt("")
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className={cn(
+        "relative animate-in fade-in zoom-in-95 duration-200 rounded-2xl border border-border bg-card shadow-xl overflow-hidden",
+        step === "camera" ? "w-full max-w-md" : "w-full max-w-sm",
+      )}>
+        {/* Header */}
+        <div className="bg-primary px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-medium uppercase tracking-widest text-white/60">{dateStr}</p>
+              <p className="mt-0.5 text-[26px] font-bold tabular-nums leading-none text-white">{timeStr}</p>
+            </div>
+            <button onClick={onClose} className="rounded-lg p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white">
+              <HugeiconsIcon icon={Cancel01Icon} size={16} strokeWidth={2} />
+            </button>
+          </div>
+        </div>
+
+        {/* Steps */}
+        {step === "form" && (
+          <div className="p-6">
+            <p className="mb-4 text-[14px] font-semibold text-foreground">Quick attendance punch</p>
+
+            {/* Punch type toggle */}
+            <div className="mb-4 flex gap-2">
+              {(["in", "out"] as PunchType[]).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setPunchType(t)}
+                  className={cn(
+                    "flex flex-1 items-center justify-center gap-2 rounded-xl border py-2.5 text-[13px] font-semibold transition-all duration-150",
+                    punchType === t
+                      ? t === "in"
+                        ? "border-green-500 bg-green-500/10 text-green-600"
+                        : "border-red-500 bg-red-500/10 text-red-600"
+                      : "border-border bg-background text-muted-foreground hover:bg-muted",
+                  )}
+                >
+                  <HugeiconsIcon icon={t === "in" ? Login01Icon : Logout01Icon} size={15} strokeWidth={2} />
+                  Time {t === "in" ? "In" : "Out"}
+                </button>
+              ))}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="emp-id">Employee ID</Label>
+              <Input
+                id="emp-id"
+                autoFocus
+                placeholder="e.g. EMP-0042"
+                value={employeeId}
+                onChange={(e) => setEmployeeId(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleFormNext() }}
+                className="h-11"
+              />
+            </div>
+
+            <Button
+              className={cn(
+                "mt-4 h-11 w-full justify-center gap-2 text-[14px] font-semibold",
+                punchType === "out" && "bg-red-500 hover:bg-red-600",
+              )}
+              disabled={!employeeId.trim()}
+              onClick={handleFormNext}
+            >
+              <HugeiconsIcon icon={Camera01Icon} size={15} strokeWidth={2} />
+              Continue to camera
+            </Button>
+          </div>
+        )}
+
+        {step === "camera" && (
+          <AttendanceCameraCapture
+            punchType={punchType}
+            onCapture={handleCaptureDone}
+            onBack={() => setStep("form")}
+          />
+        )}
+
+        {step === "done" && (
+          <div className="p-6 text-center">
+            <div className={cn(
+              "mx-auto mb-4 flex size-14 items-center justify-center rounded-full",
+              punchType === "in" ? "bg-green-500/10" : "bg-red-500/10",
+            )}>
+              <HugeiconsIcon
+                icon={CheckmarkBadge01Icon}
+                size={28}
+                strokeWidth={1.5}
+                className={punchType === "in" ? "text-green-500" : "text-red-500"}
+              />
+            </div>
+            <p className="text-[16px] font-bold text-foreground">
+              Time {punchType === "in" ? "In" : "Out"} Recorded
+            </p>
+            <p className="mt-1 text-[13px] text-muted-foreground">
+              <span className="font-medium text-foreground">{employeeId}</span> — {capturedAt}
+            </p>
+            <div className="mt-5 flex gap-2">
+              <button
+                onClick={handleAnother}
+                className="flex h-10 flex-1 items-center justify-center rounded-lg border border-border text-[13px] font-medium text-foreground transition-colors hover:bg-muted"
+              >
+                Another punch
+              </button>
+              <Button className="h-10 flex-1 text-[13px]" onClick={onClose}>Done</Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Right panel ────────────────────────────────────────────────────────────
+
+function AuthPanel() {
+  return (
+    <div className="relative flex h-full flex-col overflow-hidden bg-primary p-10">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.06]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
+      <div className="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full bg-cyan-400 opacity-20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -left-16 size-80 rounded-full bg-primary opacity-40 blur-3xl" />
+
+      <div className="relative flex flex-1 flex-col justify-between">
+        <div className="mt-auto">
+          <blockquote className="text-[22px] font-semibold leading-snug text-white">
+            &ldquo;Streamline your workforce operations with a single platform built for modern teams.&rdquo;
+          </blockquote>
+          <p className="mt-4 text-[13px] text-white/60">
+            Attendance, payroll, leaves, and more — all in one place.
+          </p>
+        </div>
+
+        <div className="mt-10 grid grid-cols-3 gap-4">
+          {[
+            { value: "99.9%", label: "Uptime" },
+            { value: "10k+", label: "Employees managed" },
+            { value: "4.9★", label: "User rating" },
+          ].map((s) => (
+            <div
+              key={s.label}
+              className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm"
+            >
+              <p className="text-[18px] font-bold text-white">{s.value}</p>
+              <p className="mt-0.5 text-[11px] text-white/50">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}

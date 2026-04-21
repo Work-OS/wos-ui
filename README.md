@@ -75,7 +75,6 @@ wos-ui/
 │   │   ├── admin/               # Admin portal pages
 │   │   └── settings/            # Settings pages
 │   ├── auth/                    # Sign-in page
-│   └── landing/                 # Landing page
 ├── components/
 │   ├── ui/                      # shadcn/ui generated components
 │   └── custom/                  # App-specific components

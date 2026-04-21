@@ -10,7 +10,8 @@
       "Bash(npx shadcn@latest add \"https://ui.aceternity.com/registry/typewriter-effect.json\" --yes)",
       "Bash(xargs grep:*)",
       "Bash(node -e \"const icons = require\\('@hugeicons/core-free-icons'\\); const names = Object.keys\\(icons\\).filter\\(k => k.endsWith\\('Icon'\\)\\); console.log\\(names.filter\\(n => /search|plus|eye|chevron|arrow|sun|moon|clock|calendar|user|bell|gear|setting|logout|lock|check|close|cancel|brief|document|file|grid|layout|fullscreen|expand|utensil|fork|food|coffee|leave|alert|x/i.test\\(n\\)\\).join\\('\\\\n'\\)\\)\")",
-      "Bash(node -e \" const icons = require\\('./node_modules/@hugeicons/core-free-icons/dist/cjs/index.js'\\); console.log\\(JSON.stringify\\(Object.keys\\(icons\\).slice\\(0, 20\\)\\)\\); \")"
+      "Bash(node -e \" const icons = require\\('./node_modules/@hugeicons/core-free-icons/dist/cjs/index.js'\\); console.log\\(JSON.stringify\\(Object.keys\\(icons\\).slice\\(0, 20\\)\\)\\); \")",
+      "Bash(npx tsc *)"
     ]
   }
 }

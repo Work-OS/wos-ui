@@ -20,6 +20,7 @@ import {
   Clock01Icon,
   StopCircleIcon,
 } from "@hugeicons/core-free-icons"
+import { AttendanceCameraCapture } from "@/components/custom/attendance-camera-capture"
 
 // ── types ─────────────────────────────────────────────────────────────────────
 
@@ -118,15 +119,15 @@ const BREAK_ICON: Record<string, (color: string) => React.ReactNode> = {
 // ── ClockWidget ───────────────────────────────────────────────────────────────
 
 export function ClockWidget() {
-  const [now, setNow] = useState<Date | null>(null)
+  const [now, setNow] = useState(new Date())
   const [clocked, setClocked] = useState(false)
   const [clockInTime, setClockInTime] = useState<Date | null>(null)
+  const [cameraPunchType, setCameraPunchType] = useState<"in" | "out" | null>(null)
   const [breaks, setBreaks] = useState<Record<string, BreakState>>(INIT_BREAKS)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    setNow(new Date())
     const id = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(id)
   }, [])
@@ -198,12 +199,12 @@ export function ClockWidget() {
     return `${m}:${String(s).padStart(2, "0")}`
   }
 
-  const timeStr = now?.toLocaleTimeString("en-US", {
+  const timeStr = now.toLocaleTimeString("en-US", {
     hour: "numeric", minute: "2-digit", second: "2-digit", hour12: true,
-  }) ?? "—"
-  const dateStr = now?.toLocaleDateString("en-US", {
+  })
+  const dateStr = now.toLocaleDateString("en-US", {
     weekday: "long", month: "long", day: "numeric",
-  }) ?? ""
+  })
 
   return (
     <div
@@ -265,12 +266,9 @@ export function ClockWidget() {
             if (anyBreakActive && activeBreakEntry) {
               toggleBreak(activeBreakEntry[0])
             } else if (!clocked) {
-              setClocked(true)
-              setClockInTime(new Date())
-              setBreaks(INIT_BREAKS)
+              setCameraPunchType("in")
             } else {
-              setClocked(false)
-              setClockInTime(null)
+              setCameraPunchType("out")
             }
           }}
           className={cn(
@@ -347,6 +345,67 @@ export function ClockWidget() {
             </div>
           </>
         )}
+      </div>
+
+      {cameraPunchType && (
+        <PunchCameraModal
+          punchType={cameraPunchType}
+          onClose={() => setCameraPunchType(null)}
+          onCaptured={() => {
+            if (cameraPunchType === "in") {
+              setClocked(true)
+              setClockInTime(new Date())
+              setBreaks(INIT_BREAKS)
+            } else {
+              setClocked(false)
+              setClockInTime(null)
+              setBreaks(INIT_BREAKS)
+            }
+            setCameraPunchType(null)
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+function PunchCameraModal({
+  punchType,
+  onClose,
+  onCaptured,
+}: {
+  punchType: "in" | "out"
+  onClose: () => void
+  onCaptured: (capturedTime: string) => void
+}) {
+  const isClockIn = punchType === "in"
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/45 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
+        <div className="flex items-center justify-between border-b border-border px-5 py-3">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              {isClockIn ? "Clock In" : "Clock Out"} Verification
+            </p>
+            <p className="text-[13px] text-muted-foreground">
+              Capture your photo to complete {isClockIn ? "clock in" : "clock out"}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="Close camera"
+          >
+            ✕
+          </button>
+        </div>
+        <AttendanceCameraCapture
+          punchType={punchType}
+          onCapture={onCaptured}
+          onBack={onClose}
+        />
       </div>
     </div>
   )

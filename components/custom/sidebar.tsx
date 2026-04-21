@@ -22,6 +22,7 @@ import {
   Audit01Icon,
   Setting06Icon,
   ShieldUserIcon,
+  UserShield01Icon,
   Notification01Icon,
   Sun01Icon,
 } from "@hugeicons/core-free-icons"
@@ -43,6 +44,7 @@ const NAV_ICONS: Record<string, IconSvgElement> = {
   attendance:    CheckListIcon,
   recruitment:   Briefcase01Icon,
   users:         UserMultiple02Icon,
+  roles:         UserShield01Icon,
   audit:         Audit01Icon,
   config:        Setting06Icon,
   security:      ShieldUserIcon,
