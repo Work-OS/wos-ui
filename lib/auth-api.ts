@@ -5,6 +5,7 @@ import { api } from "./axios"
 export interface AvailableRole {
   id:   number
   name: string
+  description?: string
 }
 
 export interface AuthResponse {

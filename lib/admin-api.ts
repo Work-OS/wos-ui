@@ -37,6 +37,13 @@ export interface CreateUserPayload {
   userRoleIds: number[]
 }
 
+export interface ActiveUserRole {
+  id:          number
+  name:        string
+  description: string
+  active:      boolean
+}
+
 export interface AuditLog {
   id:        number
   logCode:   string
@@ -78,6 +85,9 @@ export const adminUsersApi = {
 
   create: (payload: CreateUserPayload) =>
     api.post<AdminUser>("/admin/users", payload).then((r) => r.data),
+
+  listActiveUserRoles: () =>
+    api.get<ActiveUserRole[]>("/admin/user-roles/active").then((r) => r.data),
 
   delete: (id: number) =>
     api.delete(`/admin/users/${id}`),

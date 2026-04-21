@@ -240,6 +240,9 @@ export default function LoginPage() {
                   <HugeiconsIcon icon={User03Icon} size={28} strokeWidth={1.5} />
                 </div>
                 <p className="text-[13px] font-semibold text-foreground">{r.name}</p>
+                <p className="text-[11px] leading-relaxed text-muted-foreground">
+                  {r.description?.trim() || "No description provided."}
+                </p>
                 <div className={cn(
                   "mt-auto flex size-4 items-center justify-center rounded-full border-2 transition-colors",
                   selectedRoleId === r.id ? "border-primary bg-primary" : "border-muted-foreground/30",

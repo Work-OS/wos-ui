@@ -19,9 +19,17 @@ import {
   Table, TableHeader, TableBody, TableHead, TableRow, TableCell,
 } from "@/components/ui/table"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import {
-  useAdminUsers, useCreateUser, useDeleteUser, useAssignRoles,
+  useAdminUsers, useActiveUserRoles, useCreateUser, useDeleteUser, useAssignRoles,
 } from "@/hooks/use-admin-users"
 import type { AdminUser, CreateUserPayload } from "@/lib/admin-api"
 
@@ -55,26 +63,42 @@ function Backdrop({ onClose, children }: { onClose: () => void; children: React.
 interface CreateModalProps { onClose: () => void }
 function CreateUserModal({ onClose }: CreateModalProps) {
   const createMutation = useCreateUser()
+  const activeRolesQ = useActiveUserRoles()
+  const [roleSearch, setRoleSearch] = useState("")
+  const [roleMenuOpen, setRoleMenuOpen] = useState(false)
   const [form, setForm] = useState<CreateUserPayload>({
     firstName: "", lastName: "", email: "", password: "",
     userRoleIds: [],
   })
-  const [roleIdInput, setRoleIdInput] = useState("")
 
   function set(k: keyof CreateUserPayload, v: string) {
     setForm((f) => ({ ...f, [k]: v }))
   }
 
   function handleSubmit() {
-    const ids = roleIdInput
-      .split(",")
-      .map((s) => parseInt(s.trim(), 10))
-      .filter((n) => !isNaN(n))
     createMutation.mutate(
-      { ...form, userRoleIds: ids },
+      form,
       { onSuccess: onClose },
     )
   }
+
+  function toggleRole(roleId: number) {
+    setForm((f) => {
+      const selected = f.userRoleIds.includes(roleId)
+      return {
+        ...f,
+        userRoleIds: selected
+          ? f.userRoleIds.filter((id) => id !== roleId)
+          : [...f.userRoleIds, roleId],
+      }
+    })
+  }
+
+  const activeRoles = activeRolesQ.data ?? []
+  const filteredRoles = activeRoles.filter((r) =>
+    `${r.name} ${r.description}`.toLowerCase().includes(roleSearch.toLowerCase()),
+  )
+  const selectedRoles = activeRoles.filter((r) => form.userRoleIds.includes(r.id))
 
   const err = createMutation.error as { response?: { data?: { message?: string } } } | null
 
@@ -101,8 +125,82 @@ function CreateUserModal({ onClose }: CreateModalProps) {
           <Input className="h-9 text-[13px]" type="password" value={form.password} onChange={(e) => set("password", e.target.value)} />
         </div>
         <div className="col-span-2 space-y-1.5">
-          <Label className="text-[12px]">Role IDs (comma-separated)</Label>
-          <Input className="h-9 text-[13px]" placeholder="1, 2" value={roleIdInput} onChange={(e) => setRoleIdInput(e.target.value)} />
+          <Label className="text-[12px]">User Roles</Label>
+          {activeRolesQ.isLoading ? (
+            <div className="flex h-24 items-center justify-center rounded-md border border-border bg-muted/30 text-[12px] text-muted-foreground">
+              Loading active roles...
+            </div>
+          ) : activeRolesQ.isError ? (
+            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-400">
+              Failed to load active roles.
+            </div>
+          ) : (
+            <>
+              <DropdownMenu open={roleMenuOpen} onOpenChange={setRoleMenuOpen}>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-[13px] text-left transition-colors hover:bg-muted/40"
+                  >
+                    <span className={cn("truncate", form.userRoleIds.length === 0 && "text-muted-foreground")}> 
+                      {form.userRoleIds.length === 0
+                        ? "Select user roles"
+                        : `${form.userRoleIds.length} role(s) selected`}
+                    </span>
+                    <span className="text-muted-foreground">v</span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-[--radix-dropdown-menu-trigger-width] p-2">
+                  <DropdownMenuLabel className="px-1.5 py-1 text-[11px]">Choose one or more roles</DropdownMenuLabel>
+                  <div className="px-1.5 pb-2" onKeyDown={(e) => e.stopPropagation()}>
+                    <Input
+                      className="h-8 text-[12px]"
+                      placeholder="Search roles..."
+                      value={roleSearch}
+                      onChange={(e) => setRoleSearch(e.target.value)}
+                    />
+                  </div>
+                  <DropdownMenuSeparator />
+                  <div className="max-h-48 overflow-auto">
+                    {filteredRoles.length === 0 ? (
+                      <p className="px-2 py-2 text-[12px] text-muted-foreground">No matching roles.</p>
+                    ) : (
+                      filteredRoles.map((r) => (
+                        <DropdownMenuCheckboxItem
+                          key={r.id}
+                          checked={form.userRoleIds.includes(r.id)}
+                          onCheckedChange={() => toggleRole(r.id)}
+                          onSelect={(e) => e.preventDefault()}
+                        >
+                          <span className="min-w-0">
+                            <span className="block truncate text-[12px] font-medium">{r.name}</span>
+                            <span className="block truncate text-[11px] text-muted-foreground">{r.description}</span>
+                          </span>
+                        </DropdownMenuCheckboxItem>
+                      ))
+                    )}
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {selectedRoles.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {selectedRoles.map((r) => (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => toggleRole(r.id)}
+                      className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[11px]"
+                    >
+                      {r.name}
+                      <span className="text-muted-foreground">x</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+          <p className="text-[11px] text-muted-foreground">Combobox select supports multiple roles.</p>
         </div>
       </div>
 
@@ -119,7 +217,7 @@ function CreateUserModal({ onClose }: CreateModalProps) {
         </button>
         <Button
           className="h-9 flex-1 text-[13px]"
-          disabled={createMutation.isPending || !form.firstName || !form.email || !form.password}
+          disabled={createMutation.isPending || activeRolesQ.isLoading || !form.firstName || !form.email || !form.password || form.userRoleIds.length === 0}
           onClick={handleSubmit}
         >
           {createMutation.isPending ? "Creating…" : "Create user"}
@@ -132,7 +230,6 @@ function CreateUserModal({ onClose }: CreateModalProps) {
 interface AssignModalProps { user: AdminUser; onClose: () => void }
 function AssignRolesModal({ user, onClose }: AssignModalProps) {
   const assignMutation = useAssignRoles()
-  const [roleIdInput, setRoleIdInput] = useState(user.userRoleNames.join(", "))
   // Note: ideally backed by /admin/roles list endpoint; using ID input as pragmatic fallback
   const [idsInput, setIdsInput] = useState("")
 
