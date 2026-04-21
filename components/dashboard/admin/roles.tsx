@@ -244,10 +244,13 @@ export function RolesSection() {
                 onCancel={() => setEditingId(null)}
               />
             ) : (
-              <button
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => { setActiveId(r.id); setCreating(false); setEditingId(null) }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { setActiveId(r.id); setCreating(false); setEditingId(null) } }}
                 className={cn(
-                  "group flex w-full items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-all duration-150",
+                  "group flex w-full cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-all duration-150",
                   (active?.id ?? roles[0]?.id) === r.id
                     ? "border-primary/20 bg-primary text-primary-foreground shadow-sm"
                     : "border-transparent bg-muted/50 hover:bg-muted text-foreground",
@@ -298,7 +301,7 @@ export function RolesSection() {
                     <HugeiconsIcon icon={Delete01Icon} size={11} strokeWidth={2} />
                   </button>
                 </div>
-              </button>
+              </div>
             )}
           </div>
         ))}
