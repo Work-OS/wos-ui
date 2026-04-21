@@ -7,23 +7,8 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { StatusBadge } from "@/components/custom/status-badge"
 import { PhotoCropModal } from "@/components/custom/photo-crop-modal"
-import { CURRENT_USER } from "@/lib/mock-data"
-
-const PERSONAL_FIELDS = [
-  { label: "Full name",   value: CURRENT_USER.name },
-  { label: "Work email",  value: CURRENT_USER.email },
-  { label: "Phone",       value: CURRENT_USER.phone },
-  { label: "Address",     value: CURRENT_USER.address },
-]
-
-const EMPLOYMENT_FIELDS = [
-  { label: "Employee ID", value: CURRENT_USER.employeeId },
-  { label: "Position",    value: CURRENT_USER.title },
-  { label: "Department",  value: CURRENT_USER.department },
-  { label: "Team",        value: CURRENT_USER.team },
-  { label: "Reports to",  value: CURRENT_USER.manager },
-  { label: "Start date",  value: CURRENT_USER.startDate },
-]
+import { useAuthStore } from "@/store/auth-store"
+import { useEmployeeProfile } from "@/hooks/use-employee"
 
 const DOCUMENTS = [
   { name: "Employment contract",  date: "Mar 15, 2022", icon: "📄" },
@@ -34,8 +19,33 @@ const DOCUMENTS = [
 
 export function GeneralSection() {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
-  const [cropSrc, setCropSrc] = useState<string | null>(null)
+  const [cropSrc, setCropSrc]   = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  const { user }   = useAuthStore()
+  const profileQ   = useEmployeeProfile()
+  const profile    = profileQ.data
+
+  const fullName   = user ? `${user.firstName} ${user.lastName}` : "—"
+  const initials   = user
+    ? `${user.firstName[0] ?? ""}${user.lastName[0] ?? ""}`.toUpperCase()
+    : "—"
+
+  const PERSONAL_FIELDS = [
+    { label: "Full name",  value: fullName },
+    { label: "Work email", value: user?.email ?? "—" },
+    { label: "Phone",      value: profile?.phone ?? "—" },
+    { label: "Address",    value: profile?.address ?? "—" },
+  ]
+
+  const EMPLOYMENT_FIELDS = [
+    { label: "Employee ID", value: user?.employeeId ?? "—" },
+    { label: "Position",    value: profile?.position ?? "—" },
+    { label: "Department",  value: profile?.department ?? "—" },
+    { label: "Team",        value: profile?.team ?? "—" },
+    { label: "Reports to",  value: profile?.manager ?? "—" },
+    { label: "Start date",  value: profile?.startDate ?? "—" },
+  ]
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -43,7 +53,6 @@ export function GeneralSection() {
     const reader = new FileReader()
     reader.onload = () => setCropSrc(reader.result as string)
     reader.readAsDataURL(file)
-    // reset so re-selecting same file triggers onChange
     e.target.value = ""
   }
 
@@ -73,7 +82,7 @@ export function GeneralSection() {
           />
         ) : (
           <div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xl font-bold text-primary">
-            {CURRENT_USER.initials}
+            {initials}
           </div>
         )}
         <div>
@@ -106,11 +115,11 @@ export function GeneralSection() {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label>Display name</Label>
-            <Input defaultValue={CURRENT_USER.name} />
+            <Input defaultValue={fullName} />
           </div>
           <div className="space-y-1.5">
             <Label>Username</Label>
-            <Input defaultValue="alex.johnson" />
+            <Input defaultValue={user?.email?.split("@")[0] ?? ""} />
           </div>
         </div>
         <div className="space-y-1.5">

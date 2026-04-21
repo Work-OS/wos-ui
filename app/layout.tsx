@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { Providers } from "@/components/providers"
 import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
@@ -58,7 +59,9 @@ export default function RootLayout({
     >
       <body>
         <ThemeProvider>
-          <TooltipProvider>{children}</TooltipProvider>
+          <Providers>
+            <TooltipProvider>{children}</TooltipProvider>
+          </Providers>
         </ThemeProvider>
       </body>
     </html>

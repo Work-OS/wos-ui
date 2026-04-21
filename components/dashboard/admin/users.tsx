@@ -1,110 +1,404 @@
 "use client"
 
+import { useState } from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Search01Icon, Edit01Icon, Cancel01Icon } from "@hugeicons/core-free-icons"
+import {
+  Search01Icon,
+  Add01Icon,
+  Delete01Icon,
+  UserShield01Icon,
+  Alert01Icon,
+  Loading03Icon,
+} from "@hugeicons/core-free-icons"
 import { StatusBadge } from "@/components/custom/status-badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { usePagination, TablePagination } from "@/components/custom/table-pagination"
+import { Label } from "@/components/ui/label"
+import { TablePagination } from "@/components/custom/table-pagination"
 import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
+  Table, TableHeader, TableBody, TableHead, TableRow, TableCell,
 } from "@/components/ui/table"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils"
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { employees } from "@/lib/mock-data"
+  useAdminUsers, useCreateUser, useDeleteUser, useAssignRoles,
+} from "@/hooks/use-admin-users"
+import type { AdminUser, CreateUserPayload } from "@/lib/admin-api"
 
-export function UsersSection() {
-  const { paginated, page, setPage, pageSize, setPageSize, total, totalPages } =
-    usePagination(employees)
+const ROLE_FILTERS = [
+  { label: "All",      value: undefined   },
+  { label: "Employee", value: "EMPLOYEE"  },
+  { label: "HR",       value: "HR"        },
+  { label: "Admin",    value: "ADMIN"     },
+]
+
+const roleVariant = (role: string): "blue" | "purple" | "amber" => {
+  const r = role.toUpperCase()
+  if (r === "ADMIN") return "amber"
+  if (r === "HR")    return "purple"
+  return "blue"
+}
+
+// ── Modals ─────────────────────────────────────────────────────────────────
+
+function Backdrop({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md animate-in fade-in zoom-in-95 duration-200 rounded-2xl border border-border bg-card p-6 shadow-xl">
+        {children}
+      </div>
+    </div>
+  )
+}
+
+interface CreateModalProps { onClose: () => void }
+function CreateUserModal({ onClose }: CreateModalProps) {
+  const createMutation = useCreateUser()
+  const [form, setForm] = useState<CreateUserPayload>({
+    firstName: "", lastName: "", email: "", password: "",
+    userRoleIds: [],
+  })
+  const [roleIdInput, setRoleIdInput] = useState("")
+
+  function set(k: keyof CreateUserPayload, v: string) {
+    setForm((f) => ({ ...f, [k]: v }))
+  }
+
+  function handleSubmit() {
+    const ids = roleIdInput
+      .split(",")
+      .map((s) => parseInt(s.trim(), 10))
+      .filter((n) => !isNaN(n))
+    createMutation.mutate(
+      { ...form, userRoleIds: ids },
+      { onSuccess: onClose },
+    )
+  }
+
+  const err = createMutation.error as { response?: { data?: { message?: string } } } | null
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1">
-          <HugeiconsIcon icon={Search01Icon} size={14} strokeWidth={2} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input className="pl-9" placeholder="Search users…" />
+    <Backdrop onClose={onClose}>
+      <h2 className="text-[15px] font-semibold text-foreground">Add System User</h2>
+      <p className="mt-0.5 text-[12px] text-muted-foreground">Create a new user account.</p>
+
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label className="text-[12px]">First name</Label>
+          <Input className="h-9 text-[13px]" value={form.firstName} onChange={(e) => set("firstName", e.target.value)} />
         </div>
-        <Button size="sm">Add user</Button>
+        <div className="space-y-1.5">
+          <Label className="text-[12px]">Last name</Label>
+          <Input className="h-9 text-[13px]" value={form.lastName} onChange={(e) => set("lastName", e.target.value)} />
+        </div>
+        <div className="col-span-2 space-y-1.5">
+          <Label className="text-[12px]">Work email</Label>
+          <Input className="h-9 text-[13px]" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
+        </div>
+        <div className="col-span-2 space-y-1.5">
+          <Label className="text-[12px]">Password</Label>
+          <Input className="h-9 text-[13px]" type="password" value={form.password} onChange={(e) => set("password", e.target.value)} />
+        </div>
+        <div className="col-span-2 space-y-1.5">
+          <Label className="text-[12px]">Role IDs (comma-separated)</Label>
+          <Input className="h-9 text-[13px]" placeholder="1, 2" value={roleIdInput} onChange={(e) => setRoleIdInput(e.target.value)} />
+        </div>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {["User", "Department", "Role", "Status", "Last active", "Actions"].map((h) => (
-              <TableHead key={h} className={h === "Actions" ? "text-right" : undefined}>{h}</TableHead>
+      {err && (
+        <div className="mt-3 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 dark:border-red-900/40 dark:bg-red-900/20">
+          <HugeiconsIcon icon={Alert01Icon} size={13} strokeWidth={2} className="shrink-0 text-red-500" />
+          <p className="text-[11px] text-red-700 dark:text-red-400">{err?.response?.data?.message ?? "Failed to create user."}</p>
+        </div>
+      )}
+
+      <div className="mt-5 flex gap-2">
+        <button onClick={onClose} className="flex h-9 flex-1 items-center justify-center rounded-lg border border-border text-[13px] font-medium text-foreground transition-colors hover:bg-muted">
+          Cancel
+        </button>
+        <Button
+          className="h-9 flex-1 text-[13px]"
+          disabled={createMutation.isPending || !form.firstName || !form.email || !form.password}
+          onClick={handleSubmit}
+        >
+          {createMutation.isPending ? "Creating…" : "Create user"}
+        </Button>
+      </div>
+    </Backdrop>
+  )
+}
+
+interface AssignModalProps { user: AdminUser; onClose: () => void }
+function AssignRolesModal({ user, onClose }: AssignModalProps) {
+  const assignMutation = useAssignRoles()
+  const [roleIdInput, setRoleIdInput] = useState(user.userRoleNames.join(", "))
+  // Note: ideally backed by /admin/roles list endpoint; using ID input as pragmatic fallback
+  const [idsInput, setIdsInput] = useState("")
+
+  function handleAssign() {
+    const ids = idsInput
+      .split(",")
+      .map((s) => parseInt(s.trim(), 10))
+      .filter((n) => !isNaN(n))
+    if (!ids.length) return
+    assignMutation.mutate({ id: user.id, userRoleIds: ids }, { onSuccess: onClose })
+  }
+
+  return (
+    <Backdrop onClose={onClose}>
+      <div className="flex items-center gap-2">
+        <div className="flex size-8 items-center justify-center rounded-full bg-primary/10">
+          <HugeiconsIcon icon={UserShield01Icon} size={16} strokeWidth={1.8} className="text-primary" />
+        </div>
+        <div>
+          <h2 className="text-[14px] font-semibold text-foreground">Assign Roles</h2>
+          <p className="text-[11px] text-muted-foreground">{user.firstName} {user.lastName}</p>
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-lg border border-border bg-muted/40 px-3 py-2.5">
+        <p className="text-[11px] font-medium text-muted-foreground">Current roles</p>
+        <p className="mt-0.5 text-[12px] text-foreground">{user.userRoleNames.join(", ") || "None"}</p>
+      </div>
+
+      <div className="mt-3 space-y-1.5">
+        <Label className="text-[12px]">New role IDs (comma-separated)</Label>
+        <Input
+          className="h-9 text-[13px]"
+          placeholder="e.g. 1, 3"
+          value={idsInput}
+          onChange={(e) => setIdsInput(e.target.value)}
+        />
+        <p className="text-[11px] text-muted-foreground">Enter the role IDs to assign. This replaces existing roles.</p>
+      </div>
+
+      {assignMutation.error && (
+        <div className="mt-3 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 dark:border-red-900/40 dark:bg-red-900/20">
+          <HugeiconsIcon icon={Alert01Icon} size={13} strokeWidth={2} className="shrink-0 text-red-500" />
+          <p className="text-[11px] text-red-700 dark:text-red-400">Failed to assign roles.</p>
+        </div>
+      )}
+
+      <div className="mt-5 flex gap-2">
+        <button onClick={onClose} className="flex h-9 flex-1 items-center justify-center rounded-lg border border-border text-[13px] font-medium text-foreground transition-colors hover:bg-muted">
+          Cancel
+        </button>
+        <Button
+          className="h-9 flex-1 text-[13px]"
+          disabled={assignMutation.isPending || !idsInput.trim()}
+          onClick={handleAssign}
+        >
+          {assignMutation.isPending ? "Saving…" : "Save roles"}
+        </Button>
+      </div>
+    </Backdrop>
+  )
+}
+
+// ── Main section ──────────────────────────────────────────────────────────────
+
+export function UsersSection() {
+  const [roleFilter, setRoleFilter] = useState<string | undefined>(undefined)
+  const [page, setPage]             = useState(0)
+  const [search, setSearch]         = useState("")
+  const [showCreate, setShowCreate] = useState(false)
+  const [assignTarget, setAssignTarget] = useState<AdminUser | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null)
+
+  const { data, isLoading, isError } = useAdminUsers({ page, size: 20, role: roleFilter })
+  const deleteMutation = useDeleteUser()
+
+  const users = data?.content ?? []
+  const filtered = search
+    ? users.filter((u) =>
+        `${u.firstName} ${u.lastName} ${u.email} ${u.employeeId}`
+          .toLowerCase()
+          .includes(search.toLowerCase()),
+      )
+    : users
+
+  function confirmDelete() {
+    if (!deleteTarget) return
+    deleteMutation.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })
+  }
+
+  return (
+    <>
+      <div className="space-y-4">
+        {/* Toolbar */}
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1">
+            <HugeiconsIcon icon={Search01Icon} size={14} strokeWidth={2} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input className="pl-9 h-9 text-[13px]" placeholder="Search users…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          </div>
+
+          {/* Role filter tabs */}
+          <div className="flex rounded-lg border border-border bg-muted/40 p-0.5">
+            {ROLE_FILTERS.map((f) => (
+              <button
+                key={f.label}
+                onClick={() => { setRoleFilter(f.value); setPage(0) }}
+                className={cn(
+                  "rounded-md px-3 py-1.5 text-[12px] font-medium transition-colors",
+                  roleFilter === f.value
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {f.label}
+              </button>
             ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {paginated.map((emp) => (
-            <TableRow key={emp.id} className="cursor-pointer">
-              <TableCell>
-                <div className="flex items-center gap-2.5">
-                  <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
-                    {emp.initials}
-                  </div>
-                  <div>
-                    <p className="font-medium">{emp.name}</p>
-                    <p className="text-[11px] text-muted-foreground">{emp.email}</p>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="text-muted-foreground">{emp.department}</TableCell>
-              <TableCell>
-                <StatusBadge variant={emp.role === "admin" ? "amber" : emp.role === "hr" ? "purple" : "blue"} dot={false}>
-                  {emp.role.charAt(0).toUpperCase() + emp.role.slice(1)}
-                </StatusBadge>
-              </TableCell>
-              <TableCell>
-                <StatusBadge variant={emp.status === "active" ? "green" : "gray"}>
-                  {emp.status === "on-leave" ? "On leave" : emp.status.charAt(0).toUpperCase() + emp.status.slice(1)}
-                </StatusBadge>
-              </TableCell>
-              <TableCell className="text-[12px] text-muted-foreground">
-                {emp.status === "active" ? "Just now" : "3 days ago"}
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-1">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button size="icon-xs" variant="outline">
-                        <HugeiconsIcon icon={Edit01Icon} size={12} strokeWidth={2} />
-                        <span className="sr-only">Edit user</span>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Edit user</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button size="icon-xs" variant="outline" className="border-danger-border text-danger hover:bg-rbg">
-                        <HugeiconsIcon icon={Cancel01Icon} size={12} strokeWidth={2} />
-                        <span className="sr-only">Disable user</span>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Disable user</TooltipContent>
-                  </Tooltip>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <TablePagination
-        page={page}
-        totalPages={totalPages}
-        total={total}
-        pageSize={pageSize}
-        setPage={setPage}
-        setPageSize={setPageSize}
-      />
-    </div>
+          </div>
+
+          <Button size="sm" className="gap-1.5" onClick={() => setShowCreate(true)}>
+            <HugeiconsIcon icon={Add01Icon} size={14} strokeWidth={2} />
+            Add user
+          </Button>
+        </div>
+
+        {/* Table */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <HugeiconsIcon icon={Loading03Icon} size={24} strokeWidth={1.8} className="animate-spin text-muted-foreground" />
+          </div>
+        ) : isError ? (
+          <div className="flex flex-col items-center gap-2 py-16 text-center">
+            <HugeiconsIcon icon={Alert01Icon} size={24} strokeWidth={1.5} className="text-red-400" />
+            <p className="text-[13px] text-muted-foreground">Failed to load users. Check the API connection.</p>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                {["User", "Employee ID", "Role", "Status", "Actions"].map((h) => (
+                  <TableHead key={h} className={h === "Actions" ? "text-right" : undefined}>{h}</TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="py-12 text-center text-[13px] text-muted-foreground">
+                    No users found.
+                  </TableCell>
+                </TableRow>
+              ) : filtered.map((u) => (
+                <TableRow key={u.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
+                        {u.firstName[0]}{u.lastName[0]}
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-medium">{u.firstName} {u.lastName}</p>
+                        <p className="text-[11px] text-muted-foreground">{u.email}</p>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-[12px] text-muted-foreground">{u.employeeId}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      <StatusBadge variant={roleVariant(u.role)} dot={false}>
+                        {u.role}
+                      </StatusBadge>
+                      {u.userRoleNames.map((n) => (
+                        <StatusBadge key={n} variant="gray" dot={false}>{n}</StatusBadge>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge variant={u.active ? "green" : "gray"}>
+                      {u.active ? "Active" : "Inactive"}
+                    </StatusBadge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-1">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button size="icon-xs" variant="outline" onClick={() => setAssignTarget(u)}>
+                            <HugeiconsIcon icon={UserShield01Icon} size={12} strokeWidth={2} />
+                            <span className="sr-only">Assign roles</span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Assign roles</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="icon-xs"
+                            variant="outline"
+                            className="border-red-200 text-red-500 hover:bg-red-50 dark:border-red-900/40 dark:hover:bg-red-900/20"
+                            onClick={() => setDeleteTarget(u)}
+                          >
+                            <HugeiconsIcon icon={Delete01Icon} size={12} strokeWidth={2} />
+                            <span className="sr-only">Delete user</span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Delete user</TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+
+        {data && (
+          <TablePagination
+            page={page + 1}
+            totalPages={data.totalPages}
+            total={data.totalElements}
+            pageSize={data.size}
+            setPage={(p) => setPage(p - 1)}
+            setPageSize={() => {}}
+          />
+        )}
+      </div>
+
+      {/* ── Create user modal ── */}
+      {showCreate && <CreateUserModal onClose={() => setShowCreate(false)} />}
+
+      {/* ── Assign roles modal ── */}
+      {assignTarget && <AssignRolesModal user={assignTarget} onClose={() => setAssignTarget(null)} />}
+
+      {/* ── Delete confirm modal ── */}
+      {deleteTarget && (
+        <Backdrop onClose={() => setDeleteTarget(null)}>
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
+              <HugeiconsIcon icon={Delete01Icon} size={18} strokeWidth={1.8} className="text-red-500" />
+            </div>
+            <div>
+              <h2 className="text-[14px] font-semibold text-foreground">Delete user?</h2>
+              <p className="text-[12px] text-muted-foreground">{deleteTarget.firstName} {deleteTarget.lastName} · {deleteTarget.email}</p>
+            </div>
+          </div>
+          <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
+            This will permanently remove the user and cannot be undone.
+          </p>
+          {deleteMutation.error && (
+            <div className="mt-3 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 dark:border-red-900/40 dark:bg-red-900/20">
+              <HugeiconsIcon icon={Alert01Icon} size={13} strokeWidth={2} className="shrink-0 text-red-500" />
+              <p className="text-[11px] text-red-700 dark:text-red-400">Failed to delete user.</p>
+            </div>
+          )}
+          <div className="mt-5 flex gap-2">
+            <button onClick={() => setDeleteTarget(null)} className="flex h-9 flex-1 items-center justify-center rounded-lg border border-border text-[13px] font-medium transition-colors hover:bg-muted">
+              Cancel
+            </button>
+            <Button
+              variant="destructive"
+              className="h-9 flex-1 text-[13px]"
+              disabled={deleteMutation.isPending}
+              onClick={confirmDelete}
+            >
+              {deleteMutation.isPending ? "Deleting…" : "Delete"}
+            </Button>
+          </div>
+        </Backdrop>
+      )}
+    </>
   )
 }

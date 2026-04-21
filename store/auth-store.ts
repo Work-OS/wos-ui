@@ -1,0 +1,68 @@
+import { create } from "zustand"
+import { persist } from "zustand/middleware"
+import type { AuthResponse, MeResponse } from "@/lib/auth-api"
+import type { Role } from "@/lib/types"
+
+// Maps API role string → sidebar/dashboard role key
+function toDashboardRole(apiRole: string): Role {
+  const r = apiRole.toUpperCase()
+  if (r === "ADMIN")    return "admin"
+  if (r === "HR")       return "hr"
+  return "employee"
+}
+
+interface AuthState {
+  // Populated after login
+  user:           MeResponse | null
+  apiRole:        string | null          // "EMPLOYEE" | "ADMIN" | "HR" (from API)
+  dashboardRole:  Role                   // mapped to sidebar key
+  userRoleNames:  string[]               // e.g. ["HR Manager"]
+  authorities:    string[]               // e.g. ["DTR:VIEW"]
+
+  // Actions
+  setFromAuth: (res: AuthResponse) => void
+  setUser:     (user: MeResponse)  => void
+  clear:       ()                  => void
+}
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user:          null,
+      apiRole:       null,
+      dashboardRole: "employee",
+      userRoleNames: [],
+      authorities:   [],
+
+      setFromAuth: (res) =>
+        set({
+          apiRole:       res.role,
+          dashboardRole: toDashboardRole(res.role),
+          userRoleNames: res.userRoleNames,
+          authorities:   res.authorities,
+        }),
+
+      setUser: (user) => set({ user }),
+
+      clear: () =>
+        set({
+          user:          null,
+          apiRole:       null,
+          dashboardRole: "employee",
+          userRoleNames: [],
+          authorities:   [],
+        }),
+    }),
+    {
+      name:    "wos_auth",
+      // Only persist role metadata — tokens live in HttpOnly cookies managed by the server
+      partialize: (s) => ({
+        apiRole:       s.apiRole,
+        dashboardRole: s.dashboardRole,
+        userRoleNames: s.userRoleNames,
+        authorities:   s.authorities,
+        user:          s.user,
+      }),
+    },
+  ),
+)

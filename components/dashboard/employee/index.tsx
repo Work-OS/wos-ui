@@ -6,14 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { StatCard } from "@/components/custom/stat-card"
 import { ClockWidget } from "@/components/custom/clock-widget"
-import { CURRENT_USER } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
-
-const LEAVE_BALANCES = [
-  { label: "Vacation", days: 8, max: 12, indicatorClassName: "bg-primary" },
-  { label: "Sick", days: 4, max: 12, indicatorClassName: "bg-success" },
-  { label: "Emergency", days: 2, max: 12, indicatorClassName: "bg-warning" },
-]
+import { useAuthStore } from "@/store/auth-store"
+import { useEmployeeStats, useLeaveBalances } from "@/hooks/use-employee"
 
 const ACTIVITIES = [
   {
@@ -36,6 +31,13 @@ const ACTIVITIES = [
   },
 ]
 
+const LEAVE_COLOR_MAP: Record<string, string> = {
+  "Vacation Leave": "bg-primary",
+  "Sick Leave":     "bg-success",
+  "Emergency Leave": "bg-warning",
+  "Special Leave":  "bg-purple-500",
+}
+
 function getGreeting() {
   const h = new Date().getHours()
   if (h < 12) return "Good morning"
@@ -44,14 +46,20 @@ function getGreeting() {
 }
 
 export function OverviewSection() {
-  const router = useRouter()
+  const router    = useRouter()
+  const { user }  = useAuthStore()
+  const statsQ    = useEmployeeStats()
+  const balancesQ = useLeaveBalances()
 
-  const firstName = CURRENT_USER.name.split(" ")[0]
-  const dateStr = new Date().toLocaleDateString("en-US", {
+  const firstName = user?.firstName ?? "—"
+  const dateStr   = new Date().toLocaleDateString("en-US", {
     weekday: "long",
-    month: "long",
-    day: "numeric",
+    month:   "long",
+    day:     "numeric",
   })
+
+  const stats    = statsQ.data
+  const balances = balancesQ.data ?? []
 
   return (
     <div className="space-y-5">
@@ -67,7 +75,7 @@ export function OverviewSection() {
       <div className="grid grid-cols-4 gap-4">
         <StatCard
           title="Total days present"
-          value="142"
+          value={stats ? String(stats.totalDaysPresent) : "—"}
           delta="Year to date"
           deltaUp={true}
           accent="blue"
@@ -76,18 +84,18 @@ export function OverviewSection() {
           title="Total leave used"
           value={
             <>
-              8{" "}
+              {stats ? stats.totalLeaveUsed : "—"}{" "}
               <span className="text-sm font-normal text-muted-foreground">days</span>
             </>
           }
-          meta="5 vacation · 3 sick"
+          meta={stats ? `${stats.leaveVacation} vacation · ${stats.leaveSick} sick` : ""}
           accent="amber"
         />
         <StatCard
           title="Total hours worked"
           value={
             <>
-              1,136{" "}
+              {stats ? stats.totalHoursWorked.toLocaleString() : "—"}{" "}
               <span className="text-sm font-normal text-muted-foreground">hrs</span>
             </>
           }
@@ -99,11 +107,11 @@ export function OverviewSection() {
           title="Total hours late"
           value={
             <span className="text-danger">
-              3.5{" "}
+              {stats ? stats.totalHoursLate : "—"}{" "}
               <span className="text-sm font-normal text-muted-foreground">hrs</span>
             </span>
           }
-          delta="4 incidents this year"
+          delta={stats ? `${stats.lateIncidents} incidents this year` : ""}
           deltaUp={false}
           accent="red"
         />
@@ -124,19 +132,25 @@ export function OverviewSection() {
             </CardAction>
           </CardHeader>
           <CardContent className="space-y-3">
-            {LEAVE_BALANCES.map((l) => (
-              <div key={l.label}>
-                <div className="mb-1.5 flex items-center justify-between">
-                  <span className="text-[13px] text-muted-foreground">{l.label}</span>
-                  <span className="text-[13px] font-semibold">{l.days} days</span>
+            {balancesQ.isLoading ? (
+              <p className="text-[13px] text-muted-foreground">Loading…</p>
+            ) : balances.length === 0 ? (
+              <p className="text-[13px] text-muted-foreground">No leave balance data</p>
+            ) : (
+              balances.map((l) => (
+                <div key={l.type}>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-[13px] text-muted-foreground">{l.type}</span>
+                    <span className="text-[13px] font-semibold">{l.remaining} days</span>
+                  </div>
+                  <Progress
+                    value={(l.remaining / l.total) * 100}
+                    className="h-1.5"
+                    indicatorClassName={LEAVE_COLOR_MAP[l.type] ?? "bg-primary"}
+                  />
                 </div>
-                <Progress
-                  value={(l.days / l.max) * 100}
-                  className="h-1.5"
-                  indicatorClassName={l.indicatorClassName}
-                />
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
       </div>

@@ -1,6 +1,7 @@
 import { Suspense } from "react"
 import { Sidebar } from "@/components/custom/sidebar"
 import { Topbar } from "@/components/custom/topbar"
+import { SessionWarningModal } from "@/components/custom/session-warning-modal"
 
 export default function DashboardLayout({
   children,
@@ -20,6 +21,7 @@ export default function DashboardLayout({
           <Suspense>{children}</Suspense>
         </main>
       </div>
+      <SessionWarningModal />
     </div>
   )
 }

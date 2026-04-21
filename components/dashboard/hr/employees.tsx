@@ -4,22 +4,6 @@ import { useState } from "react"
 import { StatusBadge } from "@/components/custom/status-badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import {
   Table,
   TableHeader,
@@ -35,96 +19,47 @@ import {
 } from "@/components/ui/tooltip"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Search01Icon, Add01Icon, EyeIcon } from "@hugeicons/core-free-icons"
-import { employees } from "@/lib/mock-data"
-import { usePagination, TablePagination } from "@/components/custom/table-pagination"
-
-function AddEmployeeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Add new employee</DialogTitle>
-          <DialogDescription>Create a profile for a new team member</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>First name</Label>
-              <Input placeholder="Jane" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Last name</Label>
-              <Input placeholder="Smith" />
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <Label>Work email</Label>
-            <Input type="email" placeholder="jane@company.com" />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>Department</Label>
-              <Select defaultValue="Engineering">
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {["Engineering", "Design", "Sales", "People Ops", "Finance", "Marketing"].map((d) => (
-                    <SelectItem key={d} value={d}>{d}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Role</Label>
-              <Select defaultValue="employee">
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="employee">Employee</SelectItem>
-                  <SelectItem value="hr">HR</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <Label>Start date</Label>
-            <Input type="date" />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
-          <Button size="sm" onClick={onClose}>Create employee</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
+import { TablePagination } from "@/components/custom/table-pagination"
+import { useHrEmployees } from "@/hooks/use-hr"
 
 export function EmployeesSection() {
-  const [search, setSearch] = useState("")
-  const [addOpen, setAddOpen] = useState(false)
+  const [search, setSearch]     = useState("")
+  const [page, setPage]         = useState(1)
+  const [pageSize, setPageSize] = useState(20)
 
-  const filtered = employees.filter(
-    (e) =>
-      e.name.toLowerCase().includes(search.toLowerCase()) ||
-      e.department.toLowerCase().includes(search.toLowerCase()) ||
-      e.position.toLowerCase().includes(search.toLowerCase()),
-  )
+  const { data, isLoading, isError } = useHrEmployees({
+    page:   page - 1,
+    size:   pageSize,
+    search: search || undefined,
+  })
 
-  const { paginated, page, setPage, pageSize, setPageSize, total, totalPages } =
-    usePagination(filtered)
+  const employees  = data?.content       ?? []
+  const total      = data?.totalElements ?? 0
+  const totalPages = data?.totalPages    ?? 0
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <div className="relative flex-1">
           <HugeiconsIcon icon={Search01Icon} size={14} strokeWidth={2} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input className="pl-9" placeholder="Search employees…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }} />
+          <Input
+            className="pl-9"
+            placeholder="Search employees…"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+          />
         </div>
-        <Button size="sm" onClick={() => setAddOpen(true)}>
+        <Button size="sm">
           <HugeiconsIcon icon={Add01Icon} size={13} strokeWidth={2} className="mr-1.5" />
           Add employee
         </Button>
       </div>
+
+      {isError && (
+        <p className="rounded-lg border border-danger-border bg-danger-light px-4 py-3 text-[13px] text-danger">
+          Failed to load employees
+        </p>
+      )}
 
       <Table>
         <TableHeader>
@@ -135,40 +70,58 @@ export function EmployeesSection() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {paginated.map((emp) => (
-            <TableRow key={emp.id} className="cursor-pointer">
-              <TableCell>
-                <div className="flex items-center gap-2.5">
-                  <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
-                    {emp.initials}
-                  </div>
-                  <div>
-                    <p className="font-medium">{emp.name}</p>
-                    <p className="text-[11px] text-muted-foreground">{emp.email}</p>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="text-muted-foreground">{emp.department}</TableCell>
-              <TableCell>{emp.position}</TableCell>
-              <TableCell className="tabular-nums text-muted-foreground">{emp.startDate}</TableCell>
-              <TableCell>
-                <StatusBadge variant={emp.status === "active" ? "green" : emp.status === "on-leave" ? "amber" : "gray"}>
-                  {emp.status === "on-leave" ? "On leave" : emp.status.charAt(0).toUpperCase() + emp.status.slice(1)}
-                </StatusBadge>
-              </TableCell>
-              <TableCell className="text-right">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button size="icon-xs" variant="outline">
-                      <HugeiconsIcon icon={EyeIcon} size={12} strokeWidth={2} />
-                      <span className="sr-only">View profile</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>View profile</TooltipContent>
-                </Tooltip>
+          {isLoading ? (
+            <TableRow>
+              <TableCell colSpan={6} className="py-8 text-center text-[13px] text-muted-foreground">
+                Loading…
               </TableCell>
             </TableRow>
-          ))}
+          ) : employees.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} className="py-8 text-center text-[13px] text-muted-foreground">
+                No employees found
+              </TableCell>
+            </TableRow>
+          ) : (
+            employees.map((emp) => {
+              const initials = `${emp.firstName[0] ?? ""}${emp.lastName[0] ?? ""}`.toUpperCase()
+              const fullName = `${emp.firstName} ${emp.lastName}`
+              return (
+                <TableRow key={emp.id} className="cursor-pointer">
+                  <TableCell>
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
+                        {initials}
+                      </div>
+                      <div>
+                        <p className="font-medium">{fullName}</p>
+                        <p className="text-[11px] text-muted-foreground">{emp.email}</p>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{emp.department}</TableCell>
+                  <TableCell>{emp.position}</TableCell>
+                  <TableCell className="tabular-nums text-muted-foreground">{emp.startDate}</TableCell>
+                  <TableCell>
+                    <StatusBadge variant={emp.status === "active" ? "green" : emp.status === "on-leave" ? "amber" : "gray"}>
+                      {emp.status === "on-leave" ? "On leave" : emp.status.charAt(0).toUpperCase() + emp.status.slice(1)}
+                    </StatusBadge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button size="icon-xs" variant="outline">
+                          <HugeiconsIcon icon={EyeIcon} size={12} strokeWidth={2} />
+                          <span className="sr-only">View profile</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>View profile</TooltipContent>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              )
+            })
+          )}
         </TableBody>
       </Table>
       <TablePagination
@@ -179,8 +132,6 @@ export function EmployeesSection() {
         setPage={setPage}
         setPageSize={setPageSize}
       />
-
-      <AddEmployeeModal open={addOpen} onClose={() => setAddOpen(false)} />
     </div>
   )
 }

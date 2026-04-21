@@ -42,10 +42,15 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
-import { attendanceRecords } from "@/lib/mock-data"
 import type { AttendanceRecord } from "@/lib/types"
-import { usePagination, TablePagination } from "@/components/custom/table-pagination"
+import { TablePagination } from "@/components/custom/table-pagination"
 import { AttendanceHeatmap } from "@/components/custom/attendance-heatmap"
+import { useAttendance } from "@/hooks/use-employee"
+import type { AttendanceEntry } from "@/lib/employee-api"
+
+function toAttendanceRecord(e: AttendanceEntry): AttendanceRecord {
+  return e as AttendanceRecord
+}
 
 const statusVariant: Record<string, "green" | "red" | "amber" | "gray" | "blue" | "purple"> = {
   present: "green",
@@ -314,11 +319,20 @@ export function DTRSection() {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const clockCardRef = useRef<HTMLDivElement>(null)
   const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(null)
-  const [viewOpen, setViewOpen] = useState(false)
+  const [viewOpen, setViewOpen]   = useState(false)
   const [appealOpen, setAppealOpen] = useState(false)
   const [recordNotes, setRecordNotes] = useState<Record<string, string>>({})
-  const { paginated, page, setPage, pageSize, setPageSize, total, totalPages } =
-    usePagination(attendanceRecords)
+  const [page, setPage]         = useState(1)
+  const [pageSize, setPageSize] = useState(20)
+
+  const { data: attendanceData, isLoading: attendanceLoading } = useAttendance({
+    page: page - 1,
+    size: pageSize,
+  })
+
+  const paginated  = (attendanceData?.content ?? []).map(toAttendanceRecord)
+  const total      = attendanceData?.totalElements ?? 0
+  const totalPages = attendanceData?.totalPages    ?? 0
 
   useEffect(() => {
     setNow(new Date())
@@ -715,6 +729,19 @@ export function DTRSection() {
             </TableRow>
           </TableHeader>
           <TableBody>
+            {attendanceLoading ? (
+              <TableRow>
+                <TableCell colSpan={9} className="py-8 text-center text-[13px] text-muted-foreground">
+                  Loading…
+                </TableCell>
+              </TableRow>
+            ) : paginated.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={9} className="py-8 text-center text-[13px] text-muted-foreground">
+                  No attendance records
+                </TableCell>
+              </TableRow>
+            ) : null}
             {paginated.map((r, i) => {
               const note = recordNotes[r.date]
               return (

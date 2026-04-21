@@ -1,471 +1,56 @@
 "use client"
 
-import React, { useState } from "react"
+import { useState } from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Add01Icon,
-  Edit01Icon,
   Delete01Icon,
   UserShield01Icon,
-  User03Icon,
-  ManagerIcon,
-  UserStar01Icon,
   Cancel01Icon,
-  Tick02Icon,
+  Loading03Icon,
+  Alert01Icon,
+  Edit01Icon,
 } from "@hugeicons/core-free-icons"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
-
-// ── Types ──────────────────────────────────────────────────────────────────
-
-type Permission = "view" | "add" | "edit" | "delete"
-
-interface ModulePermission {
-  view: boolean
-  add: boolean
-  edit: boolean
-  delete: boolean
-}
-
-interface RoleDefinition {
-  id: string
-  name: string
-  description: string
-  builtIn?: boolean
-  permissions: Record<string, ModulePermission>
-}
-
-// ── Constants ──────────────────────────────────────────────────────────────
-
-interface ModuleGroup {
-  group: string
-  modules: { key: string; label: string }[]
-}
-
-const MODULE_GROUPS: ModuleGroup[] = [
-  {
-    group: "Workforce",
-    modules: [
-      { key: "attendance",      label: "Attendance & DTR" },
-      { key: "leave",           label: "Leave Management" },
-      { key: "leave_approval",  label: "Leave Approvals" },
-      { key: "overtime",        label: "Overtime Requests" },
-      { key: "overtime_approval", label: "Overtime Approvals" },
-    ],
-  },
-  {
-    group: "Payroll",
-    modules: [
-      { key: "payroll",         label: "Payroll Processing" },
-      { key: "payroll_config",  label: "Payroll Configuration" },
-      { key: "payslips",        label: "Payslips" },
-      { key: "deductions",      label: "Deductions & Benefits" },
-    ],
-  },
-  {
-    group: "People",
-    modules: [
-      { key: "employees",       label: "Employee Records" },
-      { key: "recruitment",     label: "Recruitment" },
-      { key: "departments",     label: "Departments" },
-    ],
-  },
-  {
-    group: "System",
-    modules: [
-      { key: "reports",         label: "Reports & Analytics" },
-      { key: "users",           label: "System Users" },
-      { key: "roles",           label: "Roles & Permissions" },
-      { key: "audit",           label: "Audit Log" },
-      { key: "config",          label: "Configuration" },
-    ],
-  },
-]
-
-const ALL_MODULES = MODULE_GROUPS.flatMap((g) => g.modules)
-
-const PERMISSIONS: Permission[] = ["view", "add", "edit", "delete"]
-
-function emptyPerms(): Record<string, ModulePermission> {
-  return Object.fromEntries(
-    ALL_MODULES.map((m) => [m.key, { view: false, add: false, edit: false, delete: false }]),
-  )
-}
-
-function employeePerms(): Record<string, ModulePermission> {
-  const p = emptyPerms()
-  p.attendance = { view: true, add: false, edit: false, delete: false }
-  p.leave      = { view: true, add: true,  edit: false, delete: false }
-  p.payroll    = { view: false, add: false, edit: false, delete: false }
-  p.payslips   = { view: true, add: false, edit: false, delete: false }
-  p.overtime   = { view: true, add: true,  edit: false, delete: false }
-  return p
-}
-
-function managerPerms(): Record<string, ModulePermission> {
-  const p = emptyPerms()
-  p.attendance       = { view: true, add: true,  edit: true,  delete: false }
-  p.leave            = { view: true, add: true,  edit: true,  delete: false }
-  p.leave_approval   = { view: true, add: true,  edit: true,  delete: false }
-  p.overtime         = { view: true, add: true,  edit: true,  delete: false }
-  p.overtime_approval = { view: true, add: true, edit: true,  delete: false }
-  p.payroll          = { view: true, add: false, edit: false, delete: false }
-  p.payslips         = { view: true, add: false, edit: false, delete: false }
-  p.employees        = { view: true, add: false, edit: true,  delete: false }
-  p.departments      = { view: true, add: false, edit: false, delete: false }
-  p.reports          = { view: true, add: false, edit: false, delete: false }
-  return p
-}
-
-function teamLeadPerms(): Record<string, ModulePermission> {
-  const p = emptyPerms()
-  p.attendance     = { view: true, add: true,  edit: false, delete: false }
-  p.leave          = { view: true, add: true,  edit: false, delete: false }
-  p.leave_approval = { view: true, add: true,  edit: false, delete: false }
-  p.overtime       = { view: true, add: true,  edit: false, delete: false }
-  p.payslips       = { view: true, add: false, edit: false, delete: false }
-  p.employees      = { view: true, add: false, edit: false, delete: false }
-  return p
-}
-
-const INITIAL_ROLES: RoleDefinition[] = [
-  {
-    id: "employee",
-    name: "Employee",
-    description: "Standard employee access",
-    builtIn: true,
-    permissions: employeePerms(),
-  },
-  {
-    id: "manager",
-    name: "Manager",
-    description: "Team & operations management",
-    permissions: managerPerms(),
-  },
-  {
-    id: "team-lead",
-    name: "Team Lead",
-    description: "Attendance oversight & approvals",
-    permissions: teamLeadPerms(),
-  },
-]
-
-const ROLE_ICONS: Record<string, React.ComponentProps<typeof HugeiconsIcon>["icon"]> = {
-  employee:  User03Icon,
-  manager:   ManagerIcon,
-  "team-lead": UserStar01Icon,
-}
-
-// ── Component ──────────────────────────────────────────────────────────────
-
-export function RolesSection() {
-  const [roles, setRoles] = useState<RoleDefinition[]>(INITIAL_ROLES)
-  const [activeId, setActiveId] = useState<string>("employee")
-  const [creating, setCreating] = useState(false)
-  const [newRoleName, setNewRoleName] = useState("")
-  const [dirty, setDirty] = useState(false)
-
-  const active = roles.find((r) => r.id === activeId)!
-
-  // ── Permission toggle ──────────────────────────────────────────────────
-
-  function togglePerm(moduleKey: string, perm: Permission) {
-    setRoles((prev) =>
-      prev.map((r) => {
-        if (r.id !== activeId) return r
-        const updated = {
-          ...r,
-          permissions: {
-            ...r.permissions,
-            [moduleKey]: {
-              ...r.permissions[moduleKey],
-              [perm]: !r.permissions[moduleKey][perm],
-            },
-          },
-        }
-        return updated
-      }),
-    )
-    setDirty(true)
-  }
-
-  function toggleAllPermsForModule(moduleKey: string) {
-    const current = active.permissions[moduleKey]
-    const allOn = PERMISSIONS.every((p) => current[p])
-    setRoles((prev) =>
-      prev.map((r) => {
-        if (r.id !== activeId) return r
-        return {
-          ...r,
-          permissions: {
-            ...r.permissions,
-            [moduleKey]: { view: !allOn, add: !allOn, edit: !allOn, delete: !allOn },
-          },
-        }
-      }),
-    )
-    setDirty(true)
-  }
-
-  function toggleAllForPerm(perm: Permission) {
-    const allOn = ALL_MODULES.every((m) => active.permissions[m.key][perm])
-    setRoles((prev) =>
-      prev.map((r) => {
-        if (r.id !== activeId) return r
-        const newPerms = { ...r.permissions }
-        ALL_MODULES.forEach((m) => {
-          newPerms[m.key] = { ...newPerms[m.key], [perm]: !allOn }
-        })
-        return { ...r, permissions: newPerms }
-      }),
-    )
-    setDirty(true)
-  }
-
-  // ── Create role ────────────────────────────────────────────────────────
-
-  function createRole() {
-    if (!newRoleName.trim()) return
-    const id = newRoleName.toLowerCase().replace(/\s+/g, "-")
-    const newRole: RoleDefinition = {
-      id,
-      name: newRoleName.trim(),
-      description: "Custom role",
-      permissions: employeePerms(),
-    }
-    setRoles((prev) => [...prev, newRole])
-    setActiveId(id)
-    setNewRoleName("")
-    setCreating(false)
-    setDirty(false)
-  }
-
-  function deleteRole(id: string) {
-    setRoles((prev) => prev.filter((r) => r.id !== id))
-    setActiveId("employee")
-    setDirty(false)
-  }
-
-  function saveRole() {
-    setDirty(false)
-  }
-
-  // ── Render ─────────────────────────────────────────────────────────────
-
-  return (
-    <div className="flex gap-5 h-full">
-      {/* ── Role list sidebar ── */}
-      <div className="flex w-56 shrink-0 flex-col gap-1">
-        <div className="mb-2 flex items-center justify-between">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-            Roles
-          </p>
-          <button
-            onClick={() => setCreating(true)}
-            className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary/10"
-          >
-            <HugeiconsIcon icon={Add01Icon} size={12} strokeWidth={2} />
-            New
-          </button>
-        </div>
-
-        {roles.map((r) => (
-          <button
-            key={r.id}
-            onClick={() => { setActiveId(r.id); setDirty(false) }}
-            className={cn(
-              "group flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-all duration-150",
-              activeId === r.id
-                ? "border-primary/20 bg-primary text-primary-foreground shadow-sm"
-                : "border-transparent bg-muted/50 hover:bg-muted text-foreground",
-            )}
-          >
-            <div className={cn(
-              "flex size-7 shrink-0 items-center justify-center rounded-lg",
-              activeId === r.id ? "bg-white/15" : "bg-background",
-            )}>
-              <HugeiconsIcon
-                icon={ROLE_ICONS[r.id] ?? UserShield01Icon}
-                size={14}
-                strokeWidth={1.8}
-                className={activeId === r.id ? "text-primary-foreground" : "text-muted-foreground"}
-              />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className={cn("truncate text-[12px] font-semibold", activeId === r.id ? "text-primary-foreground" : "text-foreground")}>
-                {r.name}
-              </p>
-              {r.builtIn && (
-                <p className={cn("text-[10px]", activeId === r.id ? "text-white/60" : "text-muted-foreground")}>
-                  Built-in
-                </p>
-              )}
-            </div>
-          </button>
-        ))}
-
-        {/* New role input */}
-        {creating && (
-          <div className="mt-1 rounded-xl border border-border bg-card p-2.5 shadow-sm">
-            <Input
-              autoFocus
-              placeholder="Role name"
-              value={newRoleName}
-              onChange={(e) => setNewRoleName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") createRole(); if (e.key === "Escape") setCreating(false) }}
-              className="mb-2 h-8 text-[12px]"
-            />
-            <div className="flex gap-1.5">
-              <Button size="sm" className="h-7 flex-1 text-[11px]" onClick={createRole} disabled={!newRoleName.trim()}>
-                Create
-              </Button>
-              <button
-                onClick={() => setCreating(false)}
-                className="flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted"
-              >
-                <HugeiconsIcon icon={Cancel01Icon} size={12} strokeWidth={2} />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ── Permission matrix ── */}
-      <div className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-border px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
-              <HugeiconsIcon icon={ROLE_ICONS[active.id] ?? UserShield01Icon} size={18} strokeWidth={1.8} className="text-primary" />
-            </div>
-            <div>
-              <h2 className="text-[15px] font-semibold text-foreground">{active.name}</h2>
-              <p className="text-[12px] text-muted-foreground">{active.description}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {!active.builtIn && (
-              <button
-                onClick={() => deleteRole(active.id)}
-                className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[12px] font-medium text-destructive transition-colors hover:bg-destructive/5"
-              >
-                <HugeiconsIcon icon={Delete01Icon} size={13} strokeWidth={2} />
-                Delete role
-              </button>
-            )}
-            <Button
-              size="sm"
-              className="gap-1.5"
-              onClick={saveRole}
-              disabled={!dirty}
-            >
-              <HugeiconsIcon icon={Tick02Icon} size={13} strokeWidth={2} />
-              Save changes
-            </Button>
-          </div>
-        </div>
-
-        {/* Table */}
-        <div className="flex-1 overflow-auto">
-          <table className="w-full">
-            <thead className="sticky top-0 z-10 bg-card">
-              <tr className="border-b border-border">
-                <th className="py-3 pl-6 pr-4 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Module
-                </th>
-                {PERMISSIONS.map((perm) => {
-                  const allOn = ALL_MODULES.every((m) => active.permissions[m.key][perm])
-                  return (
-                    <th key={perm} className="w-24 px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      <div className="flex flex-col items-center gap-1.5">
-                        <span>{perm}</span>
-                        <Checkbox
-                          checked={allOn}
-                          onChange={() => toggleAllForPerm(perm)}
-                          title={`Toggle all ${perm}`}
-                        />
-                      </div>
-                    </th>
-                  )
-                })}
-              </tr>
-            </thead>
-            <tbody>
-              {MODULE_GROUPS.map((group) => (
-                <React.Fragment key={group.group}>
-                  {/* Group header row */}
-                  <tr className="bg-muted/40">
-                    <td colSpan={5} className="py-2 pl-6 pr-4">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
-                        {group.group}
-                      </span>
-                    </td>
-                  </tr>
-
-                  {/* Module rows */}
-                  {group.modules.map((mod) => {
-                    const perms = active.permissions[mod.key]
-                    const allOn = PERMISSIONS.every((p) => perms[p])
-                    return (
-                      <tr
-                        key={mod.key}
-                        className="border-b border-border/40 transition-colors hover:bg-muted/40"
-                      >
-                        <td className="py-3 pl-8 pr-4">
-                          <div className="flex items-center gap-2.5">
-                            <Checkbox
-                              checked={allOn}
-                              onChange={() => toggleAllPermsForModule(mod.key)}
-                              title="Toggle all"
-                            />
-                            <span className="text-[13px] font-medium text-foreground">{mod.label}</span>
-                          </div>
-                        </td>
-                        {PERMISSIONS.map((perm) => (
-                          <td key={perm} className="w-24 px-4 py-3 text-center">
-                            <div className="flex justify-center">
-                              <Checkbox
-                                checked={perms[perm]}
-                                onChange={() => togglePerm(mod.key, perm)}
-                              />
-                            </div>
-                          </td>
-                        ))}
-                      </tr>
-                    )
-                  })}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  )
-}
+import {
+  useUserRoles,
+  useAccessRoles,
+  useCreateUserRole,
+  useUpdateUserRole,
+  useDeleteUserRole,
+  useAddAccessRole,
+  useRemoveAccessRole,
+  useToggleFunctionality,
+} from "@/hooks/use-admin-roles"
 
 // ── Checkbox ───────────────────────────────────────────────────────────────
 
 function Checkbox({
   checked,
+  disabled,
   onChange,
   title,
 }: {
-  checked: boolean
+  checked:  boolean
+  disabled?: boolean
   onChange: () => void
-  title?: string
+  title?:   string
 }) {
   return (
     <button
       type="button"
       onClick={onChange}
       title={title}
+      disabled={disabled}
       className={cn(
         "flex size-4.5 items-center justify-center rounded border-2 transition-all duration-150",
         checked
           ? "border-primary bg-primary"
           : "border-border bg-background hover:border-primary/50",
+        disabled && "cursor-not-allowed opacity-40",
       )}
     >
       {checked && (
@@ -474,5 +59,431 @@ function Checkbox({
         </svg>
       )}
     </button>
+  )
+}
+
+// ── Create / Edit Role Modal ───────────────────────────────────────────────
+
+function RoleFormInline({
+  initial,
+  onSave,
+  onCancel,
+  isPending,
+}: {
+  initial?:  { name: string; description: string }
+  onSave:    (name: string, description: string) => void
+  onCancel:  () => void
+  isPending: boolean
+}) {
+  const [name, setName]   = useState(initial?.name        ?? "")
+  const [desc, setDesc]   = useState(initial?.description ?? "")
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-3 shadow-sm space-y-2">
+      <div className="space-y-1">
+        <Label className="text-[11px]">Role name</Label>
+        <Input
+          autoFocus
+          placeholder="e.g. Payroll Clerk"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && name.trim()) onSave(name.trim(), desc.trim())
+            if (e.key === "Escape") onCancel()
+          }}
+          className="h-8 text-[12px]"
+        />
+      </div>
+      <div className="space-y-1">
+        <Label className="text-[11px]">Description</Label>
+        <Input
+          placeholder="Short description"
+          value={desc}
+          onChange={(e) => setDesc(e.target.value)}
+          className="h-8 text-[12px]"
+        />
+      </div>
+      <div className="flex gap-1.5 pt-1">
+        <Button
+          size="sm"
+          className="h-7 flex-1 text-[11px]"
+          disabled={!name.trim() || isPending}
+          onClick={() => onSave(name.trim(), desc.trim())}
+        >
+          {isPending ? "Saving…" : initial ? "Update" : "Create"}
+        </Button>
+        <button
+          onClick={onCancel}
+          className="flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted"
+        >
+          <HugeiconsIcon icon={Cancel01Icon} size={12} strokeWidth={2} />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Main Component ─────────────────────────────────────────────────────────
+
+export function RolesSection() {
+  const [activeId,   setActiveId]   = useState<number | null>(null)
+  const [creating,   setCreating]   = useState(false)
+  const [editingId,  setEditingId]  = useState<number | null>(null)
+  const [deleteId,   setDeleteId]   = useState<number | null>(null)
+
+  const rolesQ       = useUserRoles()
+  const accessRolesQ = useAccessRoles()
+
+  const createMutation    = useCreateUserRole()
+  const updateMutation    = useUpdateUserRole()
+  const deleteMutation    = useDeleteUserRole()
+  const addAccessRole     = useAddAccessRole()
+  const removeAccessRole  = useRemoveAccessRole()
+  const toggleFunc        = useToggleFunctionality()
+
+  const roles       = rolesQ.data       ?? []
+  const accessRoles = accessRolesQ.data ?? []
+  const active      = roles.find((r) => r.id === activeId) ?? roles[0] ?? null
+
+  // Helpers to read current state from the active role
+  function getAssigned(accessRoleId: number) {
+    return active?.accessRoles.find((ar) => ar.accessRoleId === accessRoleId) ?? null
+  }
+
+  function isFuncEnabled(accessRoleId: number, functionalityId: number): boolean {
+    const assigned = getAssigned(accessRoleId)
+    if (!assigned) return false
+    return assigned.functionalities.find((f) => f.functionalityId === functionalityId)?.enabled ?? false
+  }
+
+  function handleToggleAccessRole(accessRoleId: number) {
+    if (!active) return
+    const assigned = getAssigned(accessRoleId)
+    if (assigned) {
+      removeAccessRole.mutate({ userRoleId: active.id, accessRoleId })
+    } else {
+      addAccessRole.mutate({ userRoleId: active.id, accessRoleId })
+    }
+  }
+
+  function handleToggleFunctionality(accessRoleId: number, functionalityId: number) {
+    if (!active) return
+    const assigned = getAssigned(accessRoleId)
+    const currentlyEnabled = isFuncEnabled(accessRoleId, functionalityId)
+
+    if (!assigned) {
+      // Auto-assign access role first, then rely on the server to handle the functionality
+      addAccessRole.mutate({ userRoleId: active.id, accessRoleId }, {
+        onSuccess: () =>
+          toggleFunc.mutate({ userRoleId: active.id, accessRoleId, functionalityId, enabled: true }),
+      })
+    } else {
+      toggleFunc.mutate({ userRoleId: active.id, accessRoleId, functionalityId, enabled: !currentlyEnabled })
+    }
+  }
+
+  const isMutating =
+    addAccessRole.isPending ||
+    removeAccessRole.isPending ||
+    toggleFunc.isPending
+
+  // ── Loading / error states ─────────────────────────────────────────────
+
+  if (rolesQ.isLoading || accessRolesQ.isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center gap-2 text-muted-foreground">
+        <HugeiconsIcon icon={Loading03Icon} size={20} strokeWidth={1.8} className="animate-spin" />
+        <span className="text-[13px]">Loading roles…</span>
+      </div>
+    )
+  }
+
+  if (rolesQ.isError) {
+    return (
+      <div className="flex h-64 flex-col items-center justify-center gap-2 text-muted-foreground">
+        <HugeiconsIcon icon={Alert01Icon} size={24} strokeWidth={1.5} className="text-red-400" />
+        <p className="text-[13px]">Failed to load roles</p>
+      </div>
+    )
+  }
+
+  // Collect all unique functionality names across all access roles (for column headers)
+  const allFuncNames = Array.from(
+    new Set(accessRoles.flatMap((ar) => ar.functionalities.map((f) => f.name)))
+  )
+
+  return (
+    <div className="flex h-full gap-5">
+      {/* ── Role list sidebar ── */}
+      <div className="flex w-60 shrink-0 flex-col gap-1">
+        <div className="mb-2 flex items-center justify-between">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+            Roles
+          </p>
+          <button
+            onClick={() => { setCreating(true); setEditingId(null) }}
+            className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary/10"
+          >
+            <HugeiconsIcon icon={Add01Icon} size={12} strokeWidth={2} />
+            New
+          </button>
+        </div>
+
+        {roles.map((r) => (
+          <div key={r.id}>
+            {editingId === r.id ? (
+              <RoleFormInline
+                initial={{ name: r.name, description: r.description }}
+                isPending={updateMutation.isPending}
+                onSave={(name, description) =>
+                  updateMutation.mutate(
+                    { id: r.id, name, description },
+                    { onSuccess: () => setEditingId(null) },
+                  )
+                }
+                onCancel={() => setEditingId(null)}
+              />
+            ) : (
+              <button
+                onClick={() => { setActiveId(r.id); setCreating(false); setEditingId(null) }}
+                className={cn(
+                  "group flex w-full items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-all duration-150",
+                  (active?.id ?? roles[0]?.id) === r.id
+                    ? "border-primary/20 bg-primary text-primary-foreground shadow-sm"
+                    : "border-transparent bg-muted/50 hover:bg-muted text-foreground",
+                )}
+              >
+                <div className={cn(
+                  "flex size-7 shrink-0 items-center justify-center rounded-lg",
+                  (active?.id ?? roles[0]?.id) === r.id ? "bg-white/15" : "bg-background",
+                )}>
+                  <HugeiconsIcon
+                    icon={UserShield01Icon}
+                    size={14}
+                    strokeWidth={1.8}
+                    className={(active?.id ?? roles[0]?.id) === r.id ? "text-primary-foreground" : "text-muted-foreground"}
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className={cn(
+                    "truncate text-[12px] font-semibold",
+                    (active?.id ?? roles[0]?.id) === r.id ? "text-primary-foreground" : "text-foreground",
+                  )}>
+                    {r.name}
+                  </p>
+                  {r.description && (
+                    <p className={cn(
+                      "truncate text-[10px]",
+                      (active?.id ?? roles[0]?.id) === r.id ? "text-white/60" : "text-muted-foreground",
+                    )}>
+                      {r.description}
+                    </p>
+                  )}
+                </div>
+                {/* Edit / delete buttons (visible on hover) */}
+                <div
+                  className="hidden items-center gap-1 group-hover:flex"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => { setEditingId(r.id); setCreating(false) }}
+                    className="rounded p-0.5 opacity-70 hover:opacity-100"
+                  >
+                    <HugeiconsIcon icon={Edit01Icon} size={11} strokeWidth={2} />
+                  </button>
+                  <button
+                    onClick={() => setDeleteId(r.id)}
+                    className="rounded p-0.5 opacity-70 hover:text-red-400 hover:opacity-100"
+                  >
+                    <HugeiconsIcon icon={Delete01Icon} size={11} strokeWidth={2} />
+                  </button>
+                </div>
+              </button>
+            )}
+          </div>
+        ))}
+
+        {/* New role form */}
+        {creating && (
+          <RoleFormInline
+            isPending={createMutation.isPending}
+            onSave={(name, description) =>
+              createMutation.mutate(
+                { name, description },
+                {
+                  onSuccess: (created) => {
+                    setActiveId(created.id)
+                    setCreating(false)
+                  },
+                },
+              )
+            }
+            onCancel={() => setCreating(false)}
+          />
+        )}
+
+        {/* Delete confirm */}
+        {deleteId !== null && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDeleteId(null)} />
+            <div className="relative w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl">
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
+                  <HugeiconsIcon icon={Delete01Icon} size={18} strokeWidth={1.8} className="text-red-500" />
+                </div>
+                <div>
+                  <h2 className="text-[14px] font-semibold">Delete role?</h2>
+                  <p className="text-[12px] text-muted-foreground">
+                    {roles.find((r) => r.id === deleteId)?.name}
+                  </p>
+                </div>
+              </div>
+              <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
+                This will permanently remove the role and cannot be undone.
+              </p>
+              <div className="mt-5 flex gap-2">
+                <button
+                  onClick={() => setDeleteId(null)}
+                  className="flex h-9 flex-1 items-center justify-center rounded-lg border border-border text-[13px] font-medium transition-colors hover:bg-muted"
+                >
+                  Cancel
+                </button>
+                <Button
+                  variant="destructive"
+                  className="h-9 flex-1 text-[13px]"
+                  disabled={deleteMutation.isPending}
+                  onClick={() =>
+                    deleteMutation.mutate(deleteId, {
+                      onSuccess: () => {
+                        setDeleteId(null)
+                        setActiveId(null)
+                      },
+                    })
+                  }
+                >
+                  {deleteMutation.isPending ? "Deleting…" : "Delete"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Permission matrix ── */}
+      <div className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card">
+        {active ? (
+          <>
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-border px-6 py-4">
+              <div className="flex items-center gap-3">
+                <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
+                  <HugeiconsIcon icon={UserShield01Icon} size={18} strokeWidth={1.8} className="text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-[15px] font-semibold">{active.name}</h2>
+                  <p className="text-[12px] text-muted-foreground">{active.description}</p>
+                </div>
+              </div>
+              {isMutating && (
+                <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
+                  <HugeiconsIcon icon={Loading03Icon} size={13} strokeWidth={2} className="animate-spin" />
+                  Saving…
+                </div>
+              )}
+            </div>
+
+            {/* Matrix */}
+            {accessRolesQ.isError ? (
+              <div className="flex flex-1 items-center justify-center">
+                <p className="text-[13px] text-muted-foreground">Failed to load access roles</p>
+              </div>
+            ) : accessRoles.length === 0 ? (
+              <div className="flex flex-1 items-center justify-center">
+                <p className="text-[13px] text-muted-foreground">No access roles defined</p>
+              </div>
+            ) : (
+              <div className="flex-1 overflow-auto">
+                <table className="w-full">
+                  <thead className="sticky top-0 z-10 bg-card">
+                    <tr className="border-b border-border">
+                      <th className="py-3 pl-6 pr-4 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Access role
+                      </th>
+                      <th className="w-20 px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Enabled
+                      </th>
+                      {allFuncNames.map((name) => (
+                        <th key={name} className="w-24 px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {name}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {accessRoles.map((ar) => {
+                      const assigned   = getAssigned(ar.id)
+                      const isAssigned = !!assigned
+                      return (
+                        <tr
+                          key={ar.id}
+                          className="border-b border-border/40 transition-colors hover:bg-muted/30"
+                        >
+                          <td className="py-3 pl-8 pr-4">
+                            <span className="text-[13px] font-medium">{ar.name}</span>
+                          </td>
+                          {/* Row-level toggle */}
+                          <td className="w-20 px-4 py-3 text-center">
+                            <div className="flex justify-center">
+                              <Checkbox
+                                checked={isAssigned}
+                                disabled={isMutating}
+                                onChange={() => handleToggleAccessRole(ar.id)}
+                                title={isAssigned ? "Remove access" : "Grant access"}
+                              />
+                            </div>
+                          </td>
+                          {/* Functionality toggles */}
+                          {allFuncNames.map((funcName) => {
+                            const funcDef = ar.functionalities.find((f) => f.name === funcName)
+                            if (!funcDef) {
+                              return (
+                                <td key={funcName} className="w-24 px-4 py-3 text-center">
+                                  <span className="text-muted-foreground/30">—</span>
+                                </td>
+                              )
+                            }
+                            const enabled = isFuncEnabled(ar.id, funcDef.id)
+                            return (
+                              <td key={funcName} className="w-24 px-4 py-3 text-center">
+                                <div className="flex justify-center">
+                                  <Checkbox
+                                    checked={enabled}
+                                    disabled={isMutating}
+                                    onChange={() => handleToggleFunctionality(ar.id, funcDef.id)}
+                                  />
+                                </div>
+                              </td>
+                            )
+                          })}
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="flex flex-1 items-center justify-center">
+            <div className="text-center">
+              <HugeiconsIcon icon={UserShield01Icon} size={32} strokeWidth={1.5} className="mx-auto mb-3 text-muted-foreground/30" />
+              <p className="text-[13px] text-muted-foreground">
+                {roles.length === 0 ? "No roles yet. Create one to get started." : "Select a role to view permissions"}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }

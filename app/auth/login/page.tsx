@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Logo } from "@/components/custom/logo"
 import { Button } from "@/components/ui/button"
@@ -11,23 +10,19 @@ import { AttendanceCameraCapture } from "@/components/custom/attendance-camera-c
 import { cn } from "@/lib/utils"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  User03Icon,
-  Shield01Icon,
   Clock01Icon,
   Login01Icon,
   Logout01Icon,
   CheckmarkBadge01Icon,
   Cancel01Icon,
   Camera01Icon,
+  Alert01Icon,
+  User03Icon,
 } from "@hugeicons/core-free-icons"
+import { useLogin, useSelectRole } from "@/hooks/use-auth"
+import type { AvailableRole } from "@/lib/auth-api"
 
-type Role = "employee" | "admin"
 type PunchType = "in" | "out"
-
-const ROLES: { value: Role; label: string; description: string; icon: React.ComponentProps<typeof HugeiconsIcon>["icon"] }[] = [
-  { value: "employee", label: "Employee", description: "Attendance, payslips & leaves", icon: User03Icon },
-  { value: "admin", label: "Administrator", description: "Full system access & config", icon: Shield01Icon },
-]
 
 // ── Live clock ────────────────────────────────────────────────────────────
 
@@ -43,16 +38,40 @@ function useClock() {
 // ── Page ──────────────────────────────────────────────────────────────────
 
 export default function LoginPage() {
-  const router = useRouter()
-  const [showPassword, setShowPassword] = useState(false)
-  const [remember, setRemember] = useState(false)
-  const [showRoleModal, setShowRoleModal] = useState(false)
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null)
+  const [showPassword, setShowPassword]     = useState(false)
+  const [remember, setRemember]             = useState(false)
+  const [email, setEmail]                   = useState("")
+  const [password, setPassword]             = useState("")
   const [showQuickPunch, setShowQuickPunch] = useState(false)
 
-  const handleLogin = () => setShowRoleModal(true)
-  const handleRoleSelect = (role: Role) => setSelectedRole(role)
-  const handleRoleContinue = () => { if (selectedRole) router.push(`/dashboard/${selectedRole}`) }
+  // Role-selection state (when API returns requiresRoleSelection: true)
+  const [availableRoles, setAvailableRoles]   = useState<AvailableRole[]>([])
+  const [selectedRoleId, setSelectedRoleId]   = useState<number | null>(null)
+  const [showRoleModal, setShowRoleModal]     = useState(false)
+
+  const loginMutation      = useLogin()
+  const selectRoleMutation = useSelectRole()
+
+  const isPending = loginMutation.isPending || selectRoleMutation.isPending
+  const apiError  = loginMutation.error || selectRoleMutation.error
+
+  function handleLogin() {
+    if (!email || !password) return
+    loginMutation.mutate({ email, password }, {
+      onSuccess: (data) => {
+        if (data.requiresRoleSelection) {
+          setAvailableRoles(data.availableRoles)
+          setShowRoleModal(true)
+        }
+        // if not requiresRoleSelection, useLogin's onSuccess handles redirect
+      },
+    })
+  }
+
+  function handleRoleContinue() {
+    if (!selectedRoleId) return
+    selectRoleMutation.mutate({ email, password, userRoleId: selectedRoleId })
+  }
 
   return (
     <>
@@ -81,7 +100,7 @@ export default function LoginPage() {
               <div className="mt-7 space-y-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="email">Work email</Label>
-                  <Input id="email" type="email" placeholder="you@company.com" className="h-11" />
+                  <Input id="email" type="email" placeholder="you@company.com" className="h-11" value={email} onChange={(e) => setEmail(e.target.value)} />
                 </div>
 
                 <div className="space-y-1.5">
@@ -97,6 +116,9 @@ export default function LoginPage() {
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       className="h-11 pr-10"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleLogin()}
                     />
                     <button
                       type="button"
@@ -137,12 +159,22 @@ export default function LoginPage() {
                 </label>
               </div>
 
+              {apiError && (
+                <div className="mt-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 dark:border-red-900/40 dark:bg-red-900/20">
+                  <HugeiconsIcon icon={Alert01Icon} size={14} strokeWidth={2} className="shrink-0 text-red-500" />
+                  <p className="text-[12px] text-red-700 dark:text-red-400">
+                    {(apiError as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Invalid email or password."}
+                  </p>
+                </div>
+              )}
+
               <Button
-                className="mt-6 h-11 w-full justify-center gap-2 text-[14px] font-semibold"
+                className="mt-4 h-11 w-full justify-center gap-2 text-[14px] font-semibold"
                 onClick={handleLogin}
+                disabled={isPending}
               >
-                Sign in
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                {isPending ? "Signing in…" : "Sign in"}
+                {!isPending && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>}
               </Button>
 
               {/* Divider */}
@@ -181,7 +213,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* ── Role modal ── */}
+      {/* ── Role modal (shown when API returns requiresRoleSelection: true) ── */}
       {showRoleModal && (
         <Modal onClose={() => setShowRoleModal(false)}>
           <h2 className="text-[16px] font-semibold text-foreground">Select your role</h2>
@@ -190,36 +222,40 @@ export default function LoginPage() {
           </p>
 
           <div className="mt-5 grid grid-cols-2 gap-3">
-            {ROLES.map((r) => (
+            {availableRoles.map((r) => (
               <button
-                key={r.value}
-                onClick={() => handleRoleSelect(r.value)}
+                key={r.id}
+                onClick={() => setSelectedRoleId(r.id)}
                 className={cn(
                   "flex flex-col items-center gap-3 rounded-xl border p-4 text-center transition-all duration-150",
-                  selectedRole === r.value
+                  selectedRoleId === r.id
                     ? "border-primary bg-primary/5 shadow-sm"
                     : "border-border bg-background hover:bg-muted",
                 )}
               >
                 <div className={cn(
                   "flex size-14 items-center justify-center rounded-2xl transition-colors",
-                  selectedRole === r.value ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                  selectedRoleId === r.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
                 )}>
-                  <HugeiconsIcon icon={r.icon} size={28} strokeWidth={1.5} />
+                  <HugeiconsIcon icon={User03Icon} size={28} strokeWidth={1.5} />
                 </div>
-                <div>
-                  <p className="text-[13px] font-semibold text-foreground">{r.label}</p>
-                  <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">{r.description}</p>
-                </div>
+                <p className="text-[13px] font-semibold text-foreground">{r.name}</p>
                 <div className={cn(
                   "mt-auto flex size-4 items-center justify-center rounded-full border-2 transition-colors",
-                  selectedRole === r.value ? "border-primary bg-primary" : "border-muted-foreground/30",
+                  selectedRoleId === r.id ? "border-primary bg-primary" : "border-muted-foreground/30",
                 )}>
-                  {selectedRole === r.value && <div className="size-1.5 rounded-full bg-primary-foreground" />}
+                  {selectedRoleId === r.id && <div className="size-1.5 rounded-full bg-primary-foreground" />}
                 </div>
               </button>
             ))}
           </div>
+
+          {selectRoleMutation.error && (
+            <div className="mt-3 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 dark:border-red-900/40 dark:bg-red-900/20">
+              <HugeiconsIcon icon={Alert01Icon} size={13} strokeWidth={2} className="shrink-0 text-red-500" />
+              <p className="text-[12px] text-red-700 dark:text-red-400">Failed to sign in. Please try again.</p>
+            </div>
+          )}
 
           <div className="mt-4 flex gap-2">
             <button
@@ -228,8 +264,12 @@ export default function LoginPage() {
             >
               Cancel
             </button>
-            <Button className="h-10 flex-1 text-[13px]" disabled={!selectedRole} onClick={handleRoleContinue}>
-              Continue
+            <Button
+              className="h-10 flex-1 text-[13px]"
+              disabled={!selectedRoleId || selectRoleMutation.isPending}
+              onClick={handleRoleContinue}
+            >
+              {selectRoleMutation.isPending ? "Signing in…" : "Continue"}
             </Button>
           </div>
         </Modal>
