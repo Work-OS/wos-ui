@@ -65,19 +65,22 @@ function Checkbox({
 
 // ── Create / Edit Role Modal ───────────────────────────────────────────────
 
+const DEFAULT_ROLE_COLOR = "#6366f1"
+
 function RoleFormInline({
   initial,
   onSave,
   onCancel,
   isPending,
 }: {
-  initial?:  { name: string; description: string }
-  onSave:    (name: string, description: string) => void
+  initial?:  { name: string; description: string; color?: string }
+  onSave:    (name: string, description: string, color: string) => void
   onCancel:  () => void
   isPending: boolean
 }) {
-  const [name, setName]   = useState(initial?.name        ?? "")
-  const [desc, setDesc]   = useState(initial?.description ?? "")
+  const [name,  setName]  = useState(initial?.name        ?? "")
+  const [desc,  setDesc]  = useState(initial?.description ?? "")
+  const [color, setColor] = useState(initial?.color       ?? DEFAULT_ROLE_COLOR)
 
   return (
     <div className="rounded-xl border border-border bg-card p-3 shadow-sm space-y-2">
@@ -89,7 +92,7 @@ function RoleFormInline({
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && name.trim()) onSave(name.trim(), desc.trim())
+            if (e.key === "Enter" && name.trim()) onSave(name.trim(), desc.trim(), color)
             if (e.key === "Escape") onCancel()
           }}
           className="h-8 text-[12px]"
@@ -104,12 +107,39 @@ function RoleFormInline({
           className="h-8 text-[12px]"
         />
       </div>
+      <div className="space-y-1">
+        <Label className="text-[11px]">Badge color</Label>
+        <div className="flex items-center gap-2">
+          <label className="relative cursor-pointer shrink-0">
+            <span
+              className="block size-7 rounded-full border-2 border-border shadow-sm"
+              style={{ backgroundColor: color }}
+            />
+            <input
+              type="color"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            />
+          </label>
+          <Input
+            value={color}
+            onChange={(e) => {
+              const v = e.target.value
+              setColor(v)
+            }}
+            className="h-8 w-28 font-mono text-[12px] uppercase"
+            maxLength={7}
+            placeholder="#6366f1"
+          />
+        </div>
+      </div>
       <div className="flex gap-1.5 pt-1">
         <Button
           size="sm"
           className="h-7 flex-1 text-[11px]"
           disabled={!name.trim() || isPending}
-          onClick={() => onSave(name.trim(), desc.trim())}
+          onClick={() => onSave(name.trim(), desc.trim(), color)}
         >
           {isPending ? "Saving…" : initial ? "Update" : "Create"}
         </Button>
@@ -266,11 +296,11 @@ export function RolesSection() {
           <div key={r.id}>
             {editingId === r.id ? (
               <RoleFormInline
-                initial={{ name: r.name, description: r.description }}
+                initial={{ name: r.name, description: r.description, color: r.color }}
                 isPending={updateMutation.isPending}
-                onSave={(name, description) =>
+                onSave={(name, description, color) =>
                   updateMutation.mutate(
-                    { id: r.id, name, description },
+                    { id: r.id, name, description, color },
                     { onSuccess: () => setEditingId(null) },
                   )
                 }
@@ -301,12 +331,26 @@ export function RolesSection() {
                   />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className={cn(
-                    "truncate text-[12px] font-semibold",
-                    (active?.id ?? roles[0]?.id) === r.id ? "text-primary-foreground" : "text-foreground",
-                  )}>
-                    {r.name}
-                  </p>
+                  <div className="flex items-center gap-1.5">
+                    <p className={cn(
+                      "truncate text-[12px] font-semibold",
+                      (active?.id ?? roles[0]?.id) === r.id ? "text-primary-foreground" : "text-foreground",
+                    )}>
+                      {r.name}
+                    </p>
+                    {r.color && (
+                      <span
+                        className="shrink-0 rounded-full border px-1.5 py-px text-[9px] font-semibold leading-tight group-hover:hidden"
+                        style={{
+                          backgroundColor: `${r.color}1a`,
+                          borderColor:     `${r.color}40`,
+                          color:           r.color,
+                        }}
+                      >
+                        {r.name}
+                      </span>
+                    )}
+                  </div>
                   {r.description && (
                     <p className={cn(
                       "truncate text-[10px]",
@@ -343,9 +387,9 @@ export function RolesSection() {
         {creating && (
           <RoleFormInline
             isPending={createMutation.isPending}
-            onSave={(name, description) =>
+            onSave={(name, description, color) =>
               createMutation.mutate(
-                { name, description },
+                { name, description, color },
                 {
                   onSuccess: (created) => {
                     setActiveId(created.id)

@@ -9,7 +9,11 @@ export interface AdminUser {
   lastName:      string
   email:         string
   role:          string
-  userRoleNames: string[]
+  userRoles:     {
+    roleId:    number
+    roleName:  string
+    roleColor: string | null
+  }[]
   active:        boolean
   createdAt:     string
   updatedAt:     string

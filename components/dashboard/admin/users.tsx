@@ -47,6 +47,28 @@ const roleVariant = (role: string): "blue" | "purple" | "amber" => {
   return "blue"
 }
 
+/** Badge pill styled with a custom hex color from the API. */
+function ColoredRoleBadge({ name, color }: { name: string; color: string | null }) {
+  if (!color) {
+    return (
+      <StatusBadge variant="gray" dot={false}>{name}</StatusBadge>
+    )
+  }
+  // Derive a readable text color (the hex itself) on a lightly-tinted background.
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium whitespace-nowrap"
+      style={{
+        backgroundColor: `${color}1a`, // ~10% opacity fill
+        borderColor:     `${color}40`, // ~25% opacity border
+        color:           color,
+      }}
+    >
+      {name}
+    </span>
+  )
+}
+
 // ── Modals ─────────────────────────────────────────────────────────────────
 
 function Backdrop({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
@@ -256,7 +278,9 @@ function AssignRolesModal({ user, onClose }: AssignModalProps) {
 
       <div className="mt-4 rounded-lg border border-border bg-muted/40 px-3 py-2.5">
         <p className="text-[11px] font-medium text-muted-foreground">Current roles</p>
-        <p className="mt-0.5 text-[12px] text-foreground">{user.userRoleNames.join(", ") || "None"}</p>
+        <p className="mt-0.5 text-[12px] text-foreground">
+          {user.userRoles.map((r) => r.roleName).join(", ") || "None"}
+        </p>
       </div>
 
       <div className="mt-3 space-y-1.5">
@@ -399,8 +423,8 @@ export function UsersSection() {
                       <StatusBadge variant={roleVariant(u.role)} dot={false}>
                         {u.role}
                       </StatusBadge>
-                      {u.userRoleNames.map((n) => (
-                        <StatusBadge key={n} variant="gray" dot={false}>{n}</StatusBadge>
+                      {u.userRoles.map((r) => (
+                        <ColoredRoleBadge key={r.roleId} name={r.roleName} color={r.roleColor} />
                       ))}
                     </div>
                   </TableCell>

@@ -30,12 +30,14 @@ export interface UserRole {
   id:          number
   name:        string
   description: string
+  color?:      string
   accessRoles: AssignedAccessRole[]
 }
 
 export interface UserRolePayload {
   name:        string
   description: string
+  color?:      string
 }
 
 // ── API calls ─────────────────────────────────────────────────────────────────
