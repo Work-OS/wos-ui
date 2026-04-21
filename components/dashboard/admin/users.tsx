@@ -252,17 +252,32 @@ function CreateUserModal({ onClose }: CreateModalProps) {
 interface AssignModalProps { user: AdminUser; onClose: () => void }
 function AssignRolesModal({ user, onClose }: AssignModalProps) {
   const assignMutation = useAssignRoles()
-  // Note: ideally backed by /admin/roles list endpoint; using ID input as pragmatic fallback
-  const [idsInput, setIdsInput] = useState("")
+  const activeRolesQ = useActiveUserRoles()
+  const [roleSearch, setRoleSearch] = useState("")
+  const [roleMenuOpen, setRoleMenuOpen] = useState(false)
+  const [selectedRoleIds, setSelectedRoleIds] = useState<number[]>(
+    user.userRoles.map((r) => r.roleId),
+  )
 
   function handleAssign() {
-    const ids = idsInput
-      .split(",")
-      .map((s) => parseInt(s.trim(), 10))
-      .filter((n) => !isNaN(n))
-    if (!ids.length) return
-    assignMutation.mutate({ id: user.id, userRoleIds: ids }, { onSuccess: onClose })
+    if (!selectedRoleIds.length) return
+    assignMutation.mutate({ id: user.id, userRoleIds: selectedRoleIds }, { onSuccess: onClose })
   }
+
+  function toggleRole(roleId: number) {
+    setSelectedRoleIds((prev) => {
+      const selected = prev.includes(roleId)
+      return selected
+        ? prev.filter((id) => id !== roleId)
+        : [...prev, roleId]
+    })
+  }
+
+  const activeRoles = activeRolesQ.data ?? []
+  const filteredRoles = activeRoles.filter((r) =>
+    `${r.name} ${r.description}`.toLowerCase().includes(roleSearch.toLowerCase()),
+  )
+  const selectedRoles = activeRoles.filter((r) => selectedRoleIds.includes(r.id))
 
   return (
     <Backdrop onClose={onClose}>
@@ -284,14 +299,82 @@ function AssignRolesModal({ user, onClose }: AssignModalProps) {
       </div>
 
       <div className="mt-3 space-y-1.5">
-        <Label className="text-[12px]">New role IDs (comma-separated)</Label>
-        <Input
-          className="h-9 text-[13px]"
-          placeholder="e.g. 1, 3"
-          value={idsInput}
-          onChange={(e) => setIdsInput(e.target.value)}
-        />
-        <p className="text-[11px] text-muted-foreground">Enter the role IDs to assign. This replaces existing roles.</p>
+        <Label className="text-[12px]">New roles</Label>
+        {activeRolesQ.isLoading ? (
+          <div className="flex h-24 items-center justify-center rounded-md border border-border bg-muted/30 text-[12px] text-muted-foreground">
+            Loading active roles...
+          </div>
+        ) : activeRolesQ.isError ? (
+          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-400">
+            Failed to load active roles.
+          </div>
+        ) : (
+          <>
+            <DropdownMenu open={roleMenuOpen} onOpenChange={setRoleMenuOpen}>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-[13px] text-left transition-colors hover:bg-muted/40"
+                >
+                  <span className={cn("truncate", selectedRoleIds.length === 0 && "text-muted-foreground")}>
+                    {selectedRoleIds.length === 0
+                      ? "Select user roles"
+                      : `${selectedRoleIds.length} role(s) selected`}
+                  </span>
+                  <span className="text-muted-foreground">v</span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-[--radix-dropdown-menu-trigger-width] p-2">
+                <DropdownMenuLabel className="px-1.5 py-1 text-[11px]">Choose one or more roles</DropdownMenuLabel>
+                <div className="px-1.5 pb-2" onKeyDown={(e) => e.stopPropagation()}>
+                  <Input
+                    className="h-8 text-[12px]"
+                    placeholder="Search roles..."
+                    value={roleSearch}
+                    onChange={(e) => setRoleSearch(e.target.value)}
+                  />
+                </div>
+                <DropdownMenuSeparator />
+                <div className="max-h-48 overflow-auto">
+                  {filteredRoles.length === 0 ? (
+                    <p className="px-2 py-2 text-[12px] text-muted-foreground">No matching roles.</p>
+                  ) : (
+                    filteredRoles.map((r) => (
+                      <DropdownMenuCheckboxItem
+                        key={r.id}
+                        checked={selectedRoleIds.includes(r.id)}
+                        onCheckedChange={() => toggleRole(r.id)}
+                        onSelect={(e) => e.preventDefault()}
+                      >
+                        <span className="min-w-0">
+                          <span className="block truncate text-[12px] font-medium">{r.name}</span>
+                          <span className="block truncate text-[11px] text-muted-foreground">{r.description}</span>
+                        </span>
+                      </DropdownMenuCheckboxItem>
+                    ))
+                  )}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {selectedRoles.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {selectedRoles.map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => toggleRole(r.id)}
+                    className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[11px]"
+                  >
+                    {r.name}
+                    <span className="text-muted-foreground">x</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+        <p className="text-[11px] text-muted-foreground">Selecting roles here replaces the user's current roles.</p>
       </div>
 
       {assignMutation.error && (
@@ -307,7 +390,7 @@ function AssignRolesModal({ user, onClose }: AssignModalProps) {
         </button>
         <Button
           className="h-9 flex-1 text-[13px]"
-          disabled={assignMutation.isPending || !idsInput.trim()}
+          disabled={assignMutation.isPending || activeRolesQ.isLoading || selectedRoleIds.length === 0}
           onClick={handleAssign}
         >
           {assignMutation.isPending ? "Saving…" : "Save roles"}
@@ -435,15 +518,17 @@ export function UsersSection() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button size="icon-xs" variant="outline" onClick={() => setAssignTarget(u)}>
-                            <HugeiconsIcon icon={UserShield01Icon} size={12} strokeWidth={2} />
-                            <span className="sr-only">Assign roles</span>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Assign roles</TooltipContent>
-                      </Tooltip>
+                      {u.role.toUpperCase() !== "ADMIN" && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button size="icon-xs" variant="outline" onClick={() => setAssignTarget(u)}>
+                              <HugeiconsIcon icon={UserShield01Icon} size={12} strokeWidth={2} />
+                              <span className="sr-only">Assign roles</span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Assign roles</TooltipContent>
+                        </Tooltip>
+                      )}
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
