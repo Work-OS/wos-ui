@@ -25,6 +25,7 @@ import {
   useRemoveAccessRole,
   useToggleFunctionality,
 } from "@/hooks/use-admin-roles"
+import type { AssignedAccessRole } from "@/lib/admin-roles-api"
 
 // ── Checkbox ───────────────────────────────────────────────────────────────
 
@@ -130,6 +131,7 @@ export function RolesSection() {
   const [creating,   setCreating]   = useState(false)
   const [editingId,  setEditingId]  = useState<number | null>(null)
   const [deleteId,   setDeleteId]   = useState<number | null>(null)
+  const [confirmDisable, setConfirmDisable] = useState<{ accessRoleId: number; label: string } | null>(null)
 
   const rolesQ       = useUserRoles()
   const accessRolesQ = useAccessRoles()
@@ -141,19 +143,54 @@ export function RolesSection() {
   const removeAccessRole  = useRemoveAccessRole()
   const toggleFunc        = useToggleFunctionality()
 
-  const roles       = rolesQ.data       ?? []
-  const accessRoles = accessRolesQ.data ?? []
-  const active      = roles.find((r) => r.id === activeId) ?? roles[0] ?? null
+  const roles             = rolesQ.data ?? []
+  const accessRoles       = accessRolesQ.data ?? []
+  const active            = roles.find((r) => r.id === activeId) ?? roles[0] ?? null
+
+  function resolveAccessRoleId(ar: AssignedAccessRole): number | null {
+    const raw = ar as unknown as {
+      accessRoleId?: number
+      id?: number
+      accessRole?: { id?: number; accessRoleId?: number }
+    }
+    return raw.accessRoleId ?? raw.id ?? raw.accessRole?.id ?? raw.accessRole?.accessRoleId ?? null
+  }
+
+  function functionalityLabel(f: {
+    name?: string
+    functionalityName?: string
+    functionality?: { name?: string }
+  }) {
+    const raw = f as { functionalityName?: string; functionality?: { name?: string } }
+    return f.name ?? raw.functionalityName ?? raw.functionality?.name ?? "Unnamed functionality"
+  }
+
+  function catalogAccessRoleLabel(ar: {
+    name?: string
+    pageName?: string
+    code?: string
+    roleName?: string
+  }) {
+    return ar.name ?? ar.pageName ?? ar.code ?? ar.roleName ?? "Unnamed access role"
+  }
+
+  function resolveFunctionalityId(f: {
+    id?: number
+    functionalityId?: number
+    functionality?: { id?: number }
+  }): number | null {
+    return f.functionalityId ?? f.id ?? f.functionality?.id ?? null
+  }
 
   // Helpers to read current state from the active role
   function getAssigned(accessRoleId: number) {
-    return active?.accessRoles.find((ar) => ar.accessRoleId === accessRoleId) ?? null
+    return active?.accessRoles.find((ar) => resolveAccessRoleId(ar) === accessRoleId) ?? null
   }
 
   function isFuncEnabled(accessRoleId: number, functionalityId: number): boolean {
     const assigned = getAssigned(accessRoleId)
     if (!assigned) return false
-    return assigned.functionalities.find((f) => f.functionalityId === functionalityId)?.enabled ?? false
+    return assigned.functionalities.find((f) => resolveFunctionalityId(f) === functionalityId)?.enabled ?? false
   }
 
   function handleToggleAccessRole(accessRoleId: number) {
@@ -172,14 +209,15 @@ export function RolesSection() {
     const currentlyEnabled = isFuncEnabled(accessRoleId, functionalityId)
 
     if (!assigned) {
-      // Auto-assign access role first, then rely on the server to handle the functionality
       addAccessRole.mutate({ userRoleId: active.id, accessRoleId }, {
-        onSuccess: () =>
-          toggleFunc.mutate({ userRoleId: active.id, accessRoleId, functionalityId, enabled: true }),
+        onSuccess: () => {
+          toggleFunc.mutate({ userRoleId: active.id, accessRoleId, functionalityId, enabled: true })
+        },
       })
-    } else {
-      toggleFunc.mutate({ userRoleId: active.id, accessRoleId, functionalityId, enabled: !currentlyEnabled })
+      return
     }
+
+    toggleFunc.mutate({ userRoleId: active.id, accessRoleId, functionalityId, enabled: !currentlyEnabled })
   }
 
   const isMutating =
@@ -198,19 +236,14 @@ export function RolesSection() {
     )
   }
 
-  if (rolesQ.isError) {
+  if (rolesQ.isError || accessRolesQ.isError) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-2 text-muted-foreground">
         <HugeiconsIcon icon={Alert01Icon} size={24} strokeWidth={1.5} className="text-red-400" />
-        <p className="text-[13px]">Failed to load roles</p>
+        <p className="text-[13px]">Failed to load roles data</p>
       </div>
     )
   }
-
-  // Collect all unique functionality names across all access roles (for column headers)
-  const allFuncNames = Array.from(
-    new Set(accessRoles.flatMap((ar) => ar.functionalities.map((f) => f.name)))
-  )
 
   return (
     <div className="flex h-full gap-5">
@@ -396,11 +429,7 @@ export function RolesSection() {
             </div>
 
             {/* Matrix */}
-            {accessRolesQ.isError ? (
-              <div className="flex flex-1 items-center justify-center">
-                <p className="text-[13px] text-muted-foreground">Failed to load access roles</p>
-              </div>
-            ) : accessRoles.length === 0 ? (
+            {accessRoles.length === 0 ? (
               <div className="flex flex-1 items-center justify-center">
                 <p className="text-[13px] text-muted-foreground">No access roles defined</p>
               </div>
@@ -415,24 +444,23 @@ export function RolesSection() {
                       <th className="w-20 px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                         Enabled
                       </th>
-                      {allFuncNames.map((name) => (
-                        <th key={name} className="w-24 px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          {name}
-                        </th>
-                      ))}
+                      <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Functionalities
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {accessRoles.map((ar) => {
-                      const assigned   = getAssigned(ar.id)
+                      const resolvedAccessRoleId = ar.id
+                      const assigned = getAssigned(resolvedAccessRoleId)
                       const isAssigned = !!assigned
                       return (
                         <tr
-                          key={ar.id}
+                          key={resolvedAccessRoleId}
                           className="border-b border-border/40 transition-colors hover:bg-muted/30"
                         >
                           <td className="py-3 pl-8 pr-4">
-                            <span className="text-[13px] font-medium">{ar.name}</span>
+                            <span className="text-[13px] font-medium">{catalogAccessRoleLabel(ar)}</span>
                           </td>
                           {/* Row-level toggle */}
                           <td className="w-20 px-4 py-3 text-center">
@@ -440,39 +468,87 @@ export function RolesSection() {
                               <Checkbox
                                 checked={isAssigned}
                                 disabled={isMutating}
-                                onChange={() => handleToggleAccessRole(ar.id)}
+                                onChange={() => {
+                                  if (isAssigned) {
+                                    setConfirmDisable({
+                                      accessRoleId: resolvedAccessRoleId,
+                                      label: catalogAccessRoleLabel(ar),
+                                    })
+                                    return
+                                  }
+
+                                  handleToggleAccessRole(resolvedAccessRoleId)
+                                }}
                                 title={isAssigned ? "Remove access" : "Grant access"}
                               />
                             </div>
                           </td>
-                          {/* Functionality toggles */}
-                          {allFuncNames.map((funcName) => {
-                            const funcDef = ar.functionalities.find((f) => f.name === funcName)
-                            if (!funcDef) {
-                              return (
-                                <td key={funcName} className="w-24 px-4 py-3 text-center">
-                                  <span className="text-muted-foreground/30">—</span>
-                                </td>
-                              )
-                            }
-                            const enabled = isFuncEnabled(ar.id, funcDef.id)
-                            return (
-                              <td key={funcName} className="w-24 px-4 py-3 text-center">
-                                <div className="flex justify-center">
-                                  <Checkbox
-                                    checked={enabled}
-                                    disabled={isMutating}
-                                    onChange={() => handleToggleFunctionality(ar.id, funcDef.id)}
-                                  />
-                                </div>
-                              </td>
-                            )
-                          })}
+                          <td className="px-4 py-3">
+                            {ar.functionalities.length === 0 ? (
+                              <span className="text-[12px] text-muted-foreground">No functionalities</span>
+                            ) : (
+                              <div className="flex flex-wrap gap-2">
+                                {ar.functionalities.map((f) => (
+                                  <label key={f.id} className="inline-flex items-center gap-2 rounded-md border border-border px-2.5 py-1">
+                                    <Checkbox
+                                      checked={isFuncEnabled(resolvedAccessRoleId, f.id)}
+                                      disabled={isMutating}
+                                      onChange={() => {
+                                        const functionalityId = resolveFunctionalityId(f)
+                                        if (functionalityId === null) return
+                                        handleToggleFunctionality(resolvedAccessRoleId, functionalityId)
+                                      }}
+                                    />
+                                    <span className="text-[12px]">{functionalityLabel(f)}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            )}
+                          </td>
                         </tr>
                       )
                     })}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {confirmDisable !== null && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setConfirmDisable(null)} />
+                <div className="relative w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
+                      <HugeiconsIcon icon={Alert01Icon} size={18} strokeWidth={1.8} className="text-red-500" />
+                    </div>
+                    <div>
+                      <h2 className="text-[14px] font-semibold">Disable access role?</h2>
+                      <p className="text-[12px] text-muted-foreground">{confirmDisable.label}</p>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
+                    This will remove this access role from the selected user role.
+                  </p>
+                  <div className="mt-5 flex gap-2">
+                    <button
+                      onClick={() => setConfirmDisable(null)}
+                      className="flex h-9 flex-1 items-center justify-center rounded-lg border border-border text-[13px] font-medium transition-colors hover:bg-muted"
+                    >
+                      Cancel
+                    </button>
+                    <Button
+                      variant="destructive"
+                      className="h-9 flex-1 text-[13px]"
+                      disabled={removeAccessRole.isPending}
+                      onClick={() => {
+                        handleToggleAccessRole(confirmDisable.accessRoleId)
+                        setConfirmDisable(null)
+                      }}
+                    >
+                      {removeAccessRole.isPending ? "Disabling…" : "Disable"}
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
           </>
