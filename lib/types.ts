@@ -4,6 +4,7 @@ export interface NavItem {
   label: string
   section: string
   badge?: number
+  authority: string | null  // authority required to see this item; null = always visible
 }
 
 export interface Employee {

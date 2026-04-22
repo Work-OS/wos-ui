@@ -126,7 +126,7 @@ export function OverviewSection() {
           <CardHeader>
             <CardTitle>Leave balance</CardTitle>
             <CardAction>
-              <Button size="sm" onClick={() => router.push("/dashboard/employee/request")}>
+              <Button size="sm" onClick={() => router.push("/dashboard/request")}>
                 + File leave
               </Button>
             </CardAction>

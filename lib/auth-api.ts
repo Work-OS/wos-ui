@@ -42,15 +42,21 @@ export interface MeResponse {
   role:          string
   userRoleNames: string[]
   active:        boolean
+  profilePhoto:  string | null
   createdAt:     string
   updatedAt:     string
 }
 
 // ── API calls ─────────────────────────────────────────────────────────────────
 
+export interface SwitchRolePayload {
+  userRoleId: number
+}
+
 export const authApi = {
   login:      (payload: LoginPayload)      => api.post<LoginResponse>("/auth/login", payload).then((r) => r.data),
   selectRole: (payload: SelectRolePayload) => api.post<AuthResponse>("/auth/login/select-role", payload).then((r) => r.data),
+  switchRole: (payload: SwitchRolePayload) => api.post<AuthResponse>("/auth/switch-role", payload).then((r) => r.data),
   logout:     ()                           => api.post("/auth/logout"),
   me:         ()                           => api.get<MeResponse>("/auth/me").then((r) => r.data),
   refresh:    ()                           => api.post("/auth/refresh"),

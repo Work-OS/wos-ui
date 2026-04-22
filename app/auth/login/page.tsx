@@ -20,6 +20,7 @@ import {
   User03Icon,
 } from "@hugeicons/core-free-icons"
 import { useLogin, useSelectRole } from "@/hooks/use-auth"
+import { useAuthStore } from "@/store/auth-store"
 import type { AvailableRole } from "@/lib/auth-api"
 
 type PunchType = "in" | "out"
@@ -70,7 +71,14 @@ export default function LoginPage() {
 
   function handleRoleContinue() {
     if (!selectedRoleId) return
-    selectRoleMutation.mutate({ email, password, userRoleId: selectedRoleId })
+    selectRoleMutation.mutate(
+      { email, password, userRoleId: selectedRoleId },
+      {
+        onSuccess: () => {
+          useAuthStore.getState().setAvailableRoles(availableRoles, selectedRoleId!)
+        },
+      },
+    )
   }
 
   return (

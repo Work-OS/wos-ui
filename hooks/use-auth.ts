@@ -1,8 +1,9 @@
 "use client"
 
+import { useEffect } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
-import { authApi, AuthResponse, LoginPayload, SelectRolePayload } from "@/lib/auth-api"
+import { authApi, AuthResponse, LoginPayload, SelectRolePayload, SwitchRolePayload } from "@/lib/auth-api"
 import { useAuthStore } from "@/store/auth-store"
 
 export const AUTH_KEYS = {
@@ -12,13 +13,19 @@ export const AUTH_KEYS = {
 // ── Current user ──────────────────────────────────────────────────────────────
 
 export function useMe() {
-  const apiRole = useAuthStore((s) => s.apiRole)
-  return useQuery({
+  const { apiRole, setUser } = useAuthStore()
+  const q = useQuery({
     queryKey: AUTH_KEYS.me,
     queryFn:  authApi.me,
-    enabled:  !!apiRole,   // cookies are sent automatically; use stored role as proxy for "logged in"
+    enabled:  !!apiRole,
     retry:    false,
   })
+
+  useEffect(() => {
+    if (q.data) setUser(q.data)
+  }, [q.data])  // eslint-disable-line react-hooks/exhaustive-deps
+
+  return q
 }
 
 // ── Login ─────────────────────────────────────────────────────────────────────
@@ -57,6 +64,22 @@ export function useSelectRole() {
   })
 }
 
+// ── Switch role (mid-session) ─────────────────────────────────────────────────
+
+export function useSwitchRole() {
+  const qc = useQueryClient()
+  const { setFromAuth, setActiveUserRoleId } = useAuthStore()
+
+  return useMutation({
+    mutationFn: (payload: SwitchRolePayload) => authApi.switchRole(payload),
+    onSuccess: (res, { userRoleId }) => {
+      setFromAuth(res)
+      setActiveUserRoleId(userRoleId)
+      qc.invalidateQueries({ queryKey: AUTH_KEYS.me })
+    },
+  })
+}
+
 // ── Logout ────────────────────────────────────────────────────────────────────
 
 export function useLogout() {
@@ -76,9 +99,6 @@ export function useLogout() {
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 
-function redirectByRole(role: string, router: ReturnType<typeof useRouter>) {
-  const lower = role.toLowerCase()
-  if (lower === "admin")    { router.replace("/dashboard/admin");    return }
-  if (lower === "hr")       { router.replace("/dashboard/hr");       return }
-  router.replace("/dashboard/employee")
+function redirectByRole(_role: string, router: ReturnType<typeof useRouter>) {
+  router.replace("/dashboard")
 }

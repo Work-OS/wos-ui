@@ -10,6 +10,8 @@ import {
   Loading03Icon,
   Alert01Icon,
   Edit01Icon,
+  Clock01Icon,
+  Calendar01Icon,
 } from "@hugeicons/core-free-icons"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,8 +26,9 @@ import {
   useAddAccessRole,
   useRemoveAccessRole,
   useToggleFunctionality,
+  useSetTemporaryAccess,
 } from "@/hooks/use-admin-roles"
-import type { AssignedAccessRole } from "@/lib/admin-roles-api"
+import type { AssignedAccessRole, TemporaryAccessPayload } from "@/lib/admin-roles-api"
 
 // ── Checkbox ───────────────────────────────────────────────────────────────
 
@@ -154,6 +157,156 @@ function RoleFormInline({
   )
 }
 
+// ── Temporary Access Modal ────────────────────────────────────────────────
+
+interface TempTarget {
+  accessRoleId: number
+  label:        string
+  startDate:    string
+  endDate:      string
+  startTime:    string
+  endTime:      string
+}
+
+function TemporaryAccessModal({
+  target,
+  onSave,
+  onClear,
+  onClose,
+  isPending,
+}: {
+  target:    TempTarget
+  onSave:    (payload: TemporaryAccessPayload) => void
+  onClear:   () => void
+  onClose:   () => void
+  isPending: boolean
+}) {
+  const [startDate, setStartDate] = useState(target.startDate)
+  const [endDate,   setEndDate]   = useState(target.endDate)
+  const [startTime, setStartTime] = useState(target.startTime)
+  const [endTime,   setEndTime]   = useState(target.endTime)
+
+  const hasTime  = startTime !== "" || endTime !== ""
+  const canSave  = startDate !== "" && endDate !== ""
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-sm animate-in fade-in zoom-in-95 duration-200 rounded-2xl border border-border bg-card p-6 shadow-xl">
+
+        {/* Header */}
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="flex size-8 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/20">
+            <HugeiconsIcon icon={Clock01Icon} size={16} strokeWidth={1.8} className="text-amber-600 dark:text-amber-400" />
+          </div>
+          <div>
+            <h2 className="text-[14px] font-semibold text-foreground">Temporary access</h2>
+            <p className="text-[11px] text-muted-foreground">{target.label}</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          {/* Date range */}
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Date range
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-[11px]">From</Label>
+                <Input
+                  type="date"
+                  className="h-8 text-[12px]"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[11px]">Until</Label>
+                <Input
+                  type="date"
+                  className="h-8 text-[12px]"
+                  value={endDate}
+                  min={startDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Time range */}
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Time window <span className="normal-case font-normal text-muted-foreground/70">(optional)</span>
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-[11px]">Start time</Label>
+                <Input
+                  type="time"
+                  className="h-8 text-[12px]"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[11px]">End time</Label>
+                <Input
+                  type="time"
+                  className="h-8 text-[12px]"
+                  value={endTime}
+                  min={startTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                />
+              </div>
+            </div>
+            {hasTime && (!startTime || !endTime) && (
+              <p className="mt-1.5 text-[11px] text-amber-600">Both start and end time are required.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-5 flex gap-2">
+          <button
+            onClick={onClear}
+            disabled={isPending}
+            className="flex h-9 items-center justify-center rounded-lg border border-border px-3 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted disabled:opacity-50"
+          >
+            Clear
+          </button>
+          <button
+            onClick={onClose}
+            className="flex h-9 flex-1 items-center justify-center rounded-lg border border-border text-[13px] font-medium transition-colors hover:bg-muted"
+          >
+            Cancel
+          </button>
+          <Button
+            className="h-9 flex-1 text-[13px]"
+            disabled={!canSave || (hasTime && (!startTime || !endTime)) || isPending}
+            onClick={() =>
+              onSave({
+                startDate,
+                endDate,
+                startTime:  startTime || null,
+                endTime:    endTime   || null,
+              })
+            }
+          >
+            {isPending ? "Saving…" : "Save"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function fmtDateBadge(startDate?: string | null, endDate?: string | null) {
+  if (!startDate || !endDate) return null
+  const fmt = (d: string) =>
+    new Date(d + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })
+  return `${fmt(startDate)} – ${fmt(endDate)}`
+}
+
 // ── Main Component ─────────────────────────────────────────────────────────
 
 export function RolesSection() {
@@ -161,7 +314,8 @@ export function RolesSection() {
   const [creating,   setCreating]   = useState(false)
   const [editingId,  setEditingId]  = useState<number | null>(null)
   const [deleteId,   setDeleteId]   = useState<number | null>(null)
-  const [confirmDisable, setConfirmDisable] = useState<{ accessRoleId: number; label: string } | null>(null)
+  const [confirmDisable,  setConfirmDisable]  = useState<{ accessRoleId: number; label: string } | null>(null)
+  const [tempAccessTarget, setTempAccessTarget] = useState<TempTarget | null>(null)
 
   const rolesQ       = useUserRoles()
   const accessRolesQ = useAccessRoles()
@@ -172,6 +326,7 @@ export function RolesSection() {
   const addAccessRole     = useAddAccessRole()
   const removeAccessRole  = useRemoveAccessRole()
   const toggleFunc        = useToggleFunctionality()
+  const setTempAccess     = useSetTemporaryAccess()
 
   const roles             = rolesQ.data ?? []
   const accessRoles       = accessRolesQ.data ?? []
@@ -488,6 +643,9 @@ export function RolesSection() {
                       <th className="w-20 px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                         Enabled
                       </th>
+                      <th className="w-40 px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Temporary
+                      </th>
                       <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                         Functionalities
                       </th>
@@ -527,6 +685,58 @@ export function RolesSection() {
                               />
                             </div>
                           </td>
+                          {/* Temporary access cell */}
+                          <td className="w-40 px-4 py-3 text-center">
+                            {(() => {
+                              const badge = fmtDateBadge(assigned?.startDate, assigned?.endDate)
+                              return (
+                                <div className="flex justify-center">
+                                  {!isAssigned ? (
+                                    <HugeiconsIcon
+                                      icon={Calendar01Icon}
+                                      size={14}
+                                      strokeWidth={1.8}
+                                      className="text-muted-foreground/30"
+                                    />
+                                  ) : badge ? (
+                                    <button
+                                      onClick={() =>
+                                        setTempAccessTarget({
+                                          accessRoleId: resolvedAccessRoleId,
+                                          label:        catalogAccessRoleLabel(ar),
+                                          startDate:    assigned?.startDate ?? "",
+                                          endDate:      assigned?.endDate   ?? "",
+                                          startTime:    assigned?.startTime ?? "",
+                                          endTime:      assigned?.endTime   ?? "",
+                                        })
+                                      }
+                                      className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-400"
+                                    >
+                                      <HugeiconsIcon icon={Clock01Icon} size={10} strokeWidth={2} />
+                                      {badge}
+                                    </button>
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        setTempAccessTarget({
+                                          accessRoleId: resolvedAccessRoleId,
+                                          label:        catalogAccessRoleLabel(ar),
+                                          startDate:    "",
+                                          endDate:      "",
+                                          startTime:    "",
+                                          endTime:      "",
+                                        })
+                                      }
+                                      className="rounded p-1 text-muted-foreground/50 transition-colors hover:bg-muted hover:text-muted-foreground"
+                                      title="Set temporary access"
+                                    >
+                                      <HugeiconsIcon icon={Calendar01Icon} size={14} strokeWidth={1.8} />
+                                    </button>
+                                  )}
+                                </div>
+                              )
+                            })()}
+                          </td>
                           <td className="px-4 py-3">
                             {ar.functionalities.length === 0 ? (
                               <span className="text-[12px] text-muted-foreground">No functionalities</span>
@@ -555,6 +765,34 @@ export function RolesSection() {
                   </tbody>
                 </table>
               </div>
+            )}
+
+            {tempAccessTarget !== null && active && (
+              <TemporaryAccessModal
+                target={tempAccessTarget}
+                isPending={setTempAccess.isPending}
+                onClose={() => setTempAccessTarget(null)}
+                onClear={() =>
+                  setTempAccess.mutate(
+                    {
+                      userRoleId:   active.id,
+                      accessRoleId: tempAccessTarget.accessRoleId,
+                      payload:      { startDate: null, endDate: null, startTime: null, endTime: null },
+                    },
+                    { onSuccess: () => setTempAccessTarget(null) },
+                  )
+                }
+                onSave={(payload) =>
+                  setTempAccess.mutate(
+                    {
+                      userRoleId:   active.id,
+                      accessRoleId: tempAccessTarget.accessRoleId,
+                      payload,
+                    },
+                    { onSuccess: () => setTempAccessTarget(null) },
+                  )
+                }
+              />
             )}
 
             {confirmDisable !== null && (

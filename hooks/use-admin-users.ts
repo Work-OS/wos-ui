@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { adminUsersApi, type CreateUserPayload, type ListUsersParams } from "@/lib/admin-api"
+import { adminUsersApi, type CreateUserPayload, type ListUsersParams, type TempRoleAccessPayload } from "@/lib/admin-api"
 
 const USERS_KEY = (params: ListUsersParams) => ["admin", "users", params] as const
 const ACTIVE_USER_ROLES_KEY = ["admin", "user-roles", "active"] as const
@@ -41,6 +41,22 @@ export function useAssignRoles() {
   return useMutation({
     mutationFn: ({ id, userRoleIds }: { id: number; userRoleIds: number[] }) =>
       adminUsersApi.assignRoles(id, userRoleIds),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "users"] }),
+  })
+}
+
+export function useSetTempRoleAccess() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      userId,
+      roleId,
+      payload,
+    }: {
+      userId:  number
+      roleId:  number
+      payload: TempRoleAccessPayload
+    }) => adminUsersApi.setTempRoleAccess(userId, roleId, payload),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "users"] }),
   })
 }

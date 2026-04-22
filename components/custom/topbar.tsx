@@ -12,45 +12,55 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { roleUsers, roleLabels, sectionTitles } from "@/lib/nav-config"
-import { StatusBadge } from "./status-badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { sectionTitles } from "@/lib/nav-config"
 import { cn } from "@/lib/utils"
-import type { Role } from "@/lib/types"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   ArrowLeft01Icon,
   Sun01Icon,
   Moon02Icon,
-  UserMultiple02Icon,
   ArrowDown01Icon,
   Setting06Icon,
   Logout01Icon,
+  UserShield01Icon,
+  CheckmarkCircle01Icon,
+  Loading03Icon,
 } from "@hugeicons/core-free-icons"
+import { useAuthStore } from "@/store/auth-store"
+import { useLogout, useSwitchRole } from "@/hooks/use-auth"
 
-interface TopbarProps {
-  clockedIn?: boolean
-}
-
-export function Topbar({ clockedIn }: TopbarProps) {
-  const pathname = usePathname()
+export function Topbar() {
+  const pathname       = usePathname()
   const { resolvedTheme, setTheme } = useTheme()
-  const router = useRouter()
-  const [mounted, setMounted] = useState(false)
-  const [switchRoleOpen, setSwitchRoleOpen] = useState(false)
+  const router         = useRouter()
+  const [mounted, setMounted]           = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
   useEffect(() => setMounted(true), [])
 
-  const role = (pathname.split("/")[2] as Role) ?? "employee"
-  const section = pathname.split("/")[3] ?? "overview"
-  const user = roleUsers[role]
+  const logoutMutation  = useLogout()
+  const switchRoleMutation = useSwitchRole()
+  const { user, userRoleNames, availableRoles, activeUserRoleId } = useAuthStore()
 
-  const title =
-    sectionTitles[section] ??
-    section.charAt(0).toUpperCase() + section.slice(1)
+  const segments   = pathname.split("/")
+  const section    = segments[2]     // top-level: "dtr", "settings", undefined
+  const subSection = segments[3]     // settings sub-page
+
+  const isSettings = section === "settings"
+
+  // For settings pages, title comes from the sub-section; otherwise from the top-level section
+  const titleKey = isSettings ? (subSection ?? "general") : (section ?? "overview")
+  const title    = sectionTitles[titleKey] ?? titleKey.charAt(0).toUpperCase() + titleKey.slice(1)
+
+  const initials    = user
+    ? `${user.firstName[0] ?? ""}${user.lastName[0] ?? ""}`.toUpperCase()
+    : "—"
+  const displayName = user ? `${user.firstName} ${user.lastName}` : "—"
+  const roleLabel   = userRoleNames[0] ?? ""
 
   return (
     <div className="flex h-15 shrink-0 items-center gap-3 rounded-2xl border border-border bg-card px-5 shadow-sm">
-      {role === "settings" && (
+      {isSettings && (
         <button
           onClick={() => router.back()}
           className="flex items-center gap-1.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
@@ -62,10 +72,6 @@ export function Topbar({ clockedIn }: TopbarProps) {
       <span className="flex-1 text-[15px] font-semibold text-foreground">
         {title}
       </span>
-
-      {clockedIn && (
-        <StatusBadge variant="green">Online</StatusBadge>
-      )}
 
       {/* Dark mode toggle */}
       <button
@@ -82,55 +88,52 @@ export function Topbar({ clockedIn }: TopbarProps) {
       </button>
 
       {/* User menu */}
-      <DropdownMenu>
+      <DropdownMenu open={userMenuOpen} onOpenChange={setUserMenuOpen}>
         <DropdownMenuTrigger asChild>
           <button className="outline-none" aria-label="User menu">
             <Avatar className="size-8 cursor-pointer ring-2 ring-transparent transition-all hover:ring-primary/30">
+              <AvatarImage src={user?.profilePhoto ?? undefined} alt={displayName} />
               <AvatarFallback className="bg-primary/10 text-[11px] font-semibold text-primary">
-                {user.initials}
+                {initials}
               </AvatarFallback>
             </Avatar>
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-52" onCloseAutoFocus={() => setSwitchRoleOpen(false)}>
+        <DropdownMenuContent align="end" className="w-52">
           <DropdownMenuLabel className="font-normal">
-            <p className="text-[13px] font-semibold">{user.name}</p>
-            <p className="text-xs text-muted-foreground">{user.title}</p>
+            <p className="text-[13px] font-semibold">{displayName}</p>
+            <p className="text-xs text-muted-foreground">{roleLabel}</p>
           </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-
-          {/* Switch role accordion */}
-          <DropdownMenuItem
-            onSelect={(e) => { e.preventDefault(); setSwitchRoleOpen((v) => !v) }}
-            className="justify-between"
-          >
-            <span className="flex items-center gap-2">
-              <HugeiconsIcon icon={UserMultiple02Icon} size={13} strokeWidth={1.8} />
-              Switch role
-            </span>
-            <HugeiconsIcon
-              icon={ArrowDown01Icon}
-              size={12}
-              strokeWidth={2}
-              className={cn("transition-transform duration-200", switchRoleOpen && "rotate-180")}
-            />
-          </DropdownMenuItem>
-
-          {switchRoleOpen && (
-            <div className="mb-1 ml-2 space-y-0.5 border-l border-border pl-3">
-              {(["employee", "hr", "admin", "settings"] as Role[]).map((r) => {
-                if (r === role) return null
+          {availableRoles.length > 1 && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                Switch Role
+              </DropdownMenuLabel>
+              {availableRoles.map((r) => {
+                const isActive  = r.id === activeUserRoleId
+                const isPending = switchRoleMutation.isPending && switchRoleMutation.variables?.userRoleId === r.id
                 return (
-                  <DropdownMenuItem key={r} asChild>
-                    <Link href={`/dashboard/${r}`} className="text-[12px]">
-                      {roleLabels[r]}
-                    </Link>
+                  <DropdownMenuItem
+                    key={r.id}
+                    disabled={isActive || switchRoleMutation.isPending}
+                    onSelect={() => switchRoleMutation.mutate({ userRoleId: r.id })}
+                    className="cursor-pointer gap-2"
+                  >
+                    {isPending ? (
+                      <HugeiconsIcon icon={Loading03Icon} size={13} strokeWidth={2} className="animate-spin text-muted-foreground" />
+                    ) : isActive ? (
+                      <HugeiconsIcon icon={CheckmarkCircle01Icon} size={13} strokeWidth={2} className="text-primary" />
+                    ) : (
+                      <HugeiconsIcon icon={UserShield01Icon} size={13} strokeWidth={1.8} className="text-muted-foreground/50" />
+                    )}
+                    <span className={cn(isActive && "font-medium text-foreground")}>{r.name}</span>
+                    {isActive && <span className="ml-auto text-[10px] text-muted-foreground">Active</span>}
                   </DropdownMenuItem>
                 )
               })}
-            </div>
+            </>
           )}
-
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
             <Link href="/dashboard/settings">
@@ -139,11 +142,12 @@ export function Topbar({ clockedIn }: TopbarProps) {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem asChild className="text-destructive focus:text-destructive">
-            <Link href="/">
-              <HugeiconsIcon icon={Logout01Icon} size={13} strokeWidth={1.8} className="mr-2" />
-              Log out
-            </Link>
+          <DropdownMenuItem
+            onSelect={() => logoutMutation.mutate()}
+            className={cn("text-destructive focus:text-destructive cursor-pointer")}
+          >
+            <HugeiconsIcon icon={Logout01Icon} size={13} strokeWidth={1.8} className="mr-2" />
+            Log out
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

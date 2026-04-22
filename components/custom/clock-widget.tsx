@@ -119,7 +119,7 @@ const BREAK_ICON: Record<string, (color: string) => React.ReactNode> = {
 // ── ClockWidget ───────────────────────────────────────────────────────────────
 
 export function ClockWidget() {
-  const [now, setNow] = useState(new Date())
+  const [now, setNow] = useState<Date | null>(null)
   const [clocked, setClocked] = useState(false)
   const [clockInTime, setClockInTime] = useState<Date | null>(null)
   const [cameraPunchType, setCameraPunchType] = useState<"in" | "out" | null>(null)
@@ -128,6 +128,7 @@ export function ClockWidget() {
   const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    setNow(new Date())
     const id = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(id)
   }, [])
@@ -199,12 +200,12 @@ export function ClockWidget() {
     return `${m}:${String(s).padStart(2, "0")}`
   }
 
-  const timeStr = now.toLocaleTimeString("en-US", {
-    hour: "numeric", minute: "2-digit", second: "2-digit", hour12: true,
-  })
-  const dateStr = now.toLocaleDateString("en-US", {
-    weekday: "long", month: "long", day: "numeric",
-  })
+  const timeStr = now
+    ? now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", second: "2-digit", hour12: true })
+    : "--:-- --"
+  const dateStr = now
+    ? now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })
+    : ""
 
   return (
     <div

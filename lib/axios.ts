@@ -1,7 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios"
 
 // Relative base so requests go to the Next.js origin (/api/*).
-// next.config.mjs rewrites /api/* → the real backend, keeping cookies first-party.
+// app/api/[...path]/route.ts proxies /api/* → the backend, keeping cookies first-party.
 export const api = axios.create({
   baseURL:         "/api",
   headers:         { "Content-Type": "application/json" },

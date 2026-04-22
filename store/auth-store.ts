@@ -1,6 +1,6 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import type { AuthResponse, MeResponse } from "@/lib/auth-api"
+import type { AuthResponse, AvailableRole, MeResponse } from "@/lib/auth-api"
 import type { Role } from "@/lib/types"
 
 // Maps API role string → sidebar/dashboard role key
@@ -13,26 +13,32 @@ function toDashboardRole(apiRole: string): Role {
 
 interface AuthState {
   // Populated after login
-  user:           MeResponse | null
-  apiRole:        string | null          // "EMPLOYEE" | "ADMIN" | "HR" (from API)
-  dashboardRole:  Role                   // mapped to sidebar key
-  userRoleNames:  string[]               // e.g. ["HR Manager"]
-  authorities:    string[]               // e.g. ["DTR:VIEW"]
+  user:             MeResponse | null
+  apiRole:          string | null          // "EMPLOYEE" | "ADMIN" | "HR" (from API)
+  dashboardRole:    Role                   // mapped to sidebar key
+  userRoleNames:    string[]               // e.g. ["HR Manager"]
+  authorities:      string[]               // e.g. ["DTR:VIEW"]
+  availableRoles:   AvailableRole[]        // all roles the user can switch to
+  activeUserRoleId: number | null          // currently active role id
 
   // Actions
-  setFromAuth: (res: AuthResponse) => void
-  setUser:     (user: MeResponse)  => void
-  clear:       ()                  => void
+  setFromAuth:         (res: AuthResponse) => void
+  setUser:             (user: MeResponse)  => void
+  setAvailableRoles:   (roles: AvailableRole[], activeId: number) => void
+  setActiveUserRoleId: (id: number)        => void
+  clear:               ()                  => void
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      user:          null,
-      apiRole:       null,
-      dashboardRole: "employee",
-      userRoleNames: [],
-      authorities:   [],
+      user:             null,
+      apiRole:          null,
+      dashboardRole:    "employee",
+      userRoleNames:    [],
+      authorities:      [],
+      availableRoles:   [],
+      activeUserRoleId: null,
 
       setFromAuth: (res) =>
         set({
@@ -44,24 +50,33 @@ export const useAuthStore = create<AuthState>()(
 
       setUser: (user) => set({ user }),
 
+      setAvailableRoles: (roles, activeId) =>
+        set({ availableRoles: roles, activeUserRoleId: activeId }),
+
+      setActiveUserRoleId: (id) => set({ activeUserRoleId: id }),
+
       clear: () =>
         set({
-          user:          null,
-          apiRole:       null,
-          dashboardRole: "employee",
-          userRoleNames: [],
-          authorities:   [],
+          user:             null,
+          apiRole:          null,
+          dashboardRole:    "employee",
+          userRoleNames:    [],
+          authorities:      [],
+          availableRoles:   [],
+          activeUserRoleId: null,
         }),
     }),
     {
       name:    "wos_auth",
       // Only persist role metadata — tokens live in HttpOnly cookies managed by the server
       partialize: (s) => ({
-        apiRole:       s.apiRole,
-        dashboardRole: s.dashboardRole,
-        userRoleNames: s.userRoleNames,
-        authorities:   s.authorities,
-        user:          s.user,
+        apiRole:          s.apiRole,
+        dashboardRole:    s.dashboardRole,
+        userRoleNames:    s.userRoleNames,
+        authorities:      s.authorities,
+        user:             s.user,
+        availableRoles:   s.availableRoles,
+        activeUserRoleId: s.activeUserRoleId,
       }),
     },
   ),

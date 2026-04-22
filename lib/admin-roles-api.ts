@@ -24,6 +24,17 @@ export interface AssignedAccessRole {
   accessRoleId:    number
   name:            string
   functionalities: AssignedFunctionality[]
+  startDate?:      string | null   // ISO date "YYYY-MM-DD"
+  endDate?:        string | null
+  startTime?:      string | null   // "HH:MM" 24h
+  endTime?:        string | null
+}
+
+export interface TemporaryAccessPayload {
+  startDate:  string | null
+  endDate:    string | null
+  startTime:  string | null
+  endTime:    string | null
 }
 
 export interface UserRole {
@@ -62,6 +73,19 @@ export const adminRolesApi = {
 
   removeAccessRole: (userRoleId: number, accessRoleId: number) =>
     api.delete(`/admin/user-roles/${userRoleId}/access-roles/${accessRoleId}`),
+
+  // Temporary access
+  setTemporaryAccess: (
+    userRoleId:   number,
+    accessRoleId: number,
+    payload:      TemporaryAccessPayload,
+  ) =>
+    api
+      .put(
+        `/admin/user-roles/${userRoleId}/access-roles/${accessRoleId}/temporary-access`,
+        payload,
+      )
+      .then((r) => r.data),
 
   // Functionality toggles
   toggleFunctionality: (

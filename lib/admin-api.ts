@@ -2,6 +2,32 @@ import { api } from "./axios"
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+export interface UserRoleAssignment {
+  roleId:    number
+  roleName:  string
+  roleColor: string | null
+  temporary?: boolean
+  startAt?:   string | null   // ISO datetime "YYYY-MM-DDTHH:MM:SS"
+  endAt?:     string | null
+}
+
+export interface TempRoleAccessPayload {
+  roleId:     number
+  startDate:  string | null   // "YYYY-MM-DD"
+  endDate:    string | null
+  startTime:  string | null   // "HH:MM"
+  endTime:    string | null
+}
+
+export interface TempRoleAccessResponse {
+  roleId:    number
+  roleName:  string
+  roleColor: string | null
+  temporary: boolean
+  startAt:   string | null
+  endAt:     string | null
+}
+
 export interface AdminUser {
   id:            number
   employeeId:    string
@@ -9,11 +35,7 @@ export interface AdminUser {
   lastName:      string
   email:         string
   role:          string
-  userRoles:     {
-    roleId:    number
-    roleName:  string
-    roleColor: string | null
-  }[]
+  userRoles:     UserRoleAssignment[]
   active:        boolean
   createdAt:     string
   updatedAt:     string
@@ -36,7 +58,6 @@ export interface ListUsersParams {
 export interface CreateUserPayload {
   firstName:   string
   lastName:    string
-  email:       string
   password:    string
   userRoleIds: number[]
 }
@@ -97,5 +118,15 @@ export const adminUsersApi = {
     api.delete(`/admin/users/${id}`),
 
   assignRoles: (id: number, userRoleIds: number[]) =>
-    api.put<AdminUser>(`/admin/users/${id}/employee-roles`, { userRoleIds }).then((r) => r.data),
+    api
+      .put<AdminUser>(`/admin/users/${id}/employee-roles`, {
+        userRoleIds,
+        employeeRoleIds: userRoleIds,
+      })
+      .then((r) => r.data),
+
+  setTempRoleAccess: (userId: number, roleId: number, payload: TempRoleAccessPayload) =>
+    api
+      .put<TempRoleAccessResponse>(`/admin/users/${userId}/employee-roles/${roleId}/temporary-access`, payload)
+      .then((r) => r.data),
 }

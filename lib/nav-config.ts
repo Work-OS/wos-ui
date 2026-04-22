@@ -1,84 +1,49 @@
-import type { NavItem, Role } from "./types"
+import type { NavItem } from "./types"
 
-export const navConfig: Record<Role, NavItem[]> = {
-  employee: [
-    { label: "My Dashboard", section: "overview" },
-    { label: "Daily Time Record", section: "dtr", badge: 1 },
-    { label: "My Payroll", section: "payroll" },
-    { label: "My Request", section: "request", badge: 2 },
-  ],
-  hr: [
-    { label: "Overview", section: "overview" },
-    { label: "Employees", section: "employees" },
-    { label: "Attendance", section: "attendance" },
-    { label: "Payroll", section: "payroll" },
-    { label: "Leave Management", section: "leave", badge: 4 },
-    { label: "Recruitment", section: "recruitment" },
-  ],
-  admin: [
-    { label: "Overview", section: "overview" },
-    { label: "System Users", section: "users" },
-    { label: "Roles & Permissions", section: "roles" },
-    { label: "Audit Log", section: "audit" },
-    { label: "Configuration", section: "config" },
-  ],
-  settings: [
-    { label: "Profile", section: "profile" },
-    { label: "Security", section: "security" },
-    { label: "Notifications", section: "notifications" },
-    { label: "Appearance", section: "appearance" },
-  ],
-}
+// All dashboard nav items — sidebar filters by user's authorities
+export const navConfig: NavItem[] = [
+  { label: "Overview",           section: "overview",    authority: null },
+  { label: "Daily Time Record",  section: "dtr",         authority: "DTR:VIEW_ATTENDANCE",                    badge: 1 },
+  { label: "My Payroll",         section: "payroll",     authority: "PAYROLL:VIEW_PAYSLIP" },
+  { label: "My Request",         section: "request",     authority: "LEAVE:VIEW_OWN_LEAVE",                   badge: 2 },
+  { label: "Employees",          section: "employees",   authority: "EMPLOYEE_MANAGEMENT:VIEW_EMPLOYEES" },
+  { label: "Attendance",         section: "attendance",  authority: "ATTENDANCE_MANAGEMENT:VIEW_ALL_ATTENDANCE" },
+  { label: "Leave Management",   section: "leave",       authority: "LEAVE_MANAGEMENT:VIEW_ALL_LEAVE_REQUESTS", badge: 4 },
+  { label: "Recruitment",        section: "recruitment", authority: "RECRUITMENT:VIEW_JOB_POSTINGS" },
+  { label: "Roles & Permissions",section: "roles",       authority: "ROLES_AND_PERMISSIONS:VIEW_ROLES" },
+  { label: "Audit Log",          section: "audit",       authority: "AUDIT_LOG:VIEW_AUDIT_LOGS" },
+  { label: "Configuration",      section: "config",      authority: "CONFIGURATION:VIEW_CONFIG" },
+]
 
-export const roleLabels: Record<Role, string> = {
-  employee: "Employee",
-  hr: "HR Manager",
-  admin: "Admin",
-  settings: "Settings",
-}
+// Settings nav (always shown on /dashboard/settings/*)
+export const settingsNavConfig: NavItem[] = [
+  { label: "Profile",       section: "general",       authority: null },
+  { label: "Security",      section: "security",      authority: null },
+  { label: "Notifications", section: "notifications", authority: null },
+  { label: "Appearance",    section: "appearance",    authority: null },
+]
 
-export const roleUsers: Record<
-  Role,
-  { name: string; initials: string; title: string }
-> = {
-  employee: {
-    name: "Alex Johnson",
-    initials: "AJ",
-    title: "UX Designer L2",
-  },
-  hr: {
-    name: "Maria Santos",
-    initials: "MS",
-    title: "HR Manager",
-  },
-  admin: {
-    name: "Robert Chen",
-    initials: "RC",
-    title: "System Administrator",
-  },
-  settings: {
-    name: "Alex Johnson",
-    initials: "AJ",
-    title: "UX Designer L2",
-  },
+export const roleLabels: Record<string, string> = {
+  EMPLOYEE: "Employee",
+  HR:       "HR Manager",
+  ADMIN:    "Admin",
 }
 
 export const sectionTitles: Record<string, string> = {
-  overview: "Overview",
-  dtr: "Daily Time Record",
-  payroll: "Payroll",
-  request: "My Request",
-  leave: "Leave & Requests",
-  profile: "My Profile",
-  employees: "Employees",
-  attendance: "Attendance",
-  "leave-mgmt": "Leave Management",
-  recruitment: "Recruitment",
-  users: "System Users",
-  roles: "Roles & Permissions",
-  audit: "Audit Log",
-  config: "Configuration",
-  security: "Security",
+  overview:      "Overview",
+  dtr:           "Daily Time Record",
+  payroll:       "Payroll",
+  request:       "My Request",
+  leave:         "Leave Management",
+  employees:     "Employees",
+  attendance:    "Attendance",
+  recruitment:   "Recruitment",
+  roles:         "Roles & Permissions",
+  audit:         "Audit Log",
+  config:        "Configuration",
+  settings:      "Settings",
+  general:       "My Profile",
+  security:      "Security",
   notifications: "Notifications",
-  appearance: "Appearance",
+  appearance:    "Appearance",
 }

@@ -13,7 +13,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
 
   const handleRegister = () => {
-    router.push("/dashboard/employee")
+    router.push("/dashboard")
   }
 
   return (

@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { adminRolesApi, type UserRolePayload } from "@/lib/admin-roles-api"
+import { adminRolesApi, type UserRolePayload, type TemporaryAccessPayload } from "@/lib/admin-roles-api"
 
 const USER_ROLES_KEY  = ["admin", "user-roles"]
 const ACCESS_ROLES_KEY = ["admin", "access-roles"]
@@ -59,6 +59,22 @@ export function useRemoveAccessRole() {
   return useMutation({
     mutationFn: ({ userRoleId, accessRoleId }: { userRoleId: number; accessRoleId: number }) =>
       adminRolesApi.removeAccessRole(userRoleId, accessRoleId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: USER_ROLES_KEY }),
+  })
+}
+
+export function useSetTemporaryAccess() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      userRoleId,
+      accessRoleId,
+      payload,
+    }: {
+      userRoleId:   number
+      accessRoleId: number
+      payload:      TemporaryAccessPayload
+    }) => adminRolesApi.setTemporaryAccess(userRoleId, accessRoleId, payload),
     onSuccess: () => qc.invalidateQueries({ queryKey: USER_ROLES_KEY }),
   })
 }

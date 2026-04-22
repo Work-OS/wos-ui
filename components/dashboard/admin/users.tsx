@@ -9,6 +9,8 @@ import {
   UserShield01Icon,
   Alert01Icon,
   Loading03Icon,
+  Clock01Icon,
+  Calendar01Icon,
 } from "@hugeicons/core-free-icons"
 import { StatusBadge } from "@/components/custom/status-badge"
 import { Button } from "@/components/ui/button"
@@ -23,15 +25,16 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import {
-  useAdminUsers, useActiveUserRoles, useCreateUser, useDeleteUser, useAssignRoles,
+  useAdminUsers, useActiveUserRoles, useCreateUser, useDeleteUser, useAssignRoles, useSetTempRoleAccess,
 } from "@/hooks/use-admin-users"
-import type { AdminUser, CreateUserPayload } from "@/lib/admin-api"
+import type { AdminUser, CreateUserPayload, TempRoleAccessPayload } from "@/lib/admin-api"
 
 const ROLE_FILTERS = [
   { label: "All",      value: undefined   },
@@ -89,7 +92,7 @@ function CreateUserModal({ onClose }: CreateModalProps) {
   const [roleSearch, setRoleSearch] = useState("")
   const [roleMenuOpen, setRoleMenuOpen] = useState(false)
   const [form, setForm] = useState<CreateUserPayload>({
-    firstName: "", lastName: "", email: "", password: "",
+    firstName: "", lastName: "", password: "",
     userRoleIds: [],
   })
 
@@ -137,10 +140,6 @@ function CreateUserModal({ onClose }: CreateModalProps) {
         <div className="space-y-1.5">
           <Label className="text-[12px]">Last name</Label>
           <Input className="h-9 text-[13px]" value={form.lastName} onChange={(e) => set("lastName", e.target.value)} />
-        </div>
-        <div className="col-span-2 space-y-1.5">
-          <Label className="text-[12px]">Work email</Label>
-          <Input className="h-9 text-[13px]" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
         </div>
         <div className="col-span-2 space-y-1.5">
           <Label className="text-[12px]">Password</Label>
@@ -239,7 +238,7 @@ function CreateUserModal({ onClose }: CreateModalProps) {
         </button>
         <Button
           className="h-9 flex-1 text-[13px]"
-          disabled={createMutation.isPending || activeRolesQ.isLoading || !form.firstName || !form.email || !form.password || form.userRoleIds.length === 0}
+          disabled={createMutation.isPending || activeRolesQ.isLoading || !form.firstName || !form.lastName || !form.password || form.userRoleIds.length === 0}
           onClick={handleSubmit}
         >
           {createMutation.isPending ? "Creating…" : "Create user"}
@@ -278,6 +277,7 @@ function AssignRolesModal({ user, onClose }: AssignModalProps) {
     `${r.name} ${r.description}`.toLowerCase().includes(roleSearch.toLowerCase()),
   )
   const selectedRoles = activeRoles.filter((r) => selectedRoleIds.includes(r.id))
+  const assignErr = assignMutation.error as { response?: { data?: { message?: string } } } | null
 
   return (
     <Backdrop onClose={onClose}>
@@ -377,10 +377,10 @@ function AssignRolesModal({ user, onClose }: AssignModalProps) {
         <p className="text-[11px] text-muted-foreground">Selecting roles here replaces the user's current roles.</p>
       </div>
 
-      {assignMutation.error && (
+      {assignErr && (
         <div className="mt-3 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 dark:border-red-900/40 dark:bg-red-900/20">
           <HugeiconsIcon icon={Alert01Icon} size={13} strokeWidth={2} className="shrink-0 text-red-500" />
-          <p className="text-[11px] text-red-700 dark:text-red-400">Failed to assign roles.</p>
+          <p className="text-[11px] text-red-700 dark:text-red-400">{assignErr?.response?.data?.message ?? "Failed to assign roles."}</p>
         </div>
       )}
 
@@ -400,15 +400,224 @@ function AssignRolesModal({ user, onClose }: AssignModalProps) {
   )
 }
 
+// ── Temp role helpers ──────────────────────────────────────────────────────────
+
+function isoToDate(iso: string | null | undefined): string {
+  if (!iso) return ""
+  return iso.split("T")[0] ?? ""
+}
+
+function isoToTime(iso: string | null | undefined): string {
+  if (!iso) return ""
+  return iso.split("T")[1]?.slice(0, 5) ?? ""
+}
+
+function fmtDateBadge(startAt?: string | null, endAt?: string | null) {
+  if (!startAt || !endAt) return null
+  const fmt = (iso: string) =>
+    new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+  return `${fmt(startAt)} – ${fmt(endAt)}`
+}
+
+interface TempRoleModalProps {
+  user:    AdminUser
+  onClose: () => void
+}
+
+function TempRoleModal({ user, onClose }: TempRoleModalProps) {
+  const setTempAccess  = useSetTempRoleAccess()
+  const activeRolesQ   = useActiveUserRoles()
+  const activeRoles    = activeRolesQ.data ?? []
+
+  const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null)
+  const [roleMenuOpen,   setRoleMenuOpen]   = useState(false)
+  const [startDate, setStartDate] = useState("")
+  const [endDate,   setEndDate]   = useState("")
+  const [startTime, setStartTime] = useState("")
+  const [endTime,   setEndTime]   = useState("")
+
+  const selectedRole = activeRoles.find((r) => r.id === selectedRoleId) ?? null
+  const hasTime  = startTime !== "" || endTime !== ""
+  const canSave  = selectedRoleId !== null && startDate !== "" && endDate !== ""
+
+  function save() {
+    if (!selectedRoleId) return
+    setTempAccess.mutate(
+      {
+        userId:  user.id,
+        roleId:  selectedRoleId,
+        payload: {
+          roleId:    selectedRoleId,
+          startDate,
+          endDate,
+          startTime: startTime || null,
+          endTime:   endTime   || null,
+        },
+      },
+      { onSuccess: onClose },
+    )
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-sm animate-in fade-in zoom-in-95 duration-200 rounded-2xl border border-border bg-card p-6 shadow-xl">
+
+        {/* Header */}
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="flex size-8 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/20">
+            <HugeiconsIcon icon={Clock01Icon} size={16} strokeWidth={1.8} className="text-amber-600 dark:text-amber-400" />
+          </div>
+          <div>
+            <h2 className="text-[14px] font-semibold text-foreground">Assign temporary role</h2>
+            <p className="text-[11px] text-muted-foreground">{user.firstName} {user.lastName}</p>
+          </div>
+        </div>
+
+        {/* Role dropdown — all available roles */}
+        <div className="mb-4 space-y-1.5">
+          <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Role</Label>
+          {activeRolesQ.isLoading ? (
+            <div className="flex h-9 items-center rounded-md border border-border bg-muted/30 px-3 text-[12px] text-muted-foreground">
+              Loading roles…
+            </div>
+          ) : (
+            <DropdownMenu open={roleMenuOpen} onOpenChange={setRoleMenuOpen}>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-[13px] text-left transition-colors hover:bg-muted/40"
+                >
+                  <span className={cn("truncate", !selectedRole && "text-muted-foreground")}>
+                    {selectedRole ? selectedRole.name : "Select a role"}
+                  </span>
+                  <span className="text-muted-foreground">v</span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-[--radix-dropdown-menu-trigger-width]">
+                <div className="max-h-48 overflow-auto">
+                  {activeRoles.map((r) => {
+                    const isPermanent = user.userRoles.some((ur) => ur.roleId === r.id)
+                    return (
+                      <DropdownMenuItem
+                        key={r.id}
+                        disabled={isPermanent}
+                        onSelect={() => { setSelectedRoleId(r.id); setRoleMenuOpen(false) }}
+                        className={cn(
+                          "cursor-pointer",
+                          selectedRoleId === r.id && "bg-primary/5 font-medium",
+                          isPermanent && "cursor-not-allowed opacity-50",
+                        )}
+                      >
+                        <div className="flex-1">
+                          <p className="text-[12px]">{r.name}</p>
+                          {r.description && (
+                            <p className="text-[11px] text-muted-foreground">{r.description}</p>
+                          )}
+                        </div>
+                        {isPermanent && (
+                          <span className="ml-2 shrink-0 text-[10px] text-muted-foreground">Permanent</span>
+                        )}
+                      </DropdownMenuItem>
+                    )
+                  })}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          {/* Date range */}
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Date range
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-[11px]">From</Label>
+                <Input
+                  type="date"
+                  className="h-8 text-[12px]"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[11px]">Until</Label>
+                <Input
+                  type="date"
+                  className="h-8 text-[12px]"
+                  value={endDate}
+                  min={startDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Time window */}
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Time window <span className="normal-case font-normal text-muted-foreground/70">(optional)</span>
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-[11px]">Start time</Label>
+                <Input
+                  type="time"
+                  className="h-8 text-[12px]"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[11px]">End time</Label>
+                <Input
+                  type="time"
+                  className="h-8 text-[12px]"
+                  value={endTime}
+                  min={startTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                />
+              </div>
+            </div>
+            {hasTime && (!startTime || !endTime) && (
+              <p className="mt-1.5 text-[11px] text-amber-600">Both start and end time are required.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-5 flex gap-2">
+          <button
+            onClick={onClose}
+            className="flex h-9 flex-1 items-center justify-center rounded-lg border border-border text-[13px] font-medium transition-colors hover:bg-muted"
+          >
+            Cancel
+          </button>
+          <Button
+            className="h-9 flex-1 text-[13px]"
+            disabled={!canSave || (hasTime && (!startTime || !endTime)) || setTempAccess.isPending}
+            onClick={save}
+          >
+            {setTempAccess.isPending ? "Saving…" : "Save"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Main section ──────────────────────────────────────────────────────────────
 
 export function UsersSection() {
   const [roleFilter, setRoleFilter] = useState<string | undefined>(undefined)
   const [page, setPage]             = useState(0)
   const [search, setSearch]         = useState("")
-  const [showCreate, setShowCreate] = useState(false)
+  const [showCreate, setShowCreate]     = useState(false)
   const [assignTarget, setAssignTarget] = useState<AdminUser | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null)
+  const [tempRoleTarget, setTempRoleTarget] = useState<AdminUser | null>(null)
 
   const { data, isLoading, isError } = useAdminUsers({ page, size: 20, role: roleFilter })
   const deleteMutation = useDeleteUser()
@@ -506,9 +715,30 @@ export function UsersSection() {
                       <StatusBadge variant={roleVariant(u.role)} dot={false}>
                         {u.role}
                       </StatusBadge>
-                      {u.userRoles.map((r) => (
-                        <ColoredRoleBadge key={r.roleId} name={r.roleName} color={r.roleColor} />
-                      ))}
+                      {u.userRoles.map((r) => {
+                        const dateRange = fmtDateBadge(r.startAt, r.endAt)
+                        const isTemp    = r.temporary && !!dateRange
+
+                        if (isTemp) {
+                          return (
+                            <button
+                              key={r.roleId}
+                              onClick={() => setTempRoleTarget(u)}
+                              title={`Temporary · ${dateRange}`}
+                              className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 pl-1.5 pr-2 py-0.5 text-[11px] font-medium text-amber-800 transition-colors hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-300 dark:hover:bg-amber-900/30"
+                            >
+                              <HugeiconsIcon icon={Clock01Icon} size={10} strokeWidth={2} className="shrink-0" />
+                              <span>{r.roleName}</span>
+                              <span className="text-amber-500 dark:text-amber-500">·</span>
+                              <span className="text-[10px] font-normal">{dateRange}</span>
+                            </button>
+                          )
+                        }
+
+                        return (
+                          <ColoredRoleBadge key={r.roleId} name={r.roleName} color={r.roleColor} />
+                        )
+                      })}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -527,6 +757,22 @@ export function UsersSection() {
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>Assign roles</TooltipContent>
+                        </Tooltip>
+                      )}
+                      {u.role.toUpperCase() !== "ADMIN" && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="icon-xs"
+                              variant="outline"
+                              className="border-amber-200 text-amber-600 hover:bg-amber-50 dark:border-amber-800 dark:hover:bg-amber-900/20"
+                              onClick={() => setTempRoleTarget(u)}
+                            >
+                              <HugeiconsIcon icon={Clock01Icon} size={12} strokeWidth={2} />
+                              <span className="sr-only">Assign temporary role</span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Assign temporary role</TooltipContent>
                         </Tooltip>
                       )}
                       <Tooltip>
@@ -568,6 +814,14 @@ export function UsersSection() {
 
       {/* ── Assign roles modal ── */}
       {assignTarget && <AssignRolesModal user={assignTarget} onClose={() => setAssignTarget(null)} />}
+
+      {/* ── Temporary role access modal ── */}
+      {tempRoleTarget && (
+        <TempRoleModal
+          user={tempRoleTarget}
+          onClose={() => setTempRoleTarget(null)}
+        />
+      )}
 
       {/* ── Delete confirm modal ── */}
       {deleteTarget && (
