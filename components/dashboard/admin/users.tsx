@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Search01Icon,
@@ -11,6 +12,7 @@ import {
   Loading03Icon,
   Clock01Icon,
   Calendar01Icon,
+  EyeIcon,
 } from "@hugeicons/core-free-icons"
 import { StatusBadge } from "@/components/custom/status-badge"
 import { Button } from "@/components/ui/button"
@@ -806,6 +808,7 @@ function TempRoleModal({ user, onClose }: TempRoleModalProps) {
 // ── Main section ──────────────────────────────────────────────────────────────
 
 export function UsersSection() {
+  const router = useRouter()
   const [roleFilter, setRoleFilter] = useState<string | undefined>(undefined)
   const [page, setPage] = useState(0)
   const [search, setSearch] = useState("")
@@ -1009,6 +1012,25 @@ export function UsersSection() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="icon-xs"
+                              variant="outline"
+                              onClick={() =>
+                                router.push(`/dashboard/employees/${u.id}`)
+                              }
+                            >
+                              <HugeiconsIcon
+                                icon={EyeIcon}
+                                size={12}
+                                strokeWidth={2}
+                              />
+                              <span className="sr-only">View details</span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>View details</TooltipContent>
+                        </Tooltip>
                         {u.role.toUpperCase() !== "ADMIN" && (
                           <Tooltip>
                             <TooltipTrigger asChild>

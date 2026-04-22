@@ -25,7 +25,10 @@
       "Bash(ls -la \"c:\\\\\\\\Users\\\\\\\\user\\\\\\\\Documents\\\\\\\\Paulo Development\\\\\\\\work-os\\\\\\\\wos-ui\\\\\\\\lib\")",
       "Bash(npm install *)",
       "Bash(npm --version)",
-      "Bash(npm cache *)"
+      "Bash(npm cache *)",
+      "Bash(mkdir -p \"c:/Users/user/Documents/Paulo Development/work-os/wos-ui/app/dashboard/employees/[id]\")",
+      "Bash(mkdir -p \"c:/Users/user/Documents/Paulo Development/work-os/wos-ui/components/dashboard/hr/employee-detail\")",
+      "Bash(npx shadcn@latest add switch --yes)"
     ]
   }
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { StatusBadge } from "@/components/custom/status-badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,17 +13,13 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Search01Icon, Add01Icon, EyeIcon } from "@hugeicons/core-free-icons"
 import { TablePagination } from "@/components/custom/table-pagination"
 import { useHrEmployees } from "@/hooks/use-hr"
 
 export function EmployeesSection() {
+  const router = useRouter()
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
@@ -157,19 +154,20 @@ export function EmployeesSection() {
                     </StatusBadge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button size="icon-xs" variant="outline">
-                          <HugeiconsIcon
-                            icon={EyeIcon}
-                            size={12}
-                            strokeWidth={2}
-                          />
-                          <span className="sr-only">View profile</span>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>View profile</TooltipContent>
-                    </Tooltip>
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      onClick={() =>
+                        router.push(`/dashboard/employees/${emp.id}`)
+                      }
+                    >
+                      <HugeiconsIcon
+                        icon={EyeIcon}
+                        size={12}
+                        strokeWidth={2}
+                      />
+                      View details
+                    </Button>
                   </TableCell>
                 </TableRow>
               )

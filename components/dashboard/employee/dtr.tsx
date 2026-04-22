@@ -16,6 +16,7 @@ import {
 } from "@hugeicons/core-free-icons"
 import { StatusBadge } from "@/components/custom/status-badge"
 import { DtrChangeModal } from "@/components/custom/dtr-change-modal"
+import { AttendanceCameraCapture } from "@/components/custom/attendance-camera-capture"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -121,6 +122,158 @@ function ViewModal({
           <Button variant="outline" size="sm" onClick={onClose}>
             Close
           </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ── EOD Report Modal ──────────────────────────────────────────────────────────
+
+interface EodReport {
+  teacherName: string
+  bookedClasses: string
+  openSlots: string
+  ratings: { 5: string; 4: string; 3: string; 2: string; 1: string }
+  hoursWorked: string
+}
+
+function EodReportModal({
+  open,
+  reportDate,
+  hoursWorked,
+  onClose,
+  onSubmit,
+}: {
+  open: boolean
+  reportDate: string
+  hoursWorked: string
+  onClose: () => void
+  onSubmit: (report: EodReport | null) => void
+}) {
+  const [form, setForm] = useState<EodReport>({
+    teacherName: "",
+    bookedClasses: "",
+    openSlots: "",
+    ratings: { 5: "", 4: "", 3: "", 2: "", 1: "" },
+    hoursWorked,
+  })
+
+  useEffect(() => {
+    if (open) {
+      setForm({
+        teacherName: "",
+        bookedClasses: "",
+        openSlots: "",
+        ratings: { 5: "", 4: "", 3: "", 2: "", 1: "" },
+        hoursWorked,
+      })
+    }
+  }, [open, hoursWorked])
+
+  const setRating = (star: keyof EodReport["ratings"], val: string) =>
+    setForm((f) => ({ ...f, ratings: { ...f.ratings, [star]: val } }))
+
+  const canSubmit = form.teacherName.trim().length > 0
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-[15px]">End-of-Day Report</DialogTitle>
+        </DialogHeader>
+
+        {/* Date header */}
+        <div className="rounded-lg border border-border bg-muted/40 px-4 py-2.5 text-[12px]">
+          <span className="text-muted-foreground">EOD Report as of: </span>
+          <span className="font-semibold tabular-nums">{reportDate}</span>
+        </div>
+
+        <div className="space-y-4">
+          {/* Teacher name */}
+          <div className="space-y-1.5">
+            <Label className="text-[12px]">Teacher&apos;s Name</Label>
+            <Input
+              className="h-9 text-[13px]"
+              placeholder="Enter your name"
+              value={form.teacherName}
+              onChange={(e) => setForm((f) => ({ ...f, teacherName: e.target.value }))}
+            />
+          </div>
+
+          {/* Booked + Open slots */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-[12px]">Total booked classes</Label>
+              <Input
+                type="number"
+                min={0}
+                className="h-9 text-[13px]"
+                placeholder="0"
+                value={form.bookedClasses}
+                onChange={(e) => setForm((f) => ({ ...f, bookedClasses: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[12px]">Open slots</Label>
+              <Input
+                type="number"
+                min={0}
+                className="h-9 text-[13px]"
+                placeholder="0"
+                value={form.openSlots}
+                onChange={(e) => setForm((f) => ({ ...f, openSlots: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          {/* Star ratings */}
+          <div className="space-y-2">
+            <Label className="text-[12px]">Star Ratings</Label>
+            <div className="rounded-lg border border-border divide-y divide-border">
+              {([5, 4, 3, 2, 1] as const).map((star) => (
+                <div key={star} className="flex items-center justify-between px-3 py-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[13px] font-medium tabular-nums">{star}</span>
+                    <span className="text-amber-400">{"★".repeat(star)}</span>
+                  </div>
+                  <Input
+                    type="number"
+                    min={0}
+                    className="h-7 w-20 text-right text-[13px]"
+                    placeholder="—"
+                    value={form.ratings[star]}
+                    onChange={(e) => setRating(star, e.target.value)}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Hours worked — read-only */}
+          <div className="space-y-1.5">
+            <Label className="text-[12px]">Number of hours worked</Label>
+            <div className="flex h-9 items-center rounded-md border border-border bg-muted/40 px-3 text-[13px] font-semibold tabular-nums">
+              {hoursWorked}
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter className="flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <button
+            onClick={() => onSubmit(null)}
+            className="text-[12px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+          >
+            Skip for now &amp; proceed to time out
+          </button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button size="sm" disabled={!canSubmit} onClick={() => onSubmit(form)}>
+              Submit &amp; Clock Out
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -382,6 +535,51 @@ function DtrRingButton({
   )
 }
 
+function PunchCameraModal({
+  punchType,
+  onClose,
+  onCaptured,
+}: {
+  punchType: "in" | "out"
+  onClose: () => void
+  onCaptured: (capturedTime: string) => void
+}) {
+  const isClockIn = punchType === "in"
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-black/45 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
+        <div className="flex items-center justify-between border-b border-border px-5 py-3">
+          <div>
+            <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
+              {isClockIn ? "Clock In" : "Clock Out"} Verification
+            </p>
+            <p className="text-[13px] text-muted-foreground">
+              Capture your photo to complete {isClockIn ? "clock in" : "clock out"}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="Close camera"
+          >
+            x
+          </button>
+        </div>
+        <AttendanceCameraCapture
+          punchType={punchType}
+          onCapture={onCaptured}
+          onBack={onClose}
+        />
+      </div>
+    </div>
+  )
+}
+
 const BREAK_ICONS: Record<string, (color: string) => React.ReactNode> = {
   morning: (c) => (
     <HugeiconsIcon icon={Coffee01Icon} size={15} strokeWidth={2} color={c} />
@@ -419,6 +617,9 @@ export function DTRSection() {
   const [recordNotes, setRecordNotes] = useState<Record<string, string>>({})
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
+  const [cameraPunchType, setCameraPunchType] = useState<"in" | "out" | null>(null)
+  const [eodOpen, setEodOpen] = useState(false)
+  const [pendingClockOut, setPendingClockOut] = useState<Date | null>(null)
 
   const { data: attendanceData, isLoading: attendanceLoading } = useAttendance({
     page: page - 1,
@@ -464,18 +665,6 @@ export function DTRSection() {
   const stdSecs = 8 * 3600
   const otSecs = Math.max(0, netSecs - stdSecs)
   const progressPct = Math.min(100, (netSecs / stdSecs) * 100)
-
-  const handleClockToggle = () => {
-    if (!clocked) {
-      setClocked(true)
-      setClockInTime(new Date())
-      setClockOutTime(null)
-      setBreaks(INITIAL_BREAKS)
-    } else {
-      setClocked(false)
-      setClockOutTime(new Date())
-    }
-  }
 
   const toggleBreak = useCallback((type: string) => {
     setBreaks((prev) => {
@@ -668,8 +857,10 @@ export function DTRSection() {
               onClick={() => {
                 if (anyBreakActive && activeBreakEntry) {
                   toggleBreak(activeBreakEntry[0])
+                } else if (!clocked) {
+                  setCameraPunchType("in")
                 } else {
-                  handleClockToggle()
+                  setCameraPunchType("out")
                 }
               }}
               className={cn(
@@ -1066,6 +1257,49 @@ export function DTRSection() {
 
       <AttendanceHeatmap />
 
+      {cameraPunchType && (
+        <PunchCameraModal
+          punchType={cameraPunchType}
+          onClose={() => setCameraPunchType(null)}
+          onCaptured={() => {
+            if (cameraPunchType === "in") {
+              setClocked(true)
+              setClockInTime(new Date())
+              setClockOutTime(null)
+              setBreaks(INITIAL_BREAKS)
+              setCameraPunchType(null)
+            } else {
+              // Store the captured time and open EOD report before finalising clock-out
+              setPendingClockOut(new Date())
+              setCameraPunchType(null)
+              setEodOpen(true)
+            }
+          }}
+        />
+      )}
+
+      <EodReportModal
+        open={eodOpen}
+        reportDate={
+          (pendingClockOut ?? new Date()).toLocaleDateString("en-US", {
+            month: "2-digit",
+            day: "2-digit",
+            year: "numeric",
+          })
+        }
+        hoursWorked={netSecs > 0 ? fmtDuration(netSecs) : "—"}
+        onClose={() => {
+          setEodOpen(false)
+          setPendingClockOut(null)
+        }}
+        onSubmit={() => {
+          setClocked(false)
+          setClockOutTime(pendingClockOut ?? new Date())
+          setBreaks(INITIAL_BREAKS)
+          setPendingClockOut(null)
+          setEodOpen(false)
+        }}
+      />
       <DtrChangeModal open={dtrOpen} onClose={() => setDtrOpen(false)} />
       <ViewModal
         record={selectedRecord}
