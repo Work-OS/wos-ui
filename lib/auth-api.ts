@@ -6,6 +6,7 @@ export interface AvailableRole {
   id: number
   name: string
   description?: string
+  isTemporary?: boolean
 }
 
 export interface AuthResponse {

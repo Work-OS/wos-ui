@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Logo } from "@/components/custom/logo"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AttendanceCameraCapture } from "@/components/custom/attendance-camera-capture"
@@ -350,6 +351,14 @@ export default function LoginPage() {
                 <p className="text-[13px] font-semibold text-foreground">
                   {r.name}
                 </p>
+                {r.isTemporary && (
+                  <Badge
+                    variant="outline"
+                    className="h-5 border-amber-300 bg-amber-50 px-2 text-[10px] font-semibold text-amber-700"
+                  >
+                    Temporary
+                  </Badge>
+                )}
                 <p className="text-[11px] leading-relaxed text-muted-foreground">
                   {r.description?.trim() || "No description provided."}
                 </p>

@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { sectionTitles } from "@/lib/nav-config"
 import { cn } from "@/lib/utils"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -28,6 +29,7 @@ import {
   Loading03Icon,
 } from "@hugeicons/core-free-icons"
 import { useAuthStore } from "@/store/auth-store"
+import { useToastStore } from "@/store/toast-store"
 import { useLogout, useSwitchRole } from "@/hooks/use-auth"
 
 export function Topbar() {
@@ -40,6 +42,7 @@ export function Topbar() {
 
   const logoutMutation = useLogout()
   const switchRoleMutation = useSwitchRole()
+  const pushToast = useToastStore((s) => s.push)
   const { user, userRoleNames, availableRoles, activeUserRoleId } =
     useAuthStore()
 
@@ -128,7 +131,14 @@ export function Topbar() {
                     key={r.id}
                     disabled={isActive || switchRoleMutation.isPending}
                     onSelect={() =>
-                      switchRoleMutation.mutate({ userRoleId: r.id })
+                      switchRoleMutation.mutate(
+                        { userRoleId: r.id },
+                        {
+                          onSuccess: () => {
+                            pushToast(`Successfully switched to ${r.name}.`, "success")
+                          },
+                        }
+                      )
                     }
                     className="cursor-pointer gap-2"
                   >
@@ -159,6 +169,14 @@ export function Topbar() {
                     >
                       {r.name}
                     </span>
+                    {r.isTemporary && (
+                      <Badge
+                        variant="outline"
+                        className="h-4 border-amber-300 bg-amber-50 px-1.5 text-[9px] font-semibold text-amber-700"
+                      >
+                        Temp
+                      </Badge>
+                    )}
                     {isActive && (
                       <span className="ml-auto text-[10px] text-muted-foreground">
                         Active
