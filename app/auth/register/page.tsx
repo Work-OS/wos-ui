@@ -36,7 +36,7 @@ export default function RegisterPage() {
 
         {/* Form area */}
         <div className="flex flex-1 items-center justify-center px-8 py-12">
-          <div className="w-full max-w-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="w-full max-w-100 animate-in duration-500 fade-in slide-in-from-bottom-4">
             <h1 className="text-[28px] font-bold tracking-tight text-foreground">
               Create account
             </h1>
@@ -88,16 +88,34 @@ export default function RegisterPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                    className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {showPassword ? (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
                         <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
                         <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
                         <line x1="1" y1="1" x2="23" y2="23" />
                       </svg>
                     ) : (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                         <circle cx="12" cy="12" r="3" />
                       </svg>
@@ -125,7 +143,18 @@ export default function RegisterPage() {
               onClick={handleRegister}
             >
               Create account
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
             </Button>
           </div>
         </div>
@@ -136,8 +165,18 @@ export default function RegisterPage() {
             &copy; {new Date().getFullYear()} WorkOS. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
-            <a href="#" className="text-[11px] text-muted-foreground hover:text-foreground">Privacy</a>
-            <a href="#" className="text-[11px] text-muted-foreground hover:text-foreground">Terms</a>
+            <a
+              href="#"
+              className="text-[11px] text-muted-foreground hover:text-foreground"
+            >
+              Privacy
+            </a>
+            <a
+              href="#"
+              className="text-[11px] text-muted-foreground hover:text-foreground"
+            >
+              Terms
+            </a>
           </div>
         </div>
       </div>
@@ -161,13 +200,14 @@ function AuthPanel() {
           backgroundSize: "40px 40px",
         }}
       />
-      <div className="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full bg-cyan-400 opacity-20 blur-3xl" />
+      <div className="pointer-events-none absolute -top-24 -right-24 size-96 rounded-full bg-cyan-400 opacity-20 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-32 -left-16 size-80 rounded-full bg-primary opacity-40 blur-3xl" />
 
       <div className="relative flex flex-1 flex-col justify-between">
         <div className="mt-auto">
-          <blockquote className="text-[22px] font-semibold leading-snug text-white">
-            &ldquo;Everything your team needs to manage work, time, and people — in one place.&rdquo;
+          <blockquote className="text-[22px] leading-snug font-semibold text-white">
+            &ldquo;Everything your team needs to manage work, time, and people —
+            in one place.&rdquo;
           </blockquote>
           <p className="mt-4 text-[13px] text-white/60">
             Set up in minutes. No credit card required.

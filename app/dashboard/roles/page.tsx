@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: "Roles & Permissions" }
 
 export default function RolesPage() {
   return (
-    <div className="flex h-[calc(100vh-5rem)] flex-col p-6 animate-in fade-in duration-300">
+    <div className="flex h-[calc(100vh-5rem)] animate-in flex-col p-6 duration-300 fade-in">
       <RolesSection />
     </div>
   )

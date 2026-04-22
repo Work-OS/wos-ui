@@ -6,7 +6,20 @@ import { TypewriterEffect } from "@/components/ui/typewriter-effect"
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+]
 const TODAY = new Date(2026, 3, 1) // April 1, 2026
 const GAP = 3
 const DAY_LABEL_W = 28
@@ -14,7 +27,15 @@ const DAY_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""]
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-type DayStatus = "present" | "overtime" | "late" | "undertime" | "absent" | "leave" | "weekend" | "future"
+type DayStatus =
+  | "present"
+  | "overtime"
+  | "late"
+  | "undertime"
+  | "absent"
+  | "leave"
+  | "weekend"
+  | "future"
 
 type DayData = { date: Date; status: DayStatus } | null
 
@@ -67,7 +88,11 @@ function mockStatus(date: Date): DayStatus {
 }
 
 function formatDay(date: Date): string {
-  return date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
+  return date.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  })
 }
 
 function buildYearData(year: number): DayData[][] {
@@ -102,12 +127,33 @@ function getMonthLabels(weeks: DayData[][]): (string | null)[] {
 // ── Motivational quotes ────────────────────────────────────────────────────────
 
 const QUOTES = [
-  [{ text: "Show" }, { text: "up." }, { text: "Every" }, { text: "single" }, { text: "day." }],
+  [
+    { text: "Show" },
+    { text: "up." },
+    { text: "Every" },
+    { text: "single" },
+    { text: "day." },
+  ],
   [{ text: "Discipline" }, { text: "is" }, { text: "freedom." }],
-  [{ text: "Small" }, { text: "steps," }, { text: "big" }, { text: "results." }],
-  [{ text: "Be" }, { text: "consistent," }, { text: "be" }, { text: "present." }],
+  [
+    { text: "Small" },
+    { text: "steps," },
+    { text: "big" },
+    { text: "results." },
+  ],
+  [
+    { text: "Be" },
+    { text: "consistent," },
+    { text: "be" },
+    { text: "present." },
+  ],
   [{ text: "Progress," }, { text: "not" }, { text: "perfection." }],
-  [{ text: "Your" }, { text: "effort" }, { text: "speaks" }, { text: "loudest." }],
+  [
+    { text: "Your" },
+    { text: "effort" },
+    { text: "speaks" },
+    { text: "loudest." },
+  ],
   [{ text: "Commit" }, { text: "to" }, { text: "the" }, { text: "process." }],
 ]
 
@@ -131,7 +177,7 @@ function MotivationalQuote() {
 
   return (
     <div
-      className="[&_span]:text-foreground/70! text-center"
+      className="text-center [&_span]:text-foreground/70!"
       style={{
         fontFamily: "Georgia, 'Times New Roman', serif",
         opacity: visible ? 1 : 0,
@@ -141,7 +187,7 @@ function MotivationalQuote() {
       <TypewriterEffect
         key={idx}
         words={QUOTES[idx]}
-        className="text-[11px]! font-normal! leading-relaxed!"
+        className="text-[11px]! leading-relaxed! font-normal!"
         cursorClassName="bg-primary/60! h-3! w-[2px]!"
       />
     </div>
@@ -160,7 +206,8 @@ export function AttendanceHeatmap() {
 
   const allDays = weeks.flat()
   const workDays = allDays.filter(
-    (d): d is NonNullable<DayData> => d !== null && d.status !== "weekend" && d.status !== "future",
+    (d): d is NonNullable<DayData> =>
+      d !== null && d.status !== "weekend" && d.status !== "future"
   )
   const stats = {
     total: workDays.length,
@@ -179,17 +226,18 @@ export function AttendanceHeatmap() {
   return (
     <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
       {/* 7fr : 1fr : 2fr  →  70% : 10% : 20% */}
-      <div className="overflow-hidden" style={{ display: "grid", gridTemplateColumns: "7fr 1fr 2fr", gap: 20 }}>
-
+      <div
+        className="overflow-hidden"
+        style={{ display: "grid", gridTemplateColumns: "7fr 1fr 2fr", gap: 20 }}
+      >
         {/* ── Left: heatmap (~60%) ── */}
         <div className="min-w-0 overflow-hidden">
-
           {/* Title + stats */}
           <div className="mb-3">
             <h3 className="text-[13px] font-semibold">Attendance history</h3>
             <p className="mt-0.5 text-[11px] text-muted-foreground">
-              {stats.total} days recorded &middot; {stats.overtime} overtime &middot;{" "}
-              {stats.late} late &middot; {stats.absent} absent
+              {stats.total} days recorded &middot; {stats.overtime} overtime
+              &middot; {stats.late} late &middot; {stats.absent} absent
             </p>
           </div>
 
@@ -198,7 +246,11 @@ export function AttendanceHeatmap() {
             {/* Row 0: empty corner + month labels */}
             <div />
             {monthLabels.map((label, wi) => (
-              <div key={wi} style={{ fontSize: 10, lineHeight: 1 }} className="text-muted-foreground">
+              <div
+                key={wi}
+                style={{ fontSize: 10, lineHeight: 1 }}
+                className="text-muted-foreground"
+              >
                 {label ?? ""}
               </div>
             ))}
@@ -206,7 +258,10 @@ export function AttendanceHeatmap() {
             {/* Rows 1–7: one row per day-of-week */}
             {[0, 1, 2, 3, 4, 5, 6].map((row) => (
               <Fragment key={row}>
-                <div style={{ fontSize: 10 }} className="flex items-center justify-end text-muted-foreground">
+                <div
+                  style={{ fontSize: 10 }}
+                  className="flex items-center justify-end text-muted-foreground"
+                >
                   {DAY_LABELS[row]}
                 </div>
                 {weeks.map((week, wi) => {
@@ -215,7 +270,10 @@ export function AttendanceHeatmap() {
                     <div
                       key={wi}
                       style={{ aspectRatio: "1 / 1", borderRadius: 3 }}
-                      className={cn(STATUS_BG[day.status], "cursor-default transition-opacity hover:opacity-70")}
+                      className={cn(
+                        STATUS_BG[day.status],
+                        "cursor-default transition-opacity hover:opacity-70"
+                      )}
                       title={`${formatDay(day.date)} — ${STATUS_LABEL[day.status]}`}
                     />
                   ) : (
@@ -229,8 +287,14 @@ export function AttendanceHeatmap() {
           {/* Legend */}
           <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
             <span>Less</span>
-            {(["future", "present", "overtime", "late", "absent"] as DayStatus[]).map((s) => (
-              <div key={s} style={{ width: 11, height: 11, borderRadius: 2 }} className={STATUS_BG[s]} />
+            {(
+              ["future", "present", "overtime", "late", "absent"] as DayStatus[]
+            ).map((s) => (
+              <div
+                key={s}
+                style={{ width: 11, height: 11, borderRadius: 2 }}
+                className={STATUS_BG[s]}
+              />
             ))}
             <span className="mr-3">More</span>
             <div className="flex flex-wrap items-center gap-3">
@@ -244,7 +308,10 @@ export function AttendanceHeatmap() {
                 ] as [DayStatus, string][]
               ).map(([s, label]) => (
                 <div key={s} className="flex items-center gap-1">
-                  <div style={{ width: 10, height: 10, borderRadius: 2 }} className={STATUS_BG[s]} />
+                  <div
+                    style={{ width: 10, height: 10, borderRadius: 2 }}
+                    className={STATUS_BG[s]}
+                  />
                   <span>{label}</span>
                 </div>
               ))}
@@ -254,7 +321,7 @@ export function AttendanceHeatmap() {
 
         {/* ── Year buttons (~15%) ── */}
         <div className="flex flex-col border-l border-border pl-4">
-          <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          <p className="mb-2 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
             Year
           </p>
           <div className="flex flex-col gap-0.5">
@@ -263,10 +330,10 @@ export function AttendanceHeatmap() {
                 key={y}
                 onClick={() => setYear(y)}
                 className={cn(
-                  "w-fit rounded-md px-2.5 py-1 text-left text-[13px] font-semibold transition-colors mr-auto",
+                  "mr-auto w-fit rounded-md px-2.5 py-1 text-left text-[13px] font-semibold transition-colors",
                   year === y
                     ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
                 {y}
@@ -279,7 +346,6 @@ export function AttendanceHeatmap() {
         <div className="flex items-center justify-center overflow-hidden border-l border-border pl-4">
           <MotivationalQuote />
         </div>
-
       </div>
     </div>
   )

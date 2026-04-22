@@ -2,7 +2,13 @@
 
 import { useState, useCallback } from "react"
 import Cropper, { type Area } from "react-easy-crop"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ZoomInAreaIcon, ZoomOutAreaIcon } from "@hugeicons/core-free-icons"
 import { Button } from "@/components/ui/button"
@@ -19,10 +25,17 @@ async function cropImageToUrl(src: string, pixelCrop: Area): Promise<string> {
       canvas.height = size
       const ctx = canvas.getContext("2d")!
       ctx.drawImage(img, pixelCrop.x, pixelCrop.y, size, size, 0, 0, size, size)
-      canvas.toBlob((blob) => {
-        if (!blob) { reject(new Error("Canvas toBlob failed")); return }
-        resolve(URL.createObjectURL(blob))
-      }, "image/jpeg", 0.92)
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error("Canvas toBlob failed"))
+            return
+          }
+          resolve(URL.createObjectURL(blob))
+        },
+        "image/jpeg",
+        0.92
+      )
     }
     img.onerror = reject
     img.src = src
@@ -54,10 +67,12 @@ export function PhotoCropModal({ imageSrc, onDone, onCancel }: Props) {
 
   return (
     <Dialog open={!!imageSrc} onOpenChange={(open) => !open && onCancel()}>
-      <DialogContent className="max-w-sm gap-0 p-0 overflow-hidden">
+      <DialogContent className="max-w-sm gap-0 overflow-hidden p-0">
         <DialogHeader className="px-5 pt-5 pb-3">
           <DialogTitle>Crop photo</DialogTitle>
-          <p className="text-[12px] text-muted-foreground">Drag to reposition · scroll or pinch to zoom</p>
+          <p className="text-[12px] text-muted-foreground">
+            Drag to reposition · scroll or pinch to zoom
+          </p>
         </DialogHeader>
 
         {/* Crop area */}
@@ -75,7 +90,10 @@ export function PhotoCropModal({ imageSrc, onDone, onCancel }: Props) {
               onCropComplete={onCropComplete}
               style={{
                 containerStyle: { borderRadius: "0.75rem" },
-                cropAreaStyle: { border: "2px solid white", boxShadow: "0 0 0 9999px rgba(0,0,0,0.5)" },
+                cropAreaStyle: {
+                  border: "2px solid white",
+                  boxShadow: "0 0 0 9999px rgba(0,0,0,0.5)",
+                },
               }}
             />
           )}
@@ -83,7 +101,12 @@ export function PhotoCropModal({ imageSrc, onDone, onCancel }: Props) {
 
         {/* Zoom slider */}
         <div className="flex items-center gap-3 px-5 pt-4 pb-1">
-          <HugeiconsIcon icon={ZoomOutAreaIcon} size={13} strokeWidth={2} className="shrink-0 text-muted-foreground" />
+          <HugeiconsIcon
+            icon={ZoomOutAreaIcon}
+            size={13}
+            strokeWidth={2}
+            className="shrink-0 text-muted-foreground"
+          />
           <input
             type="range"
             min={1}
@@ -93,12 +116,21 @@ export function PhotoCropModal({ imageSrc, onDone, onCancel }: Props) {
             onChange={(e) => setZoom(Number(e.target.value))}
             className="h-1 w-full cursor-pointer appearance-none rounded-full bg-border accent-primary"
           />
-          <HugeiconsIcon icon={ZoomInAreaIcon} size={13} strokeWidth={2} className="shrink-0 text-muted-foreground" />
+          <HugeiconsIcon
+            icon={ZoomInAreaIcon}
+            size={13}
+            strokeWidth={2}
+            className="shrink-0 text-muted-foreground"
+          />
         </div>
 
         <DialogFooter className="px-5 py-4">
-          <Button variant="outline" size="sm" onClick={onCancel}>Cancel</Button>
-          <Button size="sm" onClick={handleSave}>Apply crop</Button>
+          <Button variant="outline" size="sm" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button size="sm" onClick={handleSave}>
+            Apply crop
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

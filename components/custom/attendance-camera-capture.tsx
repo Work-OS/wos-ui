@@ -26,28 +26,139 @@ type CamStatus =
   | "ready"
   | "flash"
 
-const STATUS_CONFIG: Record<CamStatus, {
-  label: string
-  sub: string
-  color: string
-  badgeClass: string
-  icon: string
-  canCapture: boolean
-  ovalStroke: string
-  isDeny: boolean
-}> = {
-  init:            { label: "Starting camera...",           sub: "Please wait",                                  color: "text-muted-foreground", badgeClass: "border-white/20 bg-black/40",          icon: "camera", canCapture: false, ovalStroke: "#60a5fa", isDeny: false },
-  denied:          { label: "Camera access denied",         sub: "Allow camera in browser settings",             color: "text-red-400",          badgeClass: "border-red-500/40 bg-red-500/20",      icon: "alert",  canCapture: false, ovalStroke: "#ef4444", isDeny: true },
-  "too-dark":      { label: "Too dark",                     sub: "Move to a brighter area",                      color: "text-amber-400",        badgeClass: "border-amber-500/40 bg-amber-500/20",  icon: "sun",    canCapture: false, ovalStroke: "#f59e0b", isDeny: false },
-  "no-face":       { label: "No face detected",             sub: "Position your face inside the oval",           color: "text-red-400",          badgeClass: "border-red-500/40 bg-red-500/20",      icon: "alert",  canCapture: false, ovalStroke: "#ef4444", isDeny: true },
-  "deny-multi":    { label: "Only 1 face allowed",          sub: "Only one face should be inside the oval",      color: "text-red-400",          badgeClass: "border-red-500/40 bg-red-500/20",      icon: "alert",  canCapture: false, ovalStroke: "#ef4444", isDeny: true },
-  "deny-mouth":    { label: "Close your mouth",             sub: "Mouth must be closed to capture",              color: "text-red-400",          badgeClass: "border-red-500/40 bg-red-500/20",      icon: "alert",  canCapture: false, ovalStroke: "#ef4444", isDeny: true },
-  "deny-partial":  { label: "Show full face",               sub: "Partial face detected - face the camera fully",color: "text-red-400",          badgeClass: "border-red-500/40 bg-red-500/20",      icon: "alert",  canCapture: false, ovalStroke: "#ef4444", isDeny: true },
-  "warn-far":      { label: "Move closer",                  sub: "You are too far - move closer to the camera", color: "text-amber-400",        badgeClass: "border-amber-500/40 bg-amber-500/20",  icon: "expand", canCapture: false, ovalStroke: "#f59e0b", isDeny: false },
-  "warn-close":    { label: "Move back",                    sub: "Too close - move back a little",               color: "text-amber-400",        badgeClass: "border-amber-500/40 bg-amber-500/20",  icon: "shrink", canCapture: false, ovalStroke: "#f59e0b", isDeny: false },
-  "warn-align":    { label: "Align face in oval",           sub: "Center your face completely inside the oval",  color: "text-amber-400",        badgeClass: "border-amber-500/40 bg-amber-500/20",  icon: "alert",  canCapture: false, ovalStroke: "#f59e0b", isDeny: false },
-  ready:           { label: "Full face detected",          sub: "Press capture when ready",                     color: "text-green-400",        badgeClass: "border-green-500/40 bg-green-500/20",  icon: "check",  canCapture: true,  ovalStroke: "#22c55e", isDeny: false },
-  flash:           { label: "Captured!",                   sub: "",                                             color: "text-green-400",        badgeClass: "border-green-500/40 bg-green-500/20",  icon: "check",  canCapture: true,  ovalStroke: "#22c55e", isDeny: false },
+const STATUS_CONFIG: Record<
+  CamStatus,
+  {
+    label: string
+    sub: string
+    color: string
+    badgeClass: string
+    icon: string
+    canCapture: boolean
+    ovalStroke: string
+    isDeny: boolean
+  }
+> = {
+  init: {
+    label: "Starting camera...",
+    sub: "Please wait",
+    color: "text-muted-foreground",
+    badgeClass: "border-white/20 bg-black/40",
+    icon: "camera",
+    canCapture: false,
+    ovalStroke: "#60a5fa",
+    isDeny: false,
+  },
+  denied: {
+    label: "Camera access denied",
+    sub: "Allow camera in browser settings",
+    color: "text-red-400",
+    badgeClass: "border-red-500/40 bg-red-500/20",
+    icon: "alert",
+    canCapture: false,
+    ovalStroke: "#ef4444",
+    isDeny: true,
+  },
+  "too-dark": {
+    label: "Too dark",
+    sub: "Move to a brighter area",
+    color: "text-amber-400",
+    badgeClass: "border-amber-500/40 bg-amber-500/20",
+    icon: "sun",
+    canCapture: false,
+    ovalStroke: "#f59e0b",
+    isDeny: false,
+  },
+  "no-face": {
+    label: "No face detected",
+    sub: "Position your face inside the oval",
+    color: "text-red-400",
+    badgeClass: "border-red-500/40 bg-red-500/20",
+    icon: "alert",
+    canCapture: false,
+    ovalStroke: "#ef4444",
+    isDeny: true,
+  },
+  "deny-multi": {
+    label: "Only 1 face allowed",
+    sub: "Only one face should be inside the oval",
+    color: "text-red-400",
+    badgeClass: "border-red-500/40 bg-red-500/20",
+    icon: "alert",
+    canCapture: false,
+    ovalStroke: "#ef4444",
+    isDeny: true,
+  },
+  "deny-mouth": {
+    label: "Close your mouth",
+    sub: "Mouth must be closed to capture",
+    color: "text-red-400",
+    badgeClass: "border-red-500/40 bg-red-500/20",
+    icon: "alert",
+    canCapture: false,
+    ovalStroke: "#ef4444",
+    isDeny: true,
+  },
+  "deny-partial": {
+    label: "Show full face",
+    sub: "Partial face detected - face the camera fully",
+    color: "text-red-400",
+    badgeClass: "border-red-500/40 bg-red-500/20",
+    icon: "alert",
+    canCapture: false,
+    ovalStroke: "#ef4444",
+    isDeny: true,
+  },
+  "warn-far": {
+    label: "Move closer",
+    sub: "You are too far - move closer to the camera",
+    color: "text-amber-400",
+    badgeClass: "border-amber-500/40 bg-amber-500/20",
+    icon: "expand",
+    canCapture: false,
+    ovalStroke: "#f59e0b",
+    isDeny: false,
+  },
+  "warn-close": {
+    label: "Move back",
+    sub: "Too close - move back a little",
+    color: "text-amber-400",
+    badgeClass: "border-amber-500/40 bg-amber-500/20",
+    icon: "shrink",
+    canCapture: false,
+    ovalStroke: "#f59e0b",
+    isDeny: false,
+  },
+  "warn-align": {
+    label: "Align face in oval",
+    sub: "Center your face completely inside the oval",
+    color: "text-amber-400",
+    badgeClass: "border-amber-500/40 bg-amber-500/20",
+    icon: "alert",
+    canCapture: false,
+    ovalStroke: "#f59e0b",
+    isDeny: false,
+  },
+  ready: {
+    label: "Full face detected",
+    sub: "Press capture when ready",
+    color: "text-green-400",
+    badgeClass: "border-green-500/40 bg-green-500/20",
+    icon: "check",
+    canCapture: true,
+    ovalStroke: "#22c55e",
+    isDeny: false,
+  },
+  flash: {
+    label: "Captured!",
+    sub: "",
+    color: "text-green-400",
+    badgeClass: "border-green-500/40 bg-green-500/20",
+    icon: "check",
+    canCapture: true,
+    ovalStroke: "#22c55e",
+    isDeny: false,
+  },
 }
 
 function isSkin(r: number, g: number, b: number): boolean {
@@ -59,7 +170,7 @@ function isSkin(r: number, g: number, b: number): boolean {
 function validateCapture(
   imageData: ImageData,
   W: number,
-  H: number,
+  H: number
 ): { valid: boolean; reason?: string; warnings: string[] } {
   const d = imageData.data
   const warnings: string[] = []
@@ -70,7 +181,10 @@ function validateCapture(
   const ry = H * 0.38
 
   type ZoneKey = "top" | "eye" | "mid" | "bot"
-  const zones: Record<ZoneKey, { skin: number; dark: number; n: number; lumSum: number }> = {
+  const zones: Record<
+    ZoneKey,
+    { skin: number; dark: number; n: number; lumSum: number }
+  > = {
     top: { skin: 0, dark: 0, n: 0, lumSum: 0 },
     eye: { skin: 0, dark: 0, n: 0, lumSum: 0 },
     mid: { skin: 0, dark: 0, n: 0, lumSum: 0 },
@@ -103,8 +217,8 @@ function validateCapture(
       const skin = isSkin(r, g, b)
 
       let zone: ZoneKey
-      if (dyN < -0.30) zone = "top"
-      else if (dyN < 0.10) zone = "eye"
+      if (dyN < -0.3) zone = "top"
+      else if (dyN < 0.1) zone = "eye"
       else if (dyN < 0.55) zone = "mid"
       else zone = "bot"
 
@@ -121,7 +235,7 @@ function validateCapture(
         if (skin) rightSkin++
       }
 
-      if (dyN >= 0.30 && dyN < 0.80) {
+      if (dyN >= 0.3 && dyN < 0.8) {
         mouthN++
         if (lum < 50) mouthDark++
       }
@@ -142,14 +256,22 @@ function validateCapture(
   const midSk = skinR("mid")
   const botSk = skinR("bot")
   const eyeDk = zones.eye.n ? zones.eye.dark / zones.eye.n : 0
-  const totalSkin = zones.top.skin + zones.eye.skin + zones.mid.skin + zones.bot.skin
+  const totalSkin =
+    zones.top.skin + zones.eye.skin + zones.mid.skin + zones.bot.skin
   const totalN = zones.top.n + zones.eye.n + zones.mid.n + zones.bot.n
 
   if (!totalN || totalSkin / totalN < 0.08) {
-    return { valid: false, reason: "No face detected. Position your face inside the oval and try again.", warnings: [] }
+    return {
+      valid: false,
+      reason:
+        "No face detected. Position your face inside the oval and try again.",
+      warnings: [],
+    }
   }
 
-  const colRatios = faceSkinCols.map((s, i) => (faceColTotals[i] ? s / faceColTotals[i] : 0))
+  const colRatios = faceSkinCols.map((s, i) =>
+    faceColTotals[i] ? s / faceColTotals[i] : 0
+  )
   const MIN_FACE_PIX_CAP = 30
   let inFirstPeak = false
   let valleyCount = 0
@@ -173,7 +295,11 @@ function validateCapture(
   }
 
   if (twoFaces) {
-    return { valid: false, reason: "Only 1 face allowed - only one face should be inside the oval.", warnings: [] }
+    return {
+      valid: false,
+      reason: "Only 1 face allowed - only one face should be inside the oval.",
+      warnings: [],
+    }
   }
 
   const leftR = leftN ? leftSkin / leftN : 0
@@ -181,34 +307,71 @@ function validateCapture(
   const stronger = Math.max(leftR, rightR)
   const weaker = Math.min(leftR, rightR)
 
-  if (topSk >= 0.18 && eyeSk < 0.10 && midSk < 0.08) {
-    return { valid: false, reason: "Show full face - only your forehead is visible.", warnings: [] }
+  if (topSk >= 0.18 && eyeSk < 0.1 && midSk < 0.08) {
+    return {
+      valid: false,
+      reason: "Show full face - only your forehead is visible.",
+      warnings: [],
+    }
   }
-  if (botSk >= 0.20 && midSk < 0.10 && eyeSk < 0.08 && topSk < 0.08) {
-    return { valid: false, reason: "Show full face - only your chin is visible.", warnings: [] }
+  if (botSk >= 0.2 && midSk < 0.1 && eyeSk < 0.08 && topSk < 0.08) {
+    return {
+      valid: false,
+      reason: "Show full face - only your chin is visible.",
+      warnings: [],
+    }
   }
-  if (topSk < 0.10 && eyeSk < 0.10 && midSk >= 0.15) {
-    return { valid: false, reason: "Show full face - only the lower part of your face is visible.", warnings: [] }
+  if (topSk < 0.1 && eyeSk < 0.1 && midSk >= 0.15) {
+    return {
+      valid: false,
+      reason: "Show full face - only the lower part of your face is visible.",
+      warnings: [],
+    }
   }
-  if (topSk >= 0.15 && eyeSk >= 0.10 && midSk < 0.08 && botSk < 0.08) {
-    return { valid: false, reason: "Show full face - only the upper part of your face is visible.", warnings: [] }
+  if (topSk >= 0.15 && eyeSk >= 0.1 && midSk < 0.08 && botSk < 0.08) {
+    return {
+      valid: false,
+      reason: "Show full face - only the upper part of your face is visible.",
+      warnings: [],
+    }
   }
   if (stronger > 0.18 && weaker < stronger * 0.28 && eyeDk < 0.04) {
-    return { valid: false, reason: "Show full face - a side profile or ear was detected.", warnings: [] }
+    return {
+      valid: false,
+      reason: "Show full face - a side profile or ear was detected.",
+      warnings: [],
+    }
   }
   if (stronger > 0.18 && weaker < stronger * 0.285) {
-    return { valid: false, reason: "Show full face - your face is not completely centered in the oval.", warnings: [] }
+    return {
+      valid: false,
+      reason:
+        "Show full face - your face is not completely centered in the oval.",
+      warnings: [],
+    }
   }
   if (totalN && totalSkin / totalN < 0.18) {
-    return { valid: false, reason: "Show full face - your full face must be visible inside the oval.", warnings: [] }
+    return {
+      valid: false,
+      reason:
+        "Show full face - your full face must be visible inside the oval.",
+      warnings: [],
+    }
   }
 
-  const overallCenterLum = (lumAvg("top") + lumAvg("eye") + lumAvg("mid") + lumAvg("bot")) / 4
-  if (overallCenterLum > 190) warnings.push("Move back - you were too close to the camera.")
+  const overallCenterLum =
+    (lumAvg("top") + lumAvg("eye") + lumAvg("mid") + lumAvg("bot")) / 4
+  if (overallCenterLum > 190)
+    warnings.push("Move back - you were too close to the camera.")
 
   const mouthDarkR = mouthN > 0 ? mouthDark / mouthN : 0
   if (mouthDarkR > 0.12) {
-    return { valid: false, reason: "Close your mouth - mouth appears to be open in the captured photo.", warnings: [] }
+    return {
+      valid: false,
+      reason:
+        "Close your mouth - mouth appears to be open in the captured photo.",
+      warnings: [],
+    }
   }
 
   return { valid: true, warnings }
@@ -350,10 +513,10 @@ export function AttendanceCameraCapture({
             ovalN++
             if (skin) ovalSkin++
 
-            if (dyN < -0.30) {
+            if (dyN < -0.3) {
               zTopN++
               if (skin) zTopSkin++
-            } else if (dyN < 0.10) {
+            } else if (dyN < 0.1) {
               zEyeN++
               if (skin) zEyeSkin++
             } else if (dyN < 0.55) {
@@ -364,11 +527,11 @@ export function AttendanceCameraCapture({
               if (skin) zBotSkin++
             }
 
-            if (dyN >= -0.40 && dyN < 0.15) {
+            if (dyN >= -0.4 && dyN < 0.15) {
               eyeN++
               if (lum < 55) eyeDark++
             }
-            if (dyN >= 0.30 && dyN < 0.80) {
+            if (dyN >= 0.3 && dyN < 0.8) {
               mouthN++
               if (lum < 50) mouthDark++
             }
@@ -421,7 +584,12 @@ export function AttendanceCameraCapture({
       const zEyeSk = zEyeN > 0 ? zEyeSkin / zEyeN : 0
       const zMidSk = zMidN > 0 ? zMidSkin / zMidN : 0
       const zBotSk = zBotN > 0 ? zBotSkin / zBotN : 0
-      const zonesFailing = [zTopSk < 0.02, zEyeSk < 0.03, zMidSk < 0.03, zBotSk < 0.02].filter(Boolean).length
+      const zonesFailing = [
+        zTopSk < 0.02,
+        zEyeSk < 0.03,
+        zMidSk < 0.03,
+        zBotSk < 0.02,
+      ].filter(Boolean).length
       if (zonesFailing >= 2) {
         pushStatus("deny-partial")
         return
@@ -431,7 +599,9 @@ export function AttendanceCameraCapture({
         return
       }
 
-      const colRatios = skinCols.map((s, i) => (totalCols[i] ? s / totalCols[i] : 0))
+      const colRatios = skinCols.map((s, i) =>
+        totalCols[i] ? s / totalCols[i] : 0
+      )
       const MIN_FACE_PIX = 18
       let inFirstPeak = false
       let valleyCount = 0
@@ -465,7 +635,7 @@ export function AttendanceCameraCapture({
         pushStatus("deny-partial")
         return
       }
-      if (stronger > 0.10 && weaker < stronger * 0.40) {
+      if (stronger > 0.1 && weaker < stronger * 0.4) {
         pushStatus("warn-align")
         return
       }
@@ -503,10 +673,19 @@ export function AttendanceCameraCapture({
     ctx.drawImage(video, 0, 0)
 
     const dataUrl = snap.toDataURL("image/jpeg", 0.92)
-    const result = validateCapture(ctx.getImageData(0, 0, snap.width, snap.height), snap.width, snap.height)
+    const result = validateCapture(
+      ctx.getImageData(0, 0, snap.width, snap.height),
+      snap.width,
+      snap.height
+    )
 
     setTimeout(() => {
-      setReview({ dataUrl, valid: result.valid, reason: result.reason, warnings: result.warnings })
+      setReview({
+        dataUrl,
+        valid: result.valid,
+        reason: result.reason,
+        warnings: result.warnings,
+      })
     }, 280)
   }
 
@@ -515,11 +694,18 @@ export function AttendanceCameraCapture({
   }
 
   function handleConfirm() {
-    const time = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+    const time = new Date().toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    })
     onCapture(time)
   }
 
-  const iconMap: Record<string, React.ComponentProps<typeof HugeiconsIcon>["icon"]> = {
+  const iconMap: Record<
+    string,
+    React.ComponentProps<typeof HugeiconsIcon>["icon"]
+  > = {
     camera: Camera01Icon,
     alert: Alert01Icon,
     sun: Sun01Icon,
@@ -543,10 +729,16 @@ export function AttendanceCameraCapture({
 
   return (
     <div className="p-5">
-      <div className="relative overflow-hidden rounded-2xl bg-black" style={{ aspectRatio: "4/3" }}>
+      <div
+        className="relative overflow-hidden rounded-2xl bg-black"
+        style={{ aspectRatio: "4/3" }}
+      >
         <video
           ref={videoRef}
-          className={cn("absolute inset-0 h-full w-full object-cover scale-x-[-1]", review && "invisible")}
+          className={cn(
+            "absolute inset-0 h-full w-full scale-x-[-1] object-cover",
+            review && "invisible"
+          )}
           muted
           playsInline
         />
@@ -554,18 +746,29 @@ export function AttendanceCameraCapture({
 
         {!review && (
           <>
-            {status === "too-dark" && <div className="absolute inset-0 bg-black/50" />}
+            {status === "too-dark" && (
+              <div className="absolute inset-0 bg-black/50" />
+            )}
             {flash && <div className="absolute inset-0 bg-white/80" />}
 
             <div className="pointer-events-none absolute inset-0">
-              <svg className="absolute inset-0 h-full w-full" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+              <svg
+                className="absolute inset-0 h-full w-full"
+                viewBox="0 0 400 300"
+                preserveAspectRatio="xMidYMid slice"
+              >
                 <defs>
                   <mask id="oval-mask">
                     <rect width="400" height="300" fill="white" />
                     <ellipse cx="200" cy="150" rx="88" ry="114" fill="black" />
                   </mask>
                 </defs>
-                <rect width="400" height="300" fill="rgba(0,0,0,0.55)" mask="url(#oval-mask)" />
+                <rect
+                  width="400"
+                  height="300"
+                  fill="rgba(0,0,0,0.55)"
+                  mask="url(#oval-mask)"
+                />
                 <ellipse
                   cx="200"
                   cy="150"
@@ -581,9 +784,20 @@ export function AttendanceCameraCapture({
                   const y = pos.includes("t") ? 36 : 264
                   const dx = pos.includes("l") ? 1 : -1
                   const dy = pos.includes("t") ? 1 : -1
-                  const sc = isReady ? "#22c55e" : isWarn ? "#f59e0b" : isDeny ? "#ef4444" : "#ffffff"
+                  const sc = isReady
+                    ? "#22c55e"
+                    : isWarn
+                      ? "#f59e0b"
+                      : isDeny
+                        ? "#ef4444"
+                        : "#ffffff"
                   return (
-                    <g key={pos} stroke={sc} strokeWidth="2.5" strokeLinecap="round">
+                    <g
+                      key={pos}
+                      stroke={sc}
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                    >
                       <line x1={x} y1={y} x2={x + dx * 14} y2={y} />
                       <line x1={x} y1={y} x2={x} y2={y + dy * 14} />
                     </g>
@@ -592,15 +806,27 @@ export function AttendanceCameraCapture({
               </svg>
             </div>
 
-            <div className="absolute left-0 right-0 top-3 flex justify-center">
-              <div className={cn("flex items-center gap-1.5 rounded-full border px-3 py-1 backdrop-blur-md", cfgRaw.badgeClass)}>
-                <HugeiconsIcon icon={cfgIcon} size={13} strokeWidth={2} className={cfgRaw.color} />
-                <span className={cn("text-[12px] font-semibold", cfgRaw.color)}>{cfgRaw.label}</span>
+            <div className="absolute top-3 right-0 left-0 flex justify-center">
+              <div
+                className={cn(
+                  "flex items-center gap-1.5 rounded-full border px-3 py-1 backdrop-blur-md",
+                  cfgRaw.badgeClass
+                )}
+              >
+                <HugeiconsIcon
+                  icon={cfgIcon}
+                  size={13}
+                  strokeWidth={2}
+                  className={cfgRaw.color}
+                />
+                <span className={cn("text-[12px] font-semibold", cfgRaw.color)}>
+                  {cfgRaw.label}
+                </span>
               </div>
             </div>
 
             {cfgRaw.sub && (
-              <div className="absolute bottom-3 left-0 right-0 flex justify-center">
+              <div className="absolute right-0 bottom-3 left-0 flex justify-center">
                 <span className="rounded-full bg-black/50 px-3 py-1 text-[11px] text-white/80 backdrop-blur-sm">
                   {cfgRaw.sub}
                 </span>
@@ -609,8 +835,15 @@ export function AttendanceCameraCapture({
 
             {status === "too-dark" && (
               <div className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 flex-col items-center gap-2">
-                <HugeiconsIcon icon={Sun01Icon} size={36} strokeWidth={1.5} className="text-amber-400 drop-shadow-lg" />
-                <p className="text-[13px] font-semibold text-white drop-shadow">Needs more lighting</p>
+                <HugeiconsIcon
+                  icon={Sun01Icon}
+                  size={36}
+                  strokeWidth={1.5}
+                  className="text-amber-400 drop-shadow-lg"
+                />
+                <p className="text-[13px] font-semibold text-white drop-shadow">
+                  Needs more lighting
+                </p>
               </div>
             )}
           </>
@@ -619,11 +852,19 @@ export function AttendanceCameraCapture({
         {review && (
           <div className="absolute inset-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={review.dataUrl} alt="Captured" className="h-full w-full object-cover" />
+            <img
+              src={review.dataUrl}
+              alt="Captured"
+              className="h-full w-full object-cover"
+            />
             <div
               className={cn(
                 "pointer-events-none absolute inset-0 rounded-2xl border-4",
-                !review.valid ? "border-red-500" : review.warnings.length > 0 ? "border-amber-500" : "border-green-500",
+                !review.valid
+                  ? "border-red-500"
+                  : review.warnings.length > 0
+                    ? "border-amber-500"
+                    : "border-green-500"
               )}
             />
             <div className="absolute inset-x-0 top-3 flex justify-center">
@@ -634,22 +875,40 @@ export function AttendanceCameraCapture({
                     ? "border-red-500/40 bg-red-500/20"
                     : review.warnings.length > 0
                       ? "border-amber-500/40 bg-amber-500/20"
-                      : "border-green-500/40 bg-green-500/20",
+                      : "border-green-500/40 bg-green-500/20"
                 )}
               >
                 <HugeiconsIcon
-                  icon={!review.valid || review.warnings.length > 0 ? Alert01Icon : CheckmarkBadge01Icon}
+                  icon={
+                    !review.valid || review.warnings.length > 0
+                      ? Alert01Icon
+                      : CheckmarkBadge01Icon
+                  }
                   size={13}
                   strokeWidth={2}
-                  className={!review.valid ? "text-red-400" : review.warnings.length > 0 ? "text-amber-400" : "text-green-400"}
+                  className={
+                    !review.valid
+                      ? "text-red-400"
+                      : review.warnings.length > 0
+                        ? "text-amber-400"
+                        : "text-green-400"
+                  }
                 />
                 <span
                   className={cn(
                     "text-[12px] font-semibold",
-                    !review.valid ? "text-red-400" : review.warnings.length > 0 ? "text-amber-400" : "text-green-400",
+                    !review.valid
+                      ? "text-red-400"
+                      : review.warnings.length > 0
+                        ? "text-amber-400"
+                        : "text-green-400"
                   )}
                 >
-                  {!review.valid ? "Capture rejected" : review.warnings.length > 0 ? "Captured with notice" : "Capture accepted"}
+                  {!review.valid
+                    ? "Capture rejected"
+                    : review.warnings.length > 0
+                      ? "Captured with notice"
+                      : "Capture accepted"}
                 </span>
               </div>
             </div>
@@ -659,7 +918,12 @@ export function AttendanceCameraCapture({
 
       {!review && isDeny && cfgRaw.sub && (
         <div className="mt-2 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 dark:border-red-900/40 dark:bg-red-900/20">
-          <HugeiconsIcon icon={Alert01Icon} size={14} strokeWidth={2} className="shrink-0 text-red-500" />
+          <HugeiconsIcon
+            icon={Alert01Icon}
+            size={14}
+            strokeWidth={2}
+            className="shrink-0 text-red-500"
+          />
           <p className="text-[12px] text-red-700 dark:text-red-400">
             <span className="font-semibold">{cfgRaw.label}</span> - {cfgRaw.sub}
           </p>
@@ -668,7 +932,12 @@ export function AttendanceCameraCapture({
 
       {!review && isWarn && (
         <div className="mt-2 flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-900/40 dark:bg-amber-900/20">
-          <HugeiconsIcon icon={Alert01Icon} size={14} strokeWidth={2} className="shrink-0 text-amber-500" />
+          <HugeiconsIcon
+            icon={Alert01Icon}
+            size={14}
+            strokeWidth={2}
+            className="shrink-0 text-amber-500"
+          />
           <p className="text-[12px] text-amber-700 dark:text-amber-400">
             <span className="font-semibold">{cfgRaw.label}</span> - {cfgRaw.sub}
           </p>
@@ -677,15 +946,29 @@ export function AttendanceCameraCapture({
 
       {review && !review.valid && (
         <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3 dark:border-red-900/40 dark:bg-red-900/20">
-          <HugeiconsIcon icon={Alert01Icon} size={15} strokeWidth={2} className="mt-0.5 shrink-0 text-red-500" />
-          <p className="text-[12px] leading-relaxed text-red-700 dark:text-red-400">{review.reason}</p>
+          <HugeiconsIcon
+            icon={Alert01Icon}
+            size={15}
+            strokeWidth={2}
+            className="mt-0.5 shrink-0 text-red-500"
+          />
+          <p className="text-[12px] leading-relaxed text-red-700 dark:text-red-400">
+            {review.reason}
+          </p>
         </div>
       )}
 
       {review && review.valid && review.warnings.length > 0 && (
         <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/40 dark:bg-amber-900/20">
-          <HugeiconsIcon icon={Alert01Icon} size={15} strokeWidth={2} className="mt-0.5 shrink-0 text-amber-500" />
-          <p className="text-[12px] leading-relaxed text-amber-700 dark:text-amber-400">{review.warnings[0]}</p>
+          <HugeiconsIcon
+            icon={Alert01Icon}
+            size={15}
+            strokeWidth={2}
+            className="mt-0.5 shrink-0 text-amber-500"
+          />
+          <p className="text-[12px] leading-relaxed text-amber-700 dark:text-amber-400">
+            {review.warnings[0]}
+          </p>
         </div>
       )}
 
@@ -701,10 +984,15 @@ export function AttendanceCameraCapture({
             <button
               onClick={handleCapture}
               disabled={!canCap}
-              className={cn("flex h-11 flex-1 items-center justify-center gap-2 rounded-xl text-[14px] font-semibold transition-all duration-150", capBtnClass)}
+              className={cn(
+                "flex h-11 flex-1 items-center justify-center gap-2 rounded-xl text-[14px] font-semibold transition-all duration-150",
+                capBtnClass
+              )}
             >
               <HugeiconsIcon icon={Camera01Icon} size={16} strokeWidth={2} />
-              {canCap ? `Capture & Time ${punchType === "in" ? "In" : "Out"}` : "Waiting for face..."}
+              {canCap
+                ? `Capture & Time ${punchType === "in" ? "In" : "Out"}`
+                : "Waiting for face..."}
             </button>
           </>
         ) : review.valid ? (
@@ -719,10 +1007,16 @@ export function AttendanceCameraCapture({
               onClick={handleConfirm}
               className={cn(
                 "flex h-11 flex-1 items-center justify-center gap-2 rounded-xl text-[14px] font-semibold text-white transition-colors",
-                punchType === "in" ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600",
+                punchType === "in"
+                  ? "bg-green-500 hover:bg-green-600"
+                  : "bg-red-500 hover:bg-red-600"
               )}
             >
-              <HugeiconsIcon icon={CheckmarkBadge01Icon} size={16} strokeWidth={2} />
+              <HugeiconsIcon
+                icon={CheckmarkBadge01Icon}
+                size={16}
+                strokeWidth={2}
+              />
               Confirm Time {punchType === "in" ? "In" : "Out"}
             </button>
           </>
@@ -731,7 +1025,9 @@ export function AttendanceCameraCapture({
             onClick={handleRetry}
             className={cn(
               "flex h-11 flex-1 items-center justify-center gap-2 rounded-xl text-[14px] font-semibold text-white transition-colors",
-              punchType === "in" ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600",
+              punchType === "in"
+                ? "bg-green-500 hover:bg-green-600"
+                : "bg-red-500 hover:bg-red-600"
             )}
           >
             <HugeiconsIcon icon={Camera01Icon} size={16} strokeWidth={2} />

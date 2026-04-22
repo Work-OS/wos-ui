@@ -16,7 +16,13 @@ const TIMEZONES = [
   "Europe/Paris (UTC+1)",
 ]
 
-const LANGUAGES = ["English (US)", "English (UK)", "Filipino", "Japanese", "Spanish"]
+const LANGUAGES = [
+  "English (US)",
+  "English (UK)",
+  "Filipino",
+  "Japanese",
+  "Spanish",
+]
 
 export function AppearanceSection() {
   const { resolvedTheme, setTheme } = useTheme()
@@ -35,7 +41,9 @@ export function AppearanceSection() {
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
         <h3 className="text-[15px] font-semibold">Appearance</h3>
-        <p className="text-[13px] text-muted-foreground">Customize how WorkOS looks and feels on your device</p>
+        <p className="text-[13px] text-muted-foreground">
+          Customize how WorkOS looks and feels on your device
+        </p>
       </div>
       <Separator />
 
@@ -50,22 +58,30 @@ export function AppearanceSection() {
                 "rounded-xl border p-4 text-left transition-all duration-150",
                 mounted && resolvedTheme === t.value
                   ? "border-primary bg-primary/5 ring-2 ring-primary/20"
-                  : "border-border hover:border-primary/30 hover:bg-muted/50",
+                  : "border-border hover:border-primary/30 hover:bg-muted/50"
               )}
             >
-              <div className={cn(
-                "mb-2 h-12 rounded-lg border",
-                t.value === "dark" ? "border-zinc-700 bg-zinc-900" :
-                t.value === "light" ? "border-zinc-200 bg-white" :
-                "border-zinc-300 bg-linear-to-br from-white to-zinc-900"
-              )} />
+              <div
+                className={cn(
+                  "mb-2 h-12 rounded-lg border",
+                  t.value === "dark"
+                    ? "border-zinc-700 bg-zinc-900"
+                    : t.value === "light"
+                      ? "border-zinc-200 bg-white"
+                      : "border-zinc-300 bg-linear-to-br from-white to-zinc-900"
+                )}
+              />
               <p className="text-[13px] font-medium">{t.label}</p>
               <p className="text-[11px] text-muted-foreground">{t.desc}</p>
             </button>
           ))}
         </div>
         <p className="mt-3 text-[11px] text-muted-foreground">
-          Tip: press <kbd className="rounded border border-border bg-muted px-1 text-[10px]">D</kbd> anywhere to toggle dark mode
+          Tip: press{" "}
+          <kbd className="rounded border border-border bg-muted px-1 text-[10px]">
+            D
+          </kbd>{" "}
+          anywhere to toggle dark mode
         </p>
       </div>
 
@@ -73,16 +89,20 @@ export function AppearanceSection() {
 
       <div>
         <p className="mb-1 text-[13px] font-medium">Locale &amp; language</p>
-        <p className="mb-4 text-[12px] text-muted-foreground">Controls date formats, time display, and UI language</p>
+        <p className="mb-4 text-[12px] text-muted-foreground">
+          Controls date formats, time display, and UI language
+        </p>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label>Timezone</Label>
             <select
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
-              className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-[13px] focus:ring-1 focus:ring-ring focus:outline-none"
             >
-              {TIMEZONES.map((tz) => <option key={tz}>{tz}</option>)}
+              {TIMEZONES.map((tz) => (
+                <option key={tz}>{tz}</option>
+              ))}
             </select>
           </div>
           <div className="space-y-1.5">
@@ -90,9 +110,11 @@ export function AppearanceSection() {
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-[13px] focus:ring-1 focus:ring-ring focus:outline-none"
             >
-              {LANGUAGES.map((l) => <option key={l}>{l}</option>)}
+              {LANGUAGES.map((l) => (
+                <option key={l}>{l}</option>
+              ))}
             </select>
           </div>
         </div>

@@ -60,8 +60,15 @@ export function OvertimeModal({ open, onClose }: OvertimeModalProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {["Regular OT", "Rest day OT", "Holiday OT", "Night differential"].map((v) => (
-                  <SelectItem key={v} value={v}>{v}</SelectItem>
+                {[
+                  "Regular OT",
+                  "Rest day OT",
+                  "Holiday OT",
+                  "Night differential",
+                ].map((v) => (
+                  <SelectItem key={v} value={v}>
+                    {v}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -83,13 +90,18 @@ export function OvertimeModal({ open, onClose }: OvertimeModalProps) {
           </div>
 
           <div className="rounded-lg border border-danger-border bg-danger-light px-3 py-2.5 text-[12px] text-danger">
-            Overtime must be pre-approved by your supervisor before filing. Unapproved OT may be subject to review.
+            Overtime must be pre-approved by your supervisor before filing.
+            Unapproved OT may be subject to review.
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
-          <Button size="sm" onClick={onClose}>Submit request</Button>
+          <Button variant="outline" size="sm" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button size="sm" onClick={onClose}>
+            Submit request
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

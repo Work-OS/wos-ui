@@ -1,7 +1,13 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle, CardAction } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardAction,
+} from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { StatCard } from "@/components/custom/stat-card"
@@ -33,9 +39,9 @@ const ACTIVITIES = [
 
 const LEAVE_COLOR_MAP: Record<string, string> = {
   "Vacation Leave": "bg-primary",
-  "Sick Leave":     "bg-success",
+  "Sick Leave": "bg-success",
   "Emergency Leave": "bg-warning",
-  "Special Leave":  "bg-purple-500",
+  "Special Leave": "bg-purple-500",
 }
 
 function getGreeting() {
@@ -46,29 +52,31 @@ function getGreeting() {
 }
 
 export function OverviewSection() {
-  const router    = useRouter()
-  const { user }  = useAuthStore()
-  const statsQ    = useEmployeeStats()
+  const router = useRouter()
+  const { user } = useAuthStore()
+  const statsQ = useEmployeeStats()
   const balancesQ = useLeaveBalances()
 
   const firstName = user?.firstName ?? "—"
-  const dateStr   = new Date().toLocaleDateString("en-US", {
+  const dateStr = new Date().toLocaleDateString("en-US", {
     weekday: "long",
-    month:   "long",
-    day:     "numeric",
+    month: "long",
+    day: "numeric",
   })
 
-  const stats    = statsQ.data
+  const stats = statsQ.data
   const balances = balancesQ.data ?? []
 
   return (
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <p className="text-[15px] font-semibold leading-snug">
+        <p className="text-[15px] leading-snug font-semibold">
           {getGreeting()}, {firstName}
         </p>
-        <p className="text-sm text-muted-foreground">{dateStr} · 2 pending items</p>
+        <p className="text-sm text-muted-foreground">
+          {dateStr} · 2 pending items
+        </p>
       </div>
 
       {/* 4 stat cards */}
@@ -85,10 +93,16 @@ export function OverviewSection() {
           value={
             <>
               {stats ? stats.totalLeaveUsed : "—"}{" "}
-              <span className="text-sm font-normal text-muted-foreground">days</span>
+              <span className="text-sm font-normal text-muted-foreground">
+                days
+              </span>
             </>
           }
-          meta={stats ? `${stats.leaveVacation} vacation · ${stats.leaveSick} sick` : ""}
+          meta={
+            stats
+              ? `${stats.leaveVacation} vacation · ${stats.leaveSick} sick`
+              : ""
+          }
           accent="amber"
         />
         <StatCard
@@ -96,7 +110,9 @@ export function OverviewSection() {
           value={
             <>
               {stats ? stats.totalHoursWorked.toLocaleString() : "—"}{" "}
-              <span className="text-sm font-normal text-muted-foreground">hrs</span>
+              <span className="text-sm font-normal text-muted-foreground">
+                hrs
+              </span>
             </>
           }
           delta="Year to date"
@@ -108,7 +124,9 @@ export function OverviewSection() {
           value={
             <span className="text-danger">
               {stats ? stats.totalHoursLate : "—"}{" "}
-              <span className="text-sm font-normal text-muted-foreground">hrs</span>
+              <span className="text-sm font-normal text-muted-foreground">
+                hrs
+              </span>
             </span>
           }
           delta={stats ? `${stats.lateIncidents} incidents this year` : ""}
@@ -126,7 +144,10 @@ export function OverviewSection() {
           <CardHeader>
             <CardTitle>Leave balance</CardTitle>
             <CardAction>
-              <Button size="sm" onClick={() => router.push("/dashboard/request")}>
+              <Button
+                size="sm"
+                onClick={() => router.push("/dashboard/request")}
+              >
                 + File leave
               </Button>
             </CardAction>
@@ -135,13 +156,19 @@ export function OverviewSection() {
             {balancesQ.isLoading ? (
               <p className="text-[13px] text-muted-foreground">Loading…</p>
             ) : balances.length === 0 ? (
-              <p className="text-[13px] text-muted-foreground">No leave balance data</p>
+              <p className="text-[13px] text-muted-foreground">
+                No leave balance data
+              </p>
             ) : (
               balances.map((l) => (
                 <div key={l.type}>
                   <div className="mb-1.5 flex items-center justify-between">
-                    <span className="text-[13px] text-muted-foreground">{l.type}</span>
-                    <span className="text-[13px] font-semibold">{l.remaining} days</span>
+                    <span className="text-[13px] text-muted-foreground">
+                      {l.type}
+                    </span>
+                    <span className="text-[13px] font-semibold">
+                      {l.remaining} days
+                    </span>
                   </div>
                   <Progress
                     value={(l.remaining / l.total) * 100}
@@ -160,7 +187,9 @@ export function OverviewSection() {
         <CardHeader>
           <CardTitle>Recent activity</CardTitle>
           <CardAction>
-            <button className="text-xs text-primary hover:underline">View all</button>
+            <button className="text-xs text-primary hover:underline">
+              View all
+            </button>
           </CardAction>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -171,7 +200,9 @@ export function OverviewSection() {
                 <p className="text-[13px] font-medium">{a.title}</p>
                 <p className="text-[12px] text-muted-foreground">{a.meta}</p>
               </div>
-              <span className="shrink-0 text-[12px] text-muted-foreground">{a.time}</span>
+              <span className="shrink-0 text-[12px] text-muted-foreground">
+                {a.time}
+              </span>
             </div>
           ))}
         </CardContent>

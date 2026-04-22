@@ -82,14 +82,14 @@ function RequestTypeCard({
       className={cn(
         "group w-full rounded-xl border border-border bg-card p-4 text-left shadow-sm transition-all duration-150",
         "hover:-translate-y-0.5 hover:shadow-md",
-        s.card,
+        s.card
       )}
     >
       <div
         className={cn(
           "mb-2.5 flex size-9 items-center justify-center rounded-lg",
           s.icon,
-          s.iconStroke,
+          s.iconStroke
         )}
       >
         {icon}
@@ -180,7 +180,10 @@ const typeLabel: Record<RequestType, string> = {
   ot: "Overtime",
 }
 
-const typeVariant: Record<RequestType, "blue" | "green" | "purple" | "amber" | "red"> = {
+const typeVariant: Record<
+  RequestType,
+  "blue" | "green" | "purple" | "amber" | "red"
+> = {
   leave: "blue",
   ob: "green",
   coe: "purple",
@@ -205,7 +208,6 @@ export function RequestSection() {
 
   return (
     <div className="space-y-5">
-
       {/* ── Header ── */}
       <div>
         <p className="text-[15px] font-semibold">Requests</p>
@@ -219,7 +221,12 @@ export function RequestSection() {
         <StatCard
           title="Leave balance"
           value={
-            <>14 <span className="text-sm font-normal text-muted-foreground">days</span></>
+            <>
+              14{" "}
+              <span className="text-sm font-normal text-muted-foreground">
+                days
+              </span>
+            </>
           }
           meta="8 vacation · 4 sick · 2 emergency"
           accent="blue"
@@ -251,14 +258,18 @@ export function RequestSection() {
           title="Leave request"
           description="Vacation, sick, emergency or maternity/paternity"
           onClick={() => setLeaveOpen(true)}
-          icon={<HugeiconsIcon icon={Calendar01Icon} size={18} strokeWidth={1.8} />}
+          icon={
+            <HugeiconsIcon icon={Calendar01Icon} size={18} strokeWidth={1.8} />
+          }
         />
         <RequestTypeCard
           accent="success"
           title="Official business"
           description="Request time off for work-related activities"
           onClick={() => setObOpen(true)}
-          icon={<HugeiconsIcon icon={Briefcase01Icon} size={18} strokeWidth={1.8} />}
+          icon={
+            <HugeiconsIcon icon={Briefcase01Icon} size={18} strokeWidth={1.8} />
+          }
         />
         <RequestTypeCard
           accent="violet"
@@ -272,14 +283,18 @@ export function RequestSection() {
           title="Change time in/out"
           description="Request a correction to your DTR record"
           onClick={() => setDtrOpen(true)}
-          icon={<HugeiconsIcon icon={Clock01Icon} size={18} strokeWidth={1.8} />}
+          icon={
+            <HugeiconsIcon icon={Clock01Icon} size={18} strokeWidth={1.8} />
+          }
         />
         <RequestTypeCard
           accent="danger"
           title="Overtime request"
           description="File pre-approved overtime hours for compensation"
           onClick={() => setOtOpen(true)}
-          icon={<HugeiconsIcon icon={ClockPlusIcon} size={18} strokeWidth={1.8} />}
+          icon={
+            <HugeiconsIcon icon={ClockPlusIcon} size={18} strokeWidth={1.8} />
+          }
         />
       </div>
 
@@ -293,7 +308,14 @@ export function RequestSection() {
           <Table>
             <TableHeader>
               <TableRow>
-                {["Type", "Details", "Date filed", "For date", "Status", "Remarks"].map((h) => (
+                {[
+                  "Type",
+                  "Details",
+                  "Date filed",
+                  "For date",
+                  "Status",
+                  "Remarks",
+                ].map((h) => (
                   <TableHead key={h}>{h}</TableHead>
                 ))}
               </TableRow>
@@ -308,10 +330,16 @@ export function RequestSection() {
                   </TableCell>
                   <TableCell>
                     <p className="font-medium">{r.title}</p>
-                    <p className="text-[12px] text-muted-foreground">{r.meta}</p>
+                    <p className="text-[12px] text-muted-foreground">
+                      {r.meta}
+                    </p>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{r.filed}</TableCell>
-                  <TableCell className="text-muted-foreground">{r.forDate}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {r.filed}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {r.forDate}
+                  </TableCell>
                   <TableCell>
                     <StatusBadge variant={statusVariant[r.status]}>
                       {r.status.charAt(0).toUpperCase() + r.status.slice(1)}

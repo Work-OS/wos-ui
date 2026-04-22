@@ -59,7 +59,7 @@ export function TablePagination({
         <select
           value={pageSize}
           onChange={(e) => setPageSize(Number(e.target.value))}
-          className="rounded border border-input bg-transparent px-1.5 py-0.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-ring"
+          className="rounded border border-input bg-transparent px-1.5 py-0.5 text-[12px] focus:ring-1 focus:ring-ring focus:outline-none"
         >
           {pageSizeOptions.map((s) => (
             <option key={s} value={s}>

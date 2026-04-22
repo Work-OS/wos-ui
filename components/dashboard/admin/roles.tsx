@@ -28,7 +28,10 @@ import {
   useToggleFunctionality,
   useSetTemporaryAccess,
 } from "@/hooks/use-admin-roles"
-import type { AssignedAccessRole, TemporaryAccessPayload } from "@/lib/admin-roles-api"
+import type {
+  AssignedAccessRole,
+  TemporaryAccessPayload,
+} from "@/lib/admin-roles-api"
 
 // ── Checkbox ───────────────────────────────────────────────────────────────
 
@@ -38,10 +41,10 @@ function Checkbox({
   onChange,
   title,
 }: {
-  checked:  boolean
+  checked: boolean
   disabled?: boolean
   onChange: () => void
-  title?:   string
+  title?: string
 }) {
   return (
     <button
@@ -54,12 +57,18 @@ function Checkbox({
         checked
           ? "border-primary bg-primary"
           : "border-border bg-background hover:border-primary/50",
-        disabled && "cursor-not-allowed opacity-40",
+        disabled && "cursor-not-allowed opacity-40"
       )}
     >
       {checked && (
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <path d="M2 5l2.5 2.5L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="M2 5l2.5 2.5L8 3"
+            stroke="white"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       )}
     </button>
@@ -76,17 +85,17 @@ function RoleFormInline({
   onCancel,
   isPending,
 }: {
-  initial?:  { name: string; description: string; color?: string }
-  onSave:    (name: string, description: string, color: string) => void
-  onCancel:  () => void
+  initial?: { name: string; description: string; color?: string }
+  onSave: (name: string, description: string, color: string) => void
+  onCancel: () => void
   isPending: boolean
 }) {
-  const [name,  setName]  = useState(initial?.name        ?? "")
-  const [desc,  setDesc]  = useState(initial?.description ?? "")
-  const [color, setColor] = useState(initial?.color       ?? DEFAULT_ROLE_COLOR)
+  const [name, setName] = useState(initial?.name ?? "")
+  const [desc, setDesc] = useState(initial?.description ?? "")
+  const [color, setColor] = useState(initial?.color ?? DEFAULT_ROLE_COLOR)
 
   return (
-    <div className="rounded-xl border border-border bg-card p-3 shadow-sm space-y-2">
+    <div className="space-y-2 rounded-xl border border-border bg-card p-3 shadow-sm">
       <div className="space-y-1">
         <Label className="text-[11px]">Role name</Label>
         <Input
@@ -95,7 +104,8 @@ function RoleFormInline({
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && name.trim()) onSave(name.trim(), desc.trim(), color)
+            if (e.key === "Enter" && name.trim())
+              onSave(name.trim(), desc.trim(), color)
             if (e.key === "Escape") onCancel()
           }}
           className="h-8 text-[12px]"
@@ -113,7 +123,7 @@ function RoleFormInline({
       <div className="space-y-1">
         <Label className="text-[11px]">Badge color</Label>
         <div className="flex items-center gap-2">
-          <label className="relative cursor-pointer shrink-0">
+          <label className="relative shrink-0 cursor-pointer">
             <span
               className="block size-7 rounded-full border-2 border-border shadow-sm"
               style={{ backgroundColor: color }}
@@ -161,11 +171,11 @@ function RoleFormInline({
 
 interface TempTarget {
   accessRoleId: number
-  label:        string
-  startDate:    string
-  endDate:      string
-  startTime:    string
-  endTime:      string
+  label: string
+  startDate: string
+  endDate: string
+  startTime: string
+  endTime: string
 }
 
 function TemporaryAccessModal({
@@ -175,32 +185,41 @@ function TemporaryAccessModal({
   onClose,
   isPending,
 }: {
-  target:    TempTarget
-  onSave:    (payload: TemporaryAccessPayload) => void
-  onClear:   () => void
-  onClose:   () => void
+  target: TempTarget
+  onSave: (payload: TemporaryAccessPayload) => void
+  onClear: () => void
+  onClose: () => void
   isPending: boolean
 }) {
   const [startDate, setStartDate] = useState(target.startDate)
-  const [endDate,   setEndDate]   = useState(target.endDate)
+  const [endDate, setEndDate] = useState(target.endDate)
   const [startTime, setStartTime] = useState(target.startTime)
-  const [endTime,   setEndTime]   = useState(target.endTime)
+  const [endTime, setEndTime] = useState(target.endTime)
 
-  const hasTime  = startTime !== "" || endTime !== ""
-  const canSave  = startDate !== "" && endDate !== ""
+  const hasTime = startTime !== "" || endTime !== ""
+  const canSave = startDate !== "" && endDate !== ""
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-sm animate-in fade-in zoom-in-95 duration-200 rounded-2xl border border-border bg-card p-6 shadow-xl">
-
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div className="relative w-full max-w-sm animate-in rounded-2xl border border-border bg-card p-6 shadow-xl duration-200 zoom-in-95 fade-in">
         {/* Header */}
-        <div className="flex items-center gap-2.5 mb-4">
+        <div className="mb-4 flex items-center gap-2.5">
           <div className="flex size-8 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/20">
-            <HugeiconsIcon icon={Clock01Icon} size={16} strokeWidth={1.8} className="text-amber-600 dark:text-amber-400" />
+            <HugeiconsIcon
+              icon={Clock01Icon}
+              size={16}
+              strokeWidth={1.8}
+              className="text-amber-600 dark:text-amber-400"
+            />
           </div>
           <div>
-            <h2 className="text-[14px] font-semibold text-foreground">Temporary access</h2>
+            <h2 className="text-[14px] font-semibold text-foreground">
+              Temporary access
+            </h2>
             <p className="text-[11px] text-muted-foreground">{target.label}</p>
           </div>
         </div>
@@ -208,7 +227,7 @@ function TemporaryAccessModal({
         <div className="space-y-4">
           {/* Date range */}
           <div>
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <p className="mb-2 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
               Date range
             </p>
             <div className="grid grid-cols-2 gap-2">
@@ -236,8 +255,11 @@ function TemporaryAccessModal({
 
           {/* Time range */}
           <div>
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Time window <span className="normal-case font-normal text-muted-foreground/70">(optional)</span>
+            <p className="mb-2 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+              Time window{" "}
+              <span className="font-normal text-muted-foreground/70 normal-case">
+                (optional)
+              </span>
             </p>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
@@ -261,7 +283,9 @@ function TemporaryAccessModal({
               </div>
             </div>
             {hasTime && (!startTime || !endTime) && (
-              <p className="mt-1.5 text-[11px] text-amber-600">Both start and end time are required.</p>
+              <p className="mt-1.5 text-[11px] text-amber-600">
+                Both start and end time are required.
+              </p>
             )}
           </div>
         </div>
@@ -282,13 +306,15 @@ function TemporaryAccessModal({
           </button>
           <Button
             className="h-9 flex-1 text-[13px]"
-            disabled={!canSave || (hasTime && (!startTime || !endTime)) || isPending}
+            disabled={
+              !canSave || (hasTime && (!startTime || !endTime)) || isPending
+            }
             onClick={() =>
               onSave({
                 startDate,
                 endDate,
-                startTime:  startTime || null,
-                endTime:    endTime   || null,
+                startTime: startTime || null,
+                endTime: endTime || null,
               })
             }
           >
@@ -303,34 +329,42 @@ function TemporaryAccessModal({
 function fmtDateBadge(startDate?: string | null, endDate?: string | null) {
   if (!startDate || !endDate) return null
   const fmt = (d: string) =>
-    new Date(d + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    new Date(d + "T00:00:00").toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    })
   return `${fmt(startDate)} – ${fmt(endDate)}`
 }
 
 // ── Main Component ─────────────────────────────────────────────────────────
 
 export function RolesSection() {
-  const [activeId,   setActiveId]   = useState<number | null>(null)
-  const [creating,   setCreating]   = useState(false)
-  const [editingId,  setEditingId]  = useState<number | null>(null)
-  const [deleteId,   setDeleteId]   = useState<number | null>(null)
-  const [confirmDisable,  setConfirmDisable]  = useState<{ accessRoleId: number; label: string } | null>(null)
-  const [tempAccessTarget, setTempAccessTarget] = useState<TempTarget | null>(null)
+  const [activeId, setActiveId] = useState<number | null>(null)
+  const [creating, setCreating] = useState(false)
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [confirmDisable, setConfirmDisable] = useState<{
+    accessRoleId: number
+    label: string
+  } | null>(null)
+  const [tempAccessTarget, setTempAccessTarget] = useState<TempTarget | null>(
+    null
+  )
 
-  const rolesQ       = useUserRoles()
+  const rolesQ = useUserRoles()
   const accessRolesQ = useAccessRoles()
 
-  const createMutation    = useCreateUserRole()
-  const updateMutation    = useUpdateUserRole()
-  const deleteMutation    = useDeleteUserRole()
-  const addAccessRole     = useAddAccessRole()
-  const removeAccessRole  = useRemoveAccessRole()
-  const toggleFunc        = useToggleFunctionality()
-  const setTempAccess     = useSetTemporaryAccess()
+  const createMutation = useCreateUserRole()
+  const updateMutation = useUpdateUserRole()
+  const deleteMutation = useDeleteUserRole()
+  const addAccessRole = useAddAccessRole()
+  const removeAccessRole = useRemoveAccessRole()
+  const toggleFunc = useToggleFunctionality()
+  const setTempAccess = useSetTemporaryAccess()
 
-  const roles             = rolesQ.data ?? []
-  const accessRoles       = accessRolesQ.data ?? []
-  const active            = roles.find((r) => r.id === activeId) ?? roles[0] ?? null
+  const roles = rolesQ.data ?? []
+  const accessRoles = accessRolesQ.data ?? []
+  const active = roles.find((r) => r.id === activeId) ?? roles[0] ?? null
 
   function resolveAccessRoleId(ar: AssignedAccessRole): number | null {
     const raw = ar as unknown as {
@@ -338,7 +372,13 @@ export function RolesSection() {
       id?: number
       accessRole?: { id?: number; accessRoleId?: number }
     }
-    return raw.accessRoleId ?? raw.id ?? raw.accessRole?.id ?? raw.accessRole?.accessRoleId ?? null
+    return (
+      raw.accessRoleId ??
+      raw.id ??
+      raw.accessRole?.id ??
+      raw.accessRole?.accessRoleId ??
+      null
+    )
   }
 
   function functionalityLabel(f: {
@@ -346,8 +386,16 @@ export function RolesSection() {
     functionalityName?: string
     functionality?: { name?: string }
   }) {
-    const raw = f as { functionalityName?: string; functionality?: { name?: string } }
-    return f.name ?? raw.functionalityName ?? raw.functionality?.name ?? "Unnamed functionality"
+    const raw = f as {
+      functionalityName?: string
+      functionality?: { name?: string }
+    }
+    return (
+      f.name ??
+      raw.functionalityName ??
+      raw.functionality?.name ??
+      "Unnamed functionality"
+    )
   }
 
   function catalogAccessRoleLabel(ar: {
@@ -356,7 +404,9 @@ export function RolesSection() {
     code?: string
     roleName?: string
   }) {
-    return ar.name ?? ar.pageName ?? ar.code ?? ar.roleName ?? "Unnamed access role"
+    return (
+      ar.name ?? ar.pageName ?? ar.code ?? ar.roleName ?? "Unnamed access role"
+    )
   }
 
   function resolveFunctionalityId(f: {
@@ -369,13 +419,24 @@ export function RolesSection() {
 
   // Helpers to read current state from the active role
   function getAssigned(accessRoleId: number) {
-    return active?.accessRoles.find((ar) => resolveAccessRoleId(ar) === accessRoleId) ?? null
+    return (
+      active?.accessRoles.find(
+        (ar) => resolveAccessRoleId(ar) === accessRoleId
+      ) ?? null
+    )
   }
 
-  function isFuncEnabled(accessRoleId: number, functionalityId: number): boolean {
+  function isFuncEnabled(
+    accessRoleId: number,
+    functionalityId: number
+  ): boolean {
     const assigned = getAssigned(accessRoleId)
     if (!assigned) return false
-    return assigned.functionalities.find((f) => resolveFunctionalityId(f) === functionalityId)?.enabled ?? false
+    return (
+      assigned.functionalities.find(
+        (f) => resolveFunctionalityId(f) === functionalityId
+      )?.enabled ?? false
+    )
   }
 
   function handleToggleAccessRole(accessRoleId: number) {
@@ -388,21 +449,37 @@ export function RolesSection() {
     }
   }
 
-  function handleToggleFunctionality(accessRoleId: number, functionalityId: number) {
+  function handleToggleFunctionality(
+    accessRoleId: number,
+    functionalityId: number
+  ) {
     if (!active) return
     const assigned = getAssigned(accessRoleId)
     const currentlyEnabled = isFuncEnabled(accessRoleId, functionalityId)
 
     if (!assigned) {
-      addAccessRole.mutate({ userRoleId: active.id, accessRoleId }, {
-        onSuccess: () => {
-          toggleFunc.mutate({ userRoleId: active.id, accessRoleId, functionalityId, enabled: true })
-        },
-      })
+      addAccessRole.mutate(
+        { userRoleId: active.id, accessRoleId },
+        {
+          onSuccess: () => {
+            toggleFunc.mutate({
+              userRoleId: active.id,
+              accessRoleId,
+              functionalityId,
+              enabled: true,
+            })
+          },
+        }
+      )
       return
     }
 
-    toggleFunc.mutate({ userRoleId: active.id, accessRoleId, functionalityId, enabled: !currentlyEnabled })
+    toggleFunc.mutate({
+      userRoleId: active.id,
+      accessRoleId,
+      functionalityId,
+      enabled: !currentlyEnabled,
+    })
   }
 
   const isMutating =
@@ -415,7 +492,12 @@ export function RolesSection() {
   if (rolesQ.isLoading || accessRolesQ.isLoading) {
     return (
       <div className="flex h-64 items-center justify-center gap-2 text-muted-foreground">
-        <HugeiconsIcon icon={Loading03Icon} size={20} strokeWidth={1.8} className="animate-spin" />
+        <HugeiconsIcon
+          icon={Loading03Icon}
+          size={20}
+          strokeWidth={1.8}
+          className="animate-spin"
+        />
         <span className="text-[13px]">Loading roles…</span>
       </div>
     )
@@ -424,7 +506,12 @@ export function RolesSection() {
   if (rolesQ.isError || accessRolesQ.isError) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-2 text-muted-foreground">
-        <HugeiconsIcon icon={Alert01Icon} size={24} strokeWidth={1.5} className="text-red-400" />
+        <HugeiconsIcon
+          icon={Alert01Icon}
+          size={24}
+          strokeWidth={1.5}
+          className="text-red-400"
+        />
         <p className="text-[13px]">Failed to load roles data</p>
       </div>
     )
@@ -435,11 +522,14 @@ export function RolesSection() {
       {/* ── Role list sidebar ── */}
       <div className="flex w-60 shrink-0 flex-col gap-1">
         <div className="mb-2 flex items-center justify-between">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+          <p className="text-[11px] font-semibold tracking-widest text-muted-foreground/60 uppercase">
             Roles
           </p>
           <button
-            onClick={() => { setCreating(true); setEditingId(null) }}
+            onClick={() => {
+              setCreating(true)
+              setEditingId(null)
+            }}
             className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary/10"
           >
             <HugeiconsIcon icon={Add01Icon} size={12} strokeWidth={2} />
@@ -451,12 +541,16 @@ export function RolesSection() {
           <div key={r.id}>
             {editingId === r.id ? (
               <RoleFormInline
-                initial={{ name: r.name, description: r.description, color: r.color }}
+                initial={{
+                  name: r.name,
+                  description: r.description,
+                  color: r.color,
+                }}
                 isPending={updateMutation.isPending}
                 onSave={(name, description, color) =>
                   updateMutation.mutate(
                     { id: r.id, name, description, color },
-                    { onSuccess: () => setEditingId(null) },
+                    { onSuccess: () => setEditingId(null) }
                   )
                 }
                 onCancel={() => setEditingId(null)}
@@ -465,41 +559,63 @@ export function RolesSection() {
               <div
                 role="button"
                 tabIndex={0}
-                onClick={() => { setActiveId(r.id); setCreating(false); setEditingId(null) }}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { setActiveId(r.id); setCreating(false); setEditingId(null) } }}
+                onClick={() => {
+                  setActiveId(r.id)
+                  setCreating(false)
+                  setEditingId(null)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    setActiveId(r.id)
+                    setCreating(false)
+                    setEditingId(null)
+                  }
+                }}
                 className={cn(
                   "group flex w-full cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-all duration-150",
                   (active?.id ?? roles[0]?.id) === r.id
                     ? "border-primary/20 bg-primary text-primary-foreground shadow-sm"
-                    : "border-transparent bg-muted/50 hover:bg-muted text-foreground",
+                    : "border-transparent bg-muted/50 text-foreground hover:bg-muted"
                 )}
               >
-                <div className={cn(
-                  "flex size-7 shrink-0 items-center justify-center rounded-lg",
-                  (active?.id ?? roles[0]?.id) === r.id ? "bg-white/15" : "bg-background",
-                )}>
+                <div
+                  className={cn(
+                    "flex size-7 shrink-0 items-center justify-center rounded-lg",
+                    (active?.id ?? roles[0]?.id) === r.id
+                      ? "bg-white/15"
+                      : "bg-background"
+                  )}
+                >
                   <HugeiconsIcon
                     icon={UserShield01Icon}
                     size={14}
                     strokeWidth={1.8}
-                    className={(active?.id ?? roles[0]?.id) === r.id ? "text-primary-foreground" : "text-muted-foreground"}
+                    className={
+                      (active?.id ?? roles[0]?.id) === r.id
+                        ? "text-primary-foreground"
+                        : "text-muted-foreground"
+                    }
                   />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    <p className={cn(
-                      "truncate text-[12px] font-semibold",
-                      (active?.id ?? roles[0]?.id) === r.id ? "text-primary-foreground" : "text-foreground",
-                    )}>
+                    <p
+                      className={cn(
+                        "truncate text-[12px] font-semibold",
+                        (active?.id ?? roles[0]?.id) === r.id
+                          ? "text-primary-foreground"
+                          : "text-foreground"
+                      )}
+                    >
                       {r.name}
                     </p>
                     {r.color && (
                       <span
-                        className="shrink-0 rounded-full border px-1.5 py-px text-[9px] font-semibold leading-tight group-hover:hidden"
+                        className="shrink-0 rounded-full border px-1.5 py-px text-[9px] leading-tight font-semibold group-hover:hidden"
                         style={{
                           backgroundColor: `${r.color}1a`,
-                          borderColor:     `${r.color}40`,
-                          color:           r.color,
+                          borderColor: `${r.color}40`,
+                          color: r.color,
                         }}
                       >
                         {r.name}
@@ -507,10 +623,14 @@ export function RolesSection() {
                     )}
                   </div>
                   {r.description && (
-                    <p className={cn(
-                      "truncate text-[10px]",
-                      (active?.id ?? roles[0]?.id) === r.id ? "text-white/60" : "text-muted-foreground",
-                    )}>
+                    <p
+                      className={cn(
+                        "truncate text-[10px]",
+                        (active?.id ?? roles[0]?.id) === r.id
+                          ? "text-white/60"
+                          : "text-muted-foreground"
+                      )}
+                    >
                       {r.description}
                     </p>
                   )}
@@ -521,16 +641,27 @@ export function RolesSection() {
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
-                    onClick={() => { setEditingId(r.id); setCreating(false) }}
+                    onClick={() => {
+                      setEditingId(r.id)
+                      setCreating(false)
+                    }}
                     className="rounded p-0.5 opacity-70 hover:opacity-100"
                   >
-                    <HugeiconsIcon icon={Edit01Icon} size={11} strokeWidth={2} />
+                    <HugeiconsIcon
+                      icon={Edit01Icon}
+                      size={11}
+                      strokeWidth={2}
+                    />
                   </button>
                   <button
                     onClick={() => setDeleteId(r.id)}
                     className="rounded p-0.5 opacity-70 hover:text-red-400 hover:opacity-100"
                   >
-                    <HugeiconsIcon icon={Delete01Icon} size={11} strokeWidth={2} />
+                    <HugeiconsIcon
+                      icon={Delete01Icon}
+                      size={11}
+                      strokeWidth={2}
+                    />
                   </button>
                 </div>
               </div>
@@ -550,7 +681,7 @@ export function RolesSection() {
                     setActiveId(created.id)
                     setCreating(false)
                   },
-                },
+                }
               )
             }
             onCancel={() => setCreating(false)}
@@ -560,11 +691,19 @@ export function RolesSection() {
         {/* Delete confirm */}
         {deleteId !== null && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDeleteId(null)} />
+            <div
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              onClick={() => setDeleteId(null)}
+            />
             <div className="relative w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl">
               <div className="flex items-center gap-3">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
-                  <HugeiconsIcon icon={Delete01Icon} size={18} strokeWidth={1.8} className="text-red-500" />
+                  <HugeiconsIcon
+                    icon={Delete01Icon}
+                    size={18}
+                    strokeWidth={1.8}
+                    className="text-red-500"
+                  />
                 </div>
                 <div>
                   <h2 className="text-[14px] font-semibold">Delete role?</h2>
@@ -612,16 +751,28 @@ export function RolesSection() {
             <div className="flex items-center justify-between border-b border-border px-6 py-4">
               <div className="flex items-center gap-3">
                 <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10">
-                  <HugeiconsIcon icon={UserShield01Icon} size={18} strokeWidth={1.8} className="text-primary" />
+                  <HugeiconsIcon
+                    icon={UserShield01Icon}
+                    size={18}
+                    strokeWidth={1.8}
+                    className="text-primary"
+                  />
                 </div>
                 <div>
                   <h2 className="text-[15px] font-semibold">{active.name}</h2>
-                  <p className="text-[12px] text-muted-foreground">{active.description}</p>
+                  <p className="text-[12px] text-muted-foreground">
+                    {active.description}
+                  </p>
                 </div>
               </div>
               {isMutating && (
                 <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
-                  <HugeiconsIcon icon={Loading03Icon} size={13} strokeWidth={2} className="animate-spin" />
+                  <HugeiconsIcon
+                    icon={Loading03Icon}
+                    size={13}
+                    strokeWidth={2}
+                    className="animate-spin"
+                  />
                   Saving…
                 </div>
               )}
@@ -630,23 +781,25 @@ export function RolesSection() {
             {/* Matrix */}
             {accessRoles.length === 0 ? (
               <div className="flex flex-1 items-center justify-center">
-                <p className="text-[13px] text-muted-foreground">No access roles defined</p>
+                <p className="text-[13px] text-muted-foreground">
+                  No access roles defined
+                </p>
               </div>
             ) : (
               <div className="flex-1 overflow-auto">
                 <table className="w-full">
                   <thead className="sticky top-0 z-10 bg-card">
                     <tr className="border-b border-border">
-                      <th className="py-3 pl-6 pr-4 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      <th className="py-3 pr-4 pl-6 text-left text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
                         Access role
                       </th>
-                      <th className="w-20 px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      <th className="w-20 px-4 py-3 text-center text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
                         Enabled
                       </th>
-                      <th className="w-40 px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      <th className="w-40 px-4 py-3 text-center text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
                         Temporary
                       </th>
-                      <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      <th className="px-4 py-3 text-left text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
                         Functionalities
                       </th>
                     </tr>
@@ -661,8 +814,10 @@ export function RolesSection() {
                           key={resolvedAccessRoleId}
                           className="border-b border-border/40 transition-colors hover:bg-muted/30"
                         >
-                          <td className="py-3 pl-8 pr-4">
-                            <span className="text-[13px] font-medium">{catalogAccessRoleLabel(ar)}</span>
+                          <td className="py-3 pr-4 pl-8">
+                            <span className="text-[13px] font-medium">
+                              {catalogAccessRoleLabel(ar)}
+                            </span>
                           </td>
                           {/* Row-level toggle */}
                           <td className="w-20 px-4 py-3 text-center">
@@ -681,14 +836,19 @@ export function RolesSection() {
 
                                   handleToggleAccessRole(resolvedAccessRoleId)
                                 }}
-                                title={isAssigned ? "Remove access" : "Grant access"}
+                                title={
+                                  isAssigned ? "Remove access" : "Grant access"
+                                }
                               />
                             </div>
                           </td>
                           {/* Temporary access cell */}
                           <td className="w-40 px-4 py-3 text-center">
                             {(() => {
-                              const badge = fmtDateBadge(assigned?.startDate, assigned?.endDate)
+                              const badge = fmtDateBadge(
+                                assigned?.startDate,
+                                assigned?.endDate
+                              )
                               return (
                                 <div className="flex justify-center">
                                   {!isAssigned ? (
@@ -703,16 +863,20 @@ export function RolesSection() {
                                       onClick={() =>
                                         setTempAccessTarget({
                                           accessRoleId: resolvedAccessRoleId,
-                                          label:        catalogAccessRoleLabel(ar),
-                                          startDate:    assigned?.startDate ?? "",
-                                          endDate:      assigned?.endDate   ?? "",
-                                          startTime:    assigned?.startTime ?? "",
-                                          endTime:      assigned?.endTime   ?? "",
+                                          label: catalogAccessRoleLabel(ar),
+                                          startDate: assigned?.startDate ?? "",
+                                          endDate: assigned?.endDate ?? "",
+                                          startTime: assigned?.startTime ?? "",
+                                          endTime: assigned?.endTime ?? "",
                                         })
                                       }
                                       className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-400"
                                     >
-                                      <HugeiconsIcon icon={Clock01Icon} size={10} strokeWidth={2} />
+                                      <HugeiconsIcon
+                                        icon={Clock01Icon}
+                                        size={10}
+                                        strokeWidth={2}
+                                      />
                                       {badge}
                                     </button>
                                   ) : (
@@ -720,17 +884,21 @@ export function RolesSection() {
                                       onClick={() =>
                                         setTempAccessTarget({
                                           accessRoleId: resolvedAccessRoleId,
-                                          label:        catalogAccessRoleLabel(ar),
-                                          startDate:    "",
-                                          endDate:      "",
-                                          startTime:    "",
-                                          endTime:      "",
+                                          label: catalogAccessRoleLabel(ar),
+                                          startDate: "",
+                                          endDate: "",
+                                          startTime: "",
+                                          endTime: "",
                                         })
                                       }
                                       className="rounded p-1 text-muted-foreground/50 transition-colors hover:bg-muted hover:text-muted-foreground"
                                       title="Set temporary access"
                                     >
-                                      <HugeiconsIcon icon={Calendar01Icon} size={14} strokeWidth={1.8} />
+                                      <HugeiconsIcon
+                                        icon={Calendar01Icon}
+                                        size={14}
+                                        strokeWidth={1.8}
+                                      />
                                     </button>
                                   )}
                                 </div>
@@ -739,21 +907,35 @@ export function RolesSection() {
                           </td>
                           <td className="px-4 py-3">
                             {ar.functionalities.length === 0 ? (
-                              <span className="text-[12px] text-muted-foreground">No functionalities</span>
+                              <span className="text-[12px] text-muted-foreground">
+                                No functionalities
+                              </span>
                             ) : (
                               <div className="flex flex-wrap gap-2">
                                 {ar.functionalities.map((f) => (
-                                  <label key={f.id} className="inline-flex items-center gap-2 rounded-md border border-border px-2.5 py-1">
+                                  <label
+                                    key={f.id}
+                                    className="inline-flex items-center gap-2 rounded-md border border-border px-2.5 py-1"
+                                  >
                                     <Checkbox
-                                      checked={isFuncEnabled(resolvedAccessRoleId, f.id)}
+                                      checked={isFuncEnabled(
+                                        resolvedAccessRoleId,
+                                        f.id
+                                      )}
                                       disabled={isMutating}
                                       onChange={() => {
-                                        const functionalityId = resolveFunctionalityId(f)
+                                        const functionalityId =
+                                          resolveFunctionalityId(f)
                                         if (functionalityId === null) return
-                                        handleToggleFunctionality(resolvedAccessRoleId, functionalityId)
+                                        handleToggleFunctionality(
+                                          resolvedAccessRoleId,
+                                          functionalityId
+                                        )
                                       }}
                                     />
-                                    <span className="text-[12px]">{functionalityLabel(f)}</span>
+                                    <span className="text-[12px]">
+                                      {functionalityLabel(f)}
+                                    </span>
                                   </label>
                                 ))}
                               </div>
@@ -775,21 +957,26 @@ export function RolesSection() {
                 onClear={() =>
                   setTempAccess.mutate(
                     {
-                      userRoleId:   active.id,
+                      userRoleId: active.id,
                       accessRoleId: tempAccessTarget.accessRoleId,
-                      payload:      { startDate: null, endDate: null, startTime: null, endTime: null },
+                      payload: {
+                        startDate: null,
+                        endDate: null,
+                        startTime: null,
+                        endTime: null,
+                      },
                     },
-                    { onSuccess: () => setTempAccessTarget(null) },
+                    { onSuccess: () => setTempAccessTarget(null) }
                   )
                 }
                 onSave={(payload) =>
                   setTempAccess.mutate(
                     {
-                      userRoleId:   active.id,
+                      userRoleId: active.id,
                       accessRoleId: tempAccessTarget.accessRoleId,
                       payload,
                     },
-                    { onSuccess: () => setTempAccessTarget(null) },
+                    { onSuccess: () => setTempAccessTarget(null) }
                   )
                 }
               />
@@ -797,19 +984,32 @@ export function RolesSection() {
 
             {confirmDisable !== null && (
               <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setConfirmDisable(null)} />
+                <div
+                  className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                  onClick={() => setConfirmDisable(null)}
+                />
                 <div className="relative w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl">
                   <div className="flex items-center gap-3">
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
-                      <HugeiconsIcon icon={Alert01Icon} size={18} strokeWidth={1.8} className="text-red-500" />
+                      <HugeiconsIcon
+                        icon={Alert01Icon}
+                        size={18}
+                        strokeWidth={1.8}
+                        className="text-red-500"
+                      />
                     </div>
                     <div>
-                      <h2 className="text-[14px] font-semibold">Disable access role?</h2>
-                      <p className="text-[12px] text-muted-foreground">{confirmDisable.label}</p>
+                      <h2 className="text-[14px] font-semibold">
+                        Disable access role?
+                      </h2>
+                      <p className="text-[12px] text-muted-foreground">
+                        {confirmDisable.label}
+                      </p>
                     </div>
                   </div>
                   <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
-                    This will remove this access role from the selected user role.
+                    This will remove this access role from the selected user
+                    role.
                   </p>
                   <div className="mt-5 flex gap-2">
                     <button
@@ -837,9 +1037,16 @@ export function RolesSection() {
         ) : (
           <div className="flex flex-1 items-center justify-center">
             <div className="text-center">
-              <HugeiconsIcon icon={UserShield01Icon} size={32} strokeWidth={1.5} className="mx-auto mb-3 text-muted-foreground/30" />
+              <HugeiconsIcon
+                icon={UserShield01Icon}
+                size={32}
+                strokeWidth={1.5}
+                className="mx-auto mb-3 text-muted-foreground/30"
+              />
               <p className="text-[13px] text-muted-foreground">
-                {roles.length === 0 ? "No roles yet. Create one to get started." : "Select a role to view permissions"}
+                {roles.length === 0
+                  ? "No roles yet. Create one to get started."
+                  : "Select a role to view permissions"}
               </p>
             </div>
           </div>

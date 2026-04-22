@@ -39,7 +39,10 @@ export function ObModal({ open, onClose }: ObModalProps) {
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="ob-purpose">Purpose / activity</Label>
-            <Input id="ob-purpose" placeholder="e.g. Client meeting, training, conference…" />
+            <Input
+              id="ob-purpose"
+              placeholder="e.g. Client meeting, training, conference…"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -54,8 +57,15 @@ export function ObModal({ open, onClose }: ObModalProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {["Full day", "Half day AM", "Half day PM", "Custom hours"].map((v) => (
-                    <SelectItem key={v} value={v}>{v}</SelectItem>
+                  {[
+                    "Full day",
+                    "Half day AM",
+                    "Half day PM",
+                    "Custom hours",
+                  ].map((v) => (
+                    <SelectItem key={v} value={v}>
+                      {v}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -64,12 +74,20 @@ export function ObModal({ open, onClose }: ObModalProps) {
 
           <div className="space-y-1.5">
             <Label htmlFor="ob-location">Location / venue</Label>
-            <Input id="ob-location" placeholder="e.g. Makati office, BGC, Remote" />
+            <Input
+              id="ob-location"
+              placeholder="e.g. Makati office, BGC, Remote"
+            />
           </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="ob-notes">Supporting details (optional)</Label>
-            <Textarea id="ob-notes" placeholder="Add any relevant context…" rows={2} className="resize-none" />
+            <Textarea
+              id="ob-notes"
+              placeholder="Add any relevant context…"
+              rows={2}
+              className="resize-none"
+            />
           </div>
 
           <div className="rounded-lg border border-success-border bg-success-light px-3 py-2.5 text-[12px] text-success">
@@ -78,8 +96,12 @@ export function ObModal({ open, onClose }: ObModalProps) {
         </div>
 
         <DialogFooter>
-          <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
-          <Button size="sm" onClick={onClose}>Submit request</Button>
+          <Button variant="outline" size="sm" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button size="sm" onClick={onClose}>
+            Submit request
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

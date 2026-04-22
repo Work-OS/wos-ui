@@ -32,13 +32,16 @@ export function PayslipModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="p-0 overflow-hidden max-w-120 gap-0" showCloseButton={false}>
+      <DialogContent
+        className="max-w-120 gap-0 overflow-hidden p-0"
+        showCloseButton={false}
+      >
         <DialogTitle className="sr-only">Payslip — {data.period}</DialogTitle>
         {/* Blue header */}
         <div className="bg-primary px-6 py-5 text-primary-foreground">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-widest opacity-70">
+              <p className="text-[11px] font-semibold tracking-widest uppercase opacity-70">
                 Payslip
               </p>
               <p className="mt-1 text-xl font-bold">{data.period}</p>
@@ -47,15 +50,24 @@ export function PayslipModal({
               <Button
                 size="sm"
                 variant="ghost"
-                className="bg-white/15 text-white hover:bg-white/25 border border-white/30 rounded-lg text-xs"
+                className="rounded-lg border border-white/30 bg-white/15 text-xs text-white hover:bg-white/25"
                 onClick={() => alert("PDF download started")}
               >
-                <HugeiconsIcon icon={Download01Icon} size={13} strokeWidth={2} className="mr-1" />
+                <HugeiconsIcon
+                  icon={Download01Icon}
+                  size={13}
+                  strokeWidth={2}
+                  className="mr-1"
+                />
                 PDF
               </Button>
               <DialogClose asChild>
-                <button className="flex size-7 items-center justify-center rounded-lg bg-white/15 text-white hover:bg-white/25 transition-colors">
-                  <HugeiconsIcon icon={Cancel01Icon} size={13} strokeWidth={2.5} />
+                <button className="flex size-7 items-center justify-center rounded-lg bg-white/15 text-white transition-colors hover:bg-white/25">
+                  <HugeiconsIcon
+                    icon={Cancel01Icon}
+                    size={13}
+                    strokeWidth={2.5}
+                  />
                   <span className="sr-only">Close</span>
                 </button>
               </DialogClose>
@@ -66,10 +78,10 @@ export function PayslipModal({
           </p>
         </div>
 
-        <div className="px-6 pb-6 pt-0">
+        <div className="px-6 pt-0 pb-6">
           {/* Earnings */}
-          <div className="-mx-6 bg-muted px-6 py-2 mb-0">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          <div className="-mx-6 mb-0 bg-muted px-6 py-2">
+            <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
               Earnings
             </p>
           </div>
@@ -83,22 +95,36 @@ export function PayslipModal({
           )}
 
           {/* Deductions */}
-          <div className="-mx-6 bg-muted px-6 py-2 mt-1">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          <div className="-mx-6 mt-1 bg-muted px-6 py-2">
+            <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
               Deductions
             </p>
           </div>
-          <SlipRow label="SSS contribution" value={`-${data.sss}`} valueClass="text-danger" />
-          <SlipRow label="PhilHealth" value={`-${data.philhealth}`} valueClass="text-danger" />
-          <SlipRow label="Pag-IBIG" value={`-${data.pagibig}`} valueClass="text-danger" />
-          <SlipRow label="Withholding tax" value={`-${data.tax}`} valueClass="text-danger" />
+          <SlipRow
+            label="SSS contribution"
+            value={`-${data.sss}`}
+            valueClass="text-danger"
+          />
+          <SlipRow
+            label="PhilHealth"
+            value={`-${data.philhealth}`}
+            valueClass="text-danger"
+          />
+          <SlipRow
+            label="Pag-IBIG"
+            value={`-${data.pagibig}`}
+            valueClass="text-danger"
+          />
+          <SlipRow
+            label="Withholding tax"
+            value={`-${data.tax}`}
+            valueClass="text-danger"
+          />
 
           {/* Net */}
           <div className="mt-4 flex items-center justify-between rounded-lg bg-muted p-4">
             <span className="text-sm font-bold text-foreground">Net pay</span>
-            <span className="text-lg font-bold text-success">
-              {data.net}
-            </span>
+            <span className="text-lg font-bold text-success">{data.net}</span>
           </div>
         </div>
       </DialogContent>
@@ -118,7 +144,9 @@ function SlipRow({
   return (
     <div className="flex items-center justify-between border-b border-border py-2.5 last:border-0">
       <span className="text-[13px] text-muted-foreground">{label}</span>
-      <span className={`text-[13px] font-medium tabular-nums ${valueClass ?? "text-foreground"}`}>
+      <span
+        className={`text-[13px] font-medium tabular-nums ${valueClass ?? "text-foreground"}`}
+      >
         {value}
       </span>
     </div>

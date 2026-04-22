@@ -9,6 +9,6 @@ export function DashboardOverview() {
   const apiRole = useAuthStore((s) => s.apiRole)
 
   if (apiRole === "ADMIN") return <AdminOverview />
-  if (apiRole === "HR")    return <HROverview />
+  if (apiRole === "HR") return <HROverview />
   return <EmployeeOverview />
 }

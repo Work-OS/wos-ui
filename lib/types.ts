@@ -4,7 +4,7 @@ export interface NavItem {
   label: string
   section: string
   badge?: number
-  authority: string | null  // authority required to see this item; null = always visible
+  authority: string | null // authority required to see this item; null = always visible
 }
 
 export interface Employee {
@@ -27,7 +27,16 @@ export interface AttendanceRecord {
   timeOut: string
   hoursWorked: string
   otHours: string
-  status: "present" | "late" | "absent" | "leave" | "holiday" | "restday" | "overtime" | "overbreak" | "undertime"
+  status:
+    | "present"
+    | "late"
+    | "absent"
+    | "leave"
+    | "holiday"
+    | "restday"
+    | "overtime"
+    | "overbreak"
+    | "undertime"
 }
 
 export interface PayslipData {

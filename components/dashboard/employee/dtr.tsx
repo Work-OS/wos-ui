@@ -52,7 +52,10 @@ function toAttendanceRecord(e: AttendanceEntry): AttendanceRecord {
   return e as AttendanceRecord
 }
 
-const statusVariant: Record<string, "green" | "red" | "amber" | "gray" | "blue" | "purple"> = {
+const statusVariant: Record<
+  string,
+  "green" | "red" | "amber" | "gray" | "blue" | "purple"
+> = {
   present: "green",
   late: "amber",
   absent: "red",
@@ -87,8 +90,14 @@ function ViewModal({
     { label: "Time in", value: record.timeIn },
     { label: "Time out", value: record.timeOut },
     { label: "Hours worked", value: record.hoursWorked },
-    { label: "OT hours", value: record.otHours !== "—" ? `+${record.otHours}h` : "—" },
-    { label: "Status", value: record.status.charAt(0).toUpperCase() + record.status.slice(1) },
+    {
+      label: "OT hours",
+      value: record.otHours !== "—" ? `+${record.otHours}h` : "—",
+    },
+    {
+      label: "Status",
+      value: record.status.charAt(0).toUpperCase() + record.status.slice(1),
+    },
     ...(note ? [{ label: "Notes", value: note }] : []),
   ]
   return (
@@ -99,14 +108,19 @@ function ViewModal({
         </DialogHeader>
         <div className="divide-y divide-border rounded-lg border border-border text-[13px]">
           {rows.map(({ label, value }) => (
-            <div key={label} className="flex items-center justify-between px-4 py-2.5">
+            <div
+              key={label}
+              className="flex items-center justify-between px-4 py-2.5"
+            >
               <span className="text-muted-foreground">{label}</span>
               <span className="font-medium tabular-nums">{value}</span>
             </div>
           ))}
         </div>
         <DialogFooter>
-          <Button variant="outline" size="sm" onClick={onClose}>Close</Button>
+          <Button variant="outline" size="sm" onClick={onClose}>
+            Close
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -156,7 +170,8 @@ function AppealModal({
           <DialogTitle>File an appeal</DialogTitle>
         </DialogHeader>
         <p className="text-[12px] text-muted-foreground">
-          {record.date} · {record.day} · <span className="capitalize">{record.status}</span>
+          {record.date} · {record.day} ·{" "}
+          <span className="capitalize">{record.status}</span>
         </p>
         <div className="space-y-4">
           {/* Checkbox to enable time change — only for late / undertime */}
@@ -207,8 +222,12 @@ function AppealModal({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
-          <Button size="sm" disabled={!reason.trim()} onClick={handleSubmit}>Submit appeal</Button>
+          <Button variant="outline" size="sm" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button size="sm" disabled={!reason.trim()} onClick={handleSubmit}>
+            Submit appeal
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -226,10 +245,39 @@ interface DtrBreak {
 }
 
 const INITIAL_BREAKS: Record<string, DtrBreak> = {
-  morning: { label: "Morning", allowMins: 15, elapsed: 0, active: false, startTime: null, done: false },
-  lunch: { label: "Lunch", allowMins: 60, elapsed: 0, active: false, startTime: null, done: false },
-  afternoon: { label: "Afternoon", allowMins: 15, elapsed: 0, active: false, startTime: null, done: false },
-  dinner: { label: "Dinner", allowMins: 30, elapsed: 0, active: false, startTime: null, done: false, otOnly: true },
+  morning: {
+    label: "Morning",
+    allowMins: 15,
+    elapsed: 0,
+    active: false,
+    startTime: null,
+    done: false,
+  },
+  lunch: {
+    label: "Lunch",
+    allowMins: 60,
+    elapsed: 0,
+    active: false,
+    startTime: null,
+    done: false,
+  },
+  afternoon: {
+    label: "Afternoon",
+    allowMins: 15,
+    elapsed: 0,
+    active: false,
+    startTime: null,
+    done: false,
+  },
+  dinner: {
+    label: "Dinner",
+    allowMins: 30,
+    elapsed: 0,
+    active: false,
+    startTime: null,
+    done: false,
+    otOnly: true,
+  },
 }
 
 function fmtDuration(secs: number): string {
@@ -239,23 +287,35 @@ function fmtDuration(secs: number): string {
 }
 
 function fmtTime(date: Date): string {
-  return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  })
 }
 
 function isBreakInWindow(type: string, now: Date | null): boolean {
   if (!now) return false
   const mins = now.getHours() * 60 + now.getMinutes()
-  if (type === "morning")   return mins >= 6 * 60 && mins < 12 * 60
-  if (type === "lunch")     return mins >= 12 * 60 && mins <= 13 * 60
+  if (type === "morning") return mins >= 6 * 60 && mins < 12 * 60
+  if (type === "lunch") return mins >= 12 * 60 && mins <= 13 * 60
   if (type === "afternoon") return mins > 13 * 60 && mins < 18 * 60
-  if (type === "dinner")    return mins >= 18 * 60
+  if (type === "dinner") return mins >= 18 * 60
   return false
 }
 
 // ── Ring button ───────────────────────────────────────────────────────────────
 
 function DtrRingButton({
-  size, progress, ringColor, onClick, disabled, children, label, sublabel, pulse,
+  size,
+  progress,
+  ringColor,
+  onClick,
+  disabled,
+  children,
+  label,
+  sublabel,
+  pulse,
 }: {
   size: number
   progress: number
@@ -279,16 +339,34 @@ function DtrRingButton({
         className={cn(
           "relative flex items-center justify-center rounded-full bg-muted/50 transition-all duration-150",
           "hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40",
-          pulse && "animate-pulse",
+          pulse && "animate-pulse"
         )}
         style={{ width: size, height: size }}
       >
-        <svg className="absolute inset-0" width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--bdr)" strokeWidth={sw} />
+        <svg
+          className="absolute inset-0"
+          width={size}
+          height={size}
+          style={{ transform: "rotate(-90deg)" }}
+        >
           <circle
-            cx={size / 2} cy={size / 2} r={r} fill="none"
-            stroke={ringColor} strokeWidth={sw} strokeLinecap="round"
-            strokeDasharray={circ} strokeDashoffset={offset}
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            fill="none"
+            stroke="var(--bdr)"
+            strokeWidth={sw}
+          />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            fill="none"
+            stroke={ringColor}
+            strokeWidth={sw}
+            strokeLinecap="round"
+            strokeDasharray={circ}
+            strokeDashoffset={offset}
             style={{ transition: "stroke-dashoffset 1s linear, stroke 0.3s" }}
           />
         </svg>
@@ -296,17 +374,32 @@ function DtrRingButton({
       </button>
       <div className="text-center leading-tight">
         <p className="text-[11px] font-semibold text-foreground">{label}</p>
-        {sublabel && <p className="text-[10px] text-muted-foreground">{sublabel}</p>}
+        {sublabel && (
+          <p className="text-[10px] text-muted-foreground">{sublabel}</p>
+        )}
       </div>
     </div>
   )
 }
 
 const BREAK_ICONS: Record<string, (color: string) => React.ReactNode> = {
-  morning:   (c) => <HugeiconsIcon icon={Coffee01Icon}     size={15} strokeWidth={2} color={c} />,
-  lunch:     (c) => <HugeiconsIcon icon={SpoonAndForkIcon} size={15} strokeWidth={2} color={c} />,
-  afternoon: (c) => <HugeiconsIcon icon={Sun01Icon}        size={15} strokeWidth={2} color={c} />,
-  dinner:    (c) => <HugeiconsIcon icon={Moon01Icon}       size={15} strokeWidth={2} color={c} />,
+  morning: (c) => (
+    <HugeiconsIcon icon={Coffee01Icon} size={15} strokeWidth={2} color={c} />
+  ),
+  lunch: (c) => (
+    <HugeiconsIcon
+      icon={SpoonAndForkIcon}
+      size={15}
+      strokeWidth={2}
+      color={c}
+    />
+  ),
+  afternoon: (c) => (
+    <HugeiconsIcon icon={Sun01Icon} size={15} strokeWidth={2} color={c} />
+  ),
+  dinner: (c) => (
+    <HugeiconsIcon icon={Moon01Icon} size={15} strokeWidth={2} color={c} />
+  ),
 }
 
 export function DTRSection() {
@@ -318,11 +411,13 @@ export function DTRSection() {
   const [dtrOpen, setDtrOpen] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const clockCardRef = useRef<HTMLDivElement>(null)
-  const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(null)
-  const [viewOpen, setViewOpen]   = useState(false)
+  const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(
+    null
+  )
+  const [viewOpen, setViewOpen] = useState(false)
   const [appealOpen, setAppealOpen] = useState(false)
   const [recordNotes, setRecordNotes] = useState<Record<string, string>>({})
-  const [page, setPage]         = useState(1)
+  const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
 
   const { data: attendanceData, isLoading: attendanceLoading } = useAttendance({
@@ -330,9 +425,9 @@ export function DTRSection() {
     size: pageSize,
   })
 
-  const paginated  = (attendanceData?.content ?? []).map(toAttendanceRecord)
-  const total      = attendanceData?.totalElements ?? 0
-  const totalPages = attendanceData?.totalPages    ?? 0
+  const paginated = (attendanceData?.content ?? []).map(toAttendanceRecord)
+  const total = attendanceData?.totalElements ?? 0
+  const totalPages = attendanceData?.totalPages ?? 0
 
   useEffect(() => {
     setNow(new Date())
@@ -354,9 +449,10 @@ export function DTRSection() {
     }
   }
 
-  const workSecs = clocked && clockInTime && now
-    ? Math.floor((now.getTime() - clockInTime.getTime()) / 1000)
-    : 0
+  const workSecs =
+    clocked && clockInTime && now
+      ? Math.floor((now.getTime() - clockInTime.getTime()) / 1000)
+      : 0
 
   const breakSecs = Object.values(breaks).reduce((sum, b) => {
     if (b.active && b.startTime && now)
@@ -390,7 +486,16 @@ export function DTRSection() {
         const updated = Object.fromEntries(
           Object.entries(prev).map(([k, v]) => {
             if (v.active && v.startTime) {
-              return [k, { ...v, elapsed: v.elapsed + Math.floor((Date.now() - v.startTime) / 1000), active: false, startTime: null }]
+              return [
+                k,
+                {
+                  ...v,
+                  elapsed:
+                    v.elapsed + Math.floor((Date.now() - v.startTime) / 1000),
+                  active: false,
+                  startTime: null,
+                },
+              ]
             }
             return [k, v]
           })
@@ -398,17 +503,23 @@ export function DTRSection() {
         updated[type] = { ...b, active: true, startTime: Date.now() }
         return updated
       } else {
-        const elapsed = b.elapsed + (b.startTime ? Math.floor((Date.now() - b.startTime) / 1000) : 0)
-        const done = elapsed >= b.allowMins * 60  // only lock out if overbreak consumed
-        return { ...prev, [type]: { ...b, elapsed, active: false, startTime: null, done } }
+        const elapsed =
+          b.elapsed +
+          (b.startTime ? Math.floor((Date.now() - b.startTime) / 1000) : 0)
+        const done = elapsed >= b.allowMins * 60 // only lock out if overbreak consumed
+        return {
+          ...prev,
+          [type]: { ...b, elapsed, active: false, startTime: null, done },
+        }
       }
     })
   }, [])
 
   const getBreakRemaining = (b: DtrBreak) => {
-    const used = b.active && b.startTime && now
-      ? b.elapsed + Math.floor((now.getTime() - b.startTime) / 1000)
-      : b.elapsed
+    const used =
+      b.active && b.startTime && now
+        ? b.elapsed + Math.floor((now.getTime() - b.startTime) / 1000)
+        : b.elapsed
     return b.allowMins * 60 - used
   }
 
@@ -419,26 +530,38 @@ export function DTRSection() {
   }
 
   const timeStr = now
-    ? now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+    ? now.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
     : "--:--:-- --"
 
   const dateStr = now
-    ? now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
+    ? now.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
     : ""
 
-  const activeBreakEntry = Object.entries(breaks).find(([, b]) => b.active) ?? null
+  const activeBreakEntry =
+    Object.entries(breaks).find(([, b]) => b.active) ?? null
   const anyBreakActive = activeBreakEntry !== null
 
   const activeBreakRemaining = activeBreakEntry
     ? (() => {
         const b = activeBreakEntry[1]
-        const used = b.startTime && now
-          ? b.elapsed + Math.floor((now.getTime() - b.startTime) / 1000)
-          : b.elapsed
+        const used =
+          b.startTime && now
+            ? b.elapsed + Math.floor((now.getTime() - b.startTime) / 1000)
+            : b.elapsed
         return b.allowMins * 60 - used
       })()
     : null
-  const activeBreakIsOver = activeBreakRemaining !== null && activeBreakRemaining < 0
+  const activeBreakIsOver =
+    activeBreakRemaining !== null && activeBreakRemaining < 0
 
   const fmtCountdown = (secs: number) => {
     const abs = Math.abs(secs)
@@ -448,29 +571,43 @@ export function DTRSection() {
   }
 
   const clockStatus = clocked ? "green" : clockOutTime ? "blue" : "gray"
-  const clockLabel = clocked ? "Clocked in" : clockOutTime ? "Complete" : "Not clocked in"
+  const clockLabel = clocked
+    ? "Clocked in"
+    : clockOutTime
+      ? "Complete"
+      : "Not clocked in"
 
   return (
     <div className="space-y-6">
       {/* Clock + summary */}
       <div className="grid grid-cols-5 gap-4">
-
         {/* ── Clock panel ── */}
         <div
           ref={clockCardRef}
           className={cn(
             "col-span-3 overflow-hidden rounded-xl border border-border bg-card shadow-sm",
-            isFullscreen && "flex items-center justify-center",
+            isFullscreen && "flex items-center justify-center"
           )}
         >
           <div
-            className={cn("flex flex-col items-center px-6 py-5", !clocked && "h-full justify-center", isFullscreen && "w-full max-w-sm")}
-            style={isFullscreen ? { transform: "scale(2.2)", transformOrigin: "center center", gap: "14px" } : undefined}
+            className={cn(
+              "flex flex-col items-center px-6 py-5",
+              !clocked && "h-full justify-center",
+              isFullscreen && "w-full max-w-sm"
+            )}
+            style={
+              isFullscreen
+                ? {
+                    transform: "scale(2.2)",
+                    transformOrigin: "center center",
+                    gap: "14px",
+                  }
+                : undefined
+            }
           >
-
             {/* Header row: label + fullscreen toggle */}
             <div className="flex w-full items-center justify-between">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
                 Current time
               </p>
               <TooltipProvider delayDuration={300}>
@@ -480,10 +617,19 @@ export function DTRSection() {
                       onClick={toggleFullscreen}
                       className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                     >
-                      {isFullscreen
-                        ? <HugeiconsIcon icon={MinimizeScreenIcon} size={13} strokeWidth={2} />
-                        : <HugeiconsIcon icon={MaximizeScreenIcon} size={13} strokeWidth={2} />
-                      }
+                      {isFullscreen ? (
+                        <HugeiconsIcon
+                          icon={MinimizeScreenIcon}
+                          size={13}
+                          strokeWidth={2}
+                        />
+                      ) : (
+                        <HugeiconsIcon
+                          icon={MaximizeScreenIcon}
+                          size={13}
+                          strokeWidth={2}
+                        />
+                      )}
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="top">
@@ -494,7 +640,10 @@ export function DTRSection() {
             </div>
 
             {/* Big clock */}
-            <p className="mt-2 font-bold tabular-nums leading-none" style={{ fontSize: 40, letterSpacing: "-1px" }}>
+            <p
+              className="mt-2 leading-none font-bold tabular-nums"
+              style={{ fontSize: 40, letterSpacing: "-1px" }}
+            >
               {timeStr}
             </p>
 
@@ -525,10 +674,17 @@ export function DTRSection() {
               }}
               className={cn(
                 "mt-3 flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all duration-150",
-                !clocked && "bg-primary text-primary-foreground hover:bg-primary/90",
-                clocked && !anyBreakActive && "border border-danger-border bg-danger-light text-danger hover:bg-rt",
-                anyBreakActive && !activeBreakIsOver && "border border-success-border bg-success-light text-success hover:bg-gt",
-                anyBreakActive && activeBreakIsOver && "animate-pulse border border-danger-border bg-danger-light text-danger hover:bg-rt",
+                !clocked &&
+                  "bg-primary text-primary-foreground hover:bg-primary/90",
+                clocked &&
+                  !anyBreakActive &&
+                  "border border-danger-border bg-danger-light text-danger hover:bg-rt",
+                anyBreakActive &&
+                  !activeBreakIsOver &&
+                  "border border-success-border bg-success-light text-success hover:bg-gt",
+                anyBreakActive &&
+                  activeBreakIsOver &&
+                  "animate-pulse border border-danger-border bg-danger-light text-danger hover:bg-rt"
               )}
             >
               {anyBreakActive ? (
@@ -540,7 +696,11 @@ export function DTRSection() {
                 </>
               ) : clocked ? (
                 <>
-                  <HugeiconsIcon icon={StopCircleIcon} size={13} strokeWidth={2} />
+                  <HugeiconsIcon
+                    icon={StopCircleIcon}
+                    size={13}
+                    strokeWidth={2}
+                  />
                   Clock Out
                 </>
               ) : (
@@ -555,7 +715,7 @@ export function DTRSection() {
             {clocked && (
               <>
                 <div className="my-4 h-px w-full bg-border" />
-                <p className="mb-3 w-full text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <p className="mb-3 w-full text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
                   Break controls
                 </p>
                 <div className="flex w-full items-start justify-around">
@@ -563,16 +723,30 @@ export function DTRSection() {
                     const remaining = getBreakRemaining(b)
                     const isOverbreak = remaining < 0
                     const inWindow = isBreakInWindow(type, now)
-                    const exhausted = b.done  // done=true only when overbreak consumed
-                    const isDisabled = exhausted || (!b.active && (!inWindow || (!!b.otOnly && otSecs === 0)))
+                    const exhausted = b.done // done=true only when overbreak consumed
+                    const isDisabled =
+                      exhausted ||
+                      (!b.active && (!inWindow || (!!b.otOnly && otSecs === 0)))
                     const hasStarted = b.elapsed > 0 || b.active
-                    const breakProgress = Math.max(0, remaining / (b.allowMins * 60))
-                    const ringColor = isDisabled || !hasStarted
-                      ? "transparent"
-                      : isOverbreak ? "var(--red)" : "var(--green)"
+                    const breakProgress = Math.max(
+                      0,
+                      remaining / (b.allowMins * 60)
+                    )
+                    const ringColor =
+                      isDisabled || !hasStarted
+                        ? "transparent"
+                        : isOverbreak
+                          ? "var(--red)"
+                          : "var(--green)"
                     const iconColor = b.active
-                      ? isOverbreak ? "var(--red)" : "var(--green)"
-                      : isDisabled ? "var(--tx3)" : hasStarted ? "var(--tx3)" : "var(--tx2)"
+                      ? isOverbreak
+                        ? "var(--red)"
+                        : "var(--green)"
+                      : isDisabled
+                        ? "var(--tx3)"
+                        : hasStarted
+                          ? "var(--tx3)"
+                          : "var(--tx2)"
 
                     return (
                       <DtrRingButton
@@ -584,13 +758,19 @@ export function DTRSection() {
                         disabled={isDisabled}
                         label={b.label}
                         sublabel={
-                          exhausted ? "Overbreak" :
-                          b.otOnly && otSecs === 0 ? "OT only" :
-                          !inWindow && !b.active ? "Not available" :
-                          b.active
-                            ? isOverbreak ? `⚠ +${Math.ceil(Math.abs(remaining) / 60)}m` : `${Math.ceil(remaining / 60)}m left`
-                            : b.elapsed > 0 ? `${Math.ceil((b.allowMins * 60 - b.elapsed) / 60)}m left`
-                            : `${b.allowMins}m left`
+                          exhausted
+                            ? "Overbreak"
+                            : b.otOnly && otSecs === 0
+                              ? "OT only"
+                              : !inWindow && !b.active
+                                ? "Not available"
+                                : b.active
+                                  ? isOverbreak
+                                    ? `⚠ +${Math.ceil(Math.abs(remaining) / 60)}m`
+                                    : `${Math.ceil(remaining / 60)}m left`
+                                  : b.elapsed > 0
+                                    ? `${Math.ceil((b.allowMins * 60 - b.elapsed) / 60)}m left`
+                                    : `${b.allowMins}m left`
                         }
                         pulse={b.active && isOverbreak}
                       >
@@ -607,20 +787,24 @@ export function DTRSection() {
         {/* ── Today's summary ── */}
         <div className="col-span-2 rounded-xl border border-border bg-card shadow-sm">
           <div className="border-b border-border px-5 py-4">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+            <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
               Today's summary
             </p>
           </div>
           <div className="space-y-4 px-5 py-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-lg bg-muted/50 px-3 py-2.5">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Time in</p>
+                <p className="text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
+                  Time in
+                </p>
                 <p className="mt-0.5 text-[15px] font-bold tabular-nums">
                   {clockInTime ? fmtTime(clockInTime) : "—"}
                 </p>
               </div>
               <div className="rounded-lg bg-muted/50 px-3 py-2.5">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Time out</p>
+                <p className="text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
+                  Time out
+                </p>
                 <p className="mt-0.5 text-[15px] font-bold tabular-nums">
                   {clockOutTime ? fmtTime(clockOutTime) : "—"}
                 </p>
@@ -631,17 +815,23 @@ export function DTRSection() {
               <div className="flex items-center justify-between text-[13px]">
                 <span className="text-muted-foreground">Hours worked</span>
                 <span className="font-semibold tabular-nums">
-                  {clocked ? fmtDuration(netSecs) : clockOutTime ? fmtDuration(netSecs) : "—"}
+                  {clocked
+                    ? fmtDuration(netSecs)
+                    : clockOutTime
+                      ? fmtDuration(netSecs)
+                      : "—"}
                 </span>
               </div>
               <div className="flex items-center justify-between text-[13px]">
                 <span className="text-muted-foreground">Standard hours</span>
-                <span className="tabular-nums text-muted-foreground">8h 00m</span>
+                <span className="text-muted-foreground tabular-nums">
+                  8h 00m
+                </span>
               </div>
               {otSecs > 0 && (
                 <div className="flex items-center justify-between text-[13px]">
                   <span className="text-warning">Overtime</span>
-                  <span className="font-semibold tabular-nums text-warning">
+                  <span className="font-semibold text-warning tabular-nums">
                     +{fmtDuration(otSecs)}
                   </span>
                 </div>
@@ -650,14 +840,18 @@ export function DTRSection() {
 
             <div>
               <div className="mb-1.5 flex items-center justify-between text-[11px]">
-                <span className="text-muted-foreground">Progress toward 8h</span>
-                <span className="font-medium tabular-nums">{Math.round(progressPct)}%</span>
+                <span className="text-muted-foreground">
+                  Progress toward 8h
+                </span>
+                <span className="font-medium tabular-nums">
+                  {Math.round(progressPct)}%
+                </span>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-muted">
                 <div
                   className={cn(
                     "h-full rounded-full transition-all duration-1000",
-                    progressPct >= 100 ? "bg-amber-500" : "bg-primary",
+                    progressPct >= 100 ? "bg-amber-500" : "bg-primary"
                   )}
                   style={{ width: `${progressPct}%` }}
                 />
@@ -665,18 +859,21 @@ export function DTRSection() {
             </div>
 
             <div className="space-y-1.5">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <p className="text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
                 Break summary
               </p>
               {Object.entries(breaks).map(([type, b]) => {
                 const used = getBreakUsed(b)
                 return (
-                  <div key={type} className="flex items-center justify-between text-[12px]">
+                  <div
+                    key={type}
+                    className="flex items-center justify-between text-[12px]"
+                  >
                     <span className="text-muted-foreground">{b.label}</span>
                     <span
                       className={cn(
                         "font-medium tabular-nums",
-                        used > b.allowMins * 60 ? "text-danger" : "",
+                        used > b.allowMins * 60 ? "text-danger" : ""
                       )}
                     >
                       {used > 0 ? fmtDuration(used) : "—"}
@@ -718,10 +915,24 @@ export function DTRSection() {
         <Table>
           <TableHeader>
             <TableRow>
-              {["Date", "Day", "Time in", "Time out", "Hours worked", "OT hours", "Status", "Notes", "Actions"].map((h) => (
+              {[
+                "Date",
+                "Day",
+                "Time in",
+                "Time out",
+                "Hours worked",
+                "OT hours",
+                "Status",
+                "Notes",
+                "Actions",
+              ].map((h) => (
                 <TableHead
                   key={h}
-                  className={h === "Hours worked" || h === "OT hours" ? "text-right" : undefined}
+                  className={
+                    h === "Hours worked" || h === "OT hours"
+                      ? "text-right"
+                      : undefined
+                  }
                 >
                   {h}
                 </TableHead>
@@ -731,13 +942,19 @@ export function DTRSection() {
           <TableBody>
             {attendanceLoading ? (
               <TableRow>
-                <TableCell colSpan={9} className="py-8 text-center text-[13px] text-muted-foreground">
+                <TableCell
+                  colSpan={9}
+                  className="py-8 text-center text-[13px] text-muted-foreground"
+                >
                   Loading…
                 </TableCell>
               </TableRow>
             ) : paginated.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="py-8 text-center text-[13px] text-muted-foreground">
+                <TableCell
+                  colSpan={9}
+                  className="py-8 text-center text-[13px] text-muted-foreground"
+                >
                   No attendance records
                 </TableCell>
               </TableRow>
@@ -747,13 +964,19 @@ export function DTRSection() {
               return (
                 <TableRow key={i}>
                   <TableCell className="font-medium">{r.date}</TableCell>
-                  <TableCell className="text-muted-foreground">{r.day}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {r.day}
+                  </TableCell>
                   <TableCell className="tabular-nums">{r.timeIn}</TableCell>
                   <TableCell className="tabular-nums">{r.timeOut}</TableCell>
-                  <TableCell className="tabular-nums text-right">{r.hoursWorked}</TableCell>
-                  <TableCell className="tabular-nums text-right">
+                  <TableCell className="text-right tabular-nums">
+                    {r.hoursWorked}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
                     {r.otHours !== "—" ? (
-                      <span className="font-medium text-primary">+{r.otHours}h</span>
+                      <span className="font-medium text-primary">
+                        +{r.otHours}h
+                      </span>
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
@@ -765,9 +988,13 @@ export function DTRSection() {
                   </TableCell>
                   <TableCell className="max-w-45">
                     {note ? (
-                      <span className="line-clamp-2 text-[12px] text-muted-foreground">{note}</span>
+                      <span className="line-clamp-2 text-[12px] text-muted-foreground">
+                        {note}
+                      </span>
                     ) : (
-                      <span className="text-[12px] text-muted-foreground">—</span>
+                      <span className="text-[12px] text-muted-foreground">
+                        —
+                      </span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -779,12 +1006,21 @@ export function DTRSection() {
                               size="sm"
                               variant="ghost"
                               className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
-                              onClick={() => { setSelectedRecord(r); setViewOpen(true) }}
+                              onClick={() => {
+                                setSelectedRecord(r)
+                                setViewOpen(true)
+                              }}
                             >
-                              <HugeiconsIcon icon={EyeIcon} size={14} strokeWidth={2} />
+                              <HugeiconsIcon
+                                icon={EyeIcon}
+                                size={14}
+                                strokeWidth={2}
+                              />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent side="top">View record</TooltipContent>
+                          <TooltipContent side="top">
+                            View record
+                          </TooltipContent>
                         </Tooltip>
                         {APPEAL_STATUSES.has(r.status) && (
                           <Tooltip>
@@ -793,12 +1029,21 @@ export function DTRSection() {
                                 size="sm"
                                 variant="ghost"
                                 className="h-7 w-7 p-0 text-warning hover:bg-warning/10 hover:text-warning"
-                                onClick={() => { setSelectedRecord(r); setAppealOpen(true) }}
+                                onClick={() => {
+                                  setSelectedRecord(r)
+                                  setAppealOpen(true)
+                                }}
                               >
-                                <HugeiconsIcon icon={File01Icon} size={14} strokeWidth={2} />
+                                <HugeiconsIcon
+                                  icon={File01Icon}
+                                  size={14}
+                                  strokeWidth={2}
+                                />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent side="top">File an appeal</TooltipContent>
+                            <TooltipContent side="top">
+                              File an appeal
+                            </TooltipContent>
                           </Tooltip>
                         )}
                       </div>
@@ -833,7 +1078,8 @@ export function DTRSection() {
         open={appealOpen}
         onClose={() => setAppealOpen(false)}
         onSubmit={(reason) =>
-          selectedRecord && setRecordNotes((prev) => ({ ...prev, [selectedRecord.date]: reason }))
+          selectedRecord &&
+          setRecordNotes((prev) => ({ ...prev, [selectedRecord.date]: reason }))
         }
       />
     </div>

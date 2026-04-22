@@ -47,8 +47,17 @@ export function CoeModal({ open, onClose }: CoeModalProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {["Loan application", "Visa application", "New employment", "Bank requirement", "Government requirement", "Other"].map((v) => (
-                  <SelectItem key={v} value={v}>{v}</SelectItem>
+                {[
+                  "Loan application",
+                  "Visa application",
+                  "New employment",
+                  "Bank requirement",
+                  "Government requirement",
+                  "Other",
+                ].map((v) => (
+                  <SelectItem key={v} value={v}>
+                    {v}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -63,7 +72,10 @@ export function CoeModal({ open, onClose }: CoeModalProps) {
 
           <div className="space-y-1.5">
             <Label htmlFor="coe-addressee">Addressed to</Label>
-            <Input id="coe-addressee" placeholder="e.g. To whom it may concern, BDO Bank…" />
+            <Input
+              id="coe-addressee"
+              placeholder="e.g. To whom it may concern, BDO Bank…"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -87,17 +99,27 @@ export function CoeModal({ open, onClose }: CoeModalProps) {
 
           <div className="space-y-1.5">
             <Label htmlFor="coe-notes">Additional notes (optional)</Label>
-            <Textarea id="coe-notes" placeholder="Special instructions…" rows={2} className="resize-none" />
+            <Textarea
+              id="coe-notes"
+              placeholder="Special instructions…"
+              rows={2}
+              className="resize-none"
+            />
           </div>
 
           <div className="rounded-lg border border-violet-border bg-violet-light px-3 py-2.5 text-[12px] text-violet">
-            COE requests are typically processed within 3–5 business days. You will be notified once ready.
+            COE requests are typically processed within 3–5 business days. You
+            will be notified once ready.
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
-          <Button size="sm" onClick={onClose}>Submit request</Button>
+          <Button variant="outline" size="sm" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button size="sm" onClick={onClose}>
+            Submit request
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

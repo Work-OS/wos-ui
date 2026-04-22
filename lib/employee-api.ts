@@ -8,7 +8,16 @@ export interface AttendanceEntry {
   timeOut: string
   hoursWorked: string
   otHours: string
-  status: "present" | "late" | "absent" | "leave" | "holiday" | "restday" | "overtime" | "overbreak" | "undertime"
+  status:
+    | "present"
+    | "late"
+    | "absent"
+    | "leave"
+    | "holiday"
+    | "restday"
+    | "overtime"
+    | "overbreak"
+    | "undertime"
 }
 
 export interface PayslipEntry {
@@ -29,54 +38,61 @@ export interface PayslipEntry {
 
 export interface EmployeeStats {
   totalDaysPresent: number
-  totalLeaveUsed:   number
-  leaveVacation:    number
-  leaveSick:        number
+  totalLeaveUsed: number
+  leaveVacation: number
+  leaveSick: number
   totalHoursWorked: number
-  totalHoursLate:   number
-  lateIncidents:    number
+  totalHoursLate: number
+  lateIncidents: number
 }
 
 export interface EmployeeProfile {
-  firstName:  string
-  lastName:   string
-  email:      string
+  firstName: string
+  lastName: string
+  email: string
   employeeId: string
-  phone:      string
-  address:    string
+  phone: string
+  address: string
   department: string
-  position:   string
-  team:       string
-  manager:    string
-  startDate:  string
+  position: string
+  team: string
+  manager: string
+  startDate: string
 }
 
 export interface LeaveBalance {
-  type:      string
-  total:     number
-  used:      number
+  type: string
+  total: number
+  used: number
   remaining: number
 }
 
 export const employeeApi = {
   attendance: (params: { page?: number; size?: number } = {}) =>
     api
-      .get<PageResponse<AttendanceEntry>>("/employee/attendance", { params: { page: 0, size: 20, ...params } })
+      .get<
+        PageResponse<AttendanceEntry>
+      >("/employee/attendance", { params: { page: 0, size: 20, ...params } })
       .then((r) => r.data),
 
   clockIn: () =>
-    api.post<{ timeIn: string }>("/employee/attendance/clock-in").then((r) => r.data),
+    api
+      .post<{ timeIn: string }>("/employee/attendance/clock-in")
+      .then((r) => r.data),
 
   clockOut: () =>
-    api.post<{ timeOut: string }>("/employee/attendance/clock-out").then((r) => r.data),
+    api
+      .post<{ timeOut: string }>("/employee/attendance/clock-out")
+      .then((r) => r.data),
 
   payslips: (params: { page?: number; size?: number } = {}) =>
     api
-      .get<PageResponse<PayslipEntry>>("/employee/payslips", { params: { page: 0, size: 20, ...params } })
+      .get<
+        PageResponse<PayslipEntry>
+      >("/employee/payslips", { params: { page: 0, size: 20, ...params } })
       .then((r) => r.data),
 
-  stats: () =>
-    api.get<EmployeeStats>("/employee/stats").then((r) => r.data),
+  stats: () => api.get<EmployeeStats>("/employee/stats").then((r) => r.data),
 
   profile: () =>
     api.get<EmployeeProfile>("/employee/profile").then((r) => r.data),

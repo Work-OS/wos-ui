@@ -32,18 +32,30 @@ export function ConfigSection() {
           ],
         },
       ].map((section) => (
-        <div key={section.title} className="rounded-xl border border-border p-5">
+        <div
+          key={section.title}
+          className="rounded-xl border border-border p-5"
+        >
           <div className="mb-4 flex items-center justify-between">
             <p className="text-[13px] font-semibold">{section.title}</p>
-            <Button size="xs" variant="outline">Edit</Button>
+            <Button size="xs" variant="outline">
+              Edit
+            </Button>
           </div>
           <div className="space-y-3">
             {section.items.map((item) => (
-              <div key={item.label} className="flex items-center justify-between text-[13px]">
+              <div
+                key={item.label}
+                className="flex items-center justify-between text-[13px]"
+              >
                 <span className="text-muted-foreground">{item.label}</span>
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{item.value}</span>
-                  {item.tag && <StatusBadge variant="amber" dot={false}>{item.tag}</StatusBadge>}
+                  {item.tag && (
+                    <StatusBadge variant="amber" dot={false}>
+                      {item.tag}
+                    </StatusBadge>
+                  )}
                 </div>
               </div>
             ))}

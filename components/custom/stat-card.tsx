@@ -12,10 +12,10 @@ interface StatCardProps {
 }
 
 const accentBar: Record<string, string> = {
-  blue:   "bg-primary",
-  green:  "bg-success",
-  amber:  "bg-warning",
-  red:    "bg-danger",
+  blue: "bg-primary",
+  green: "bg-success",
+  amber: "bg-warning",
+  red: "bg-danger",
   purple: "bg-violet",
 }
 
@@ -34,19 +34,19 @@ export function StatCard({
       className={cn(
         "group relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm",
         "transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md",
-        className,
+        className
       )}
     >
       {accent && (
         <div
           className={cn(
-            "absolute left-0 top-0 h-full w-0.5 rounded-l-xl",
-            accentBar[accent],
+            "absolute top-0 left-0 h-full w-0.5 rounded-l-xl",
+            accentBar[accent]
           )}
         />
       )}
       <div className="flex items-start justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
           {title}
         </p>
         {icon && (
@@ -62,7 +62,7 @@ export function StatCard({
         <p
           className={cn(
             "mt-1 flex items-center gap-1 text-xs",
-            deltaUp ? "text-success" : "text-danger",
+            deltaUp ? "text-success" : "text-danger"
           )}
         >
           <span>{deltaUp ? "↑" : "↓"}</span>

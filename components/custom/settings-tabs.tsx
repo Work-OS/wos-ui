@@ -12,10 +12,26 @@ import {
 } from "@hugeicons/core-free-icons"
 
 const TABS: { label: string; href: string; icon: IconSvgElement }[] = [
-  { label: "General",       href: "/dashboard/settings/general",       icon: Setting06Icon },
-  { label: "Security",      href: "/dashboard/settings/security",      icon: ShieldUserIcon },
-  { label: "Notifications", href: "/dashboard/settings/notifications", icon: Notification01Icon },
-  { label: "Appearance",    href: "/dashboard/settings/appearance",    icon: Sun01Icon },
+  {
+    label: "General",
+    href: "/dashboard/settings/general",
+    icon: Setting06Icon,
+  },
+  {
+    label: "Security",
+    href: "/dashboard/settings/security",
+    icon: ShieldUserIcon,
+  },
+  {
+    label: "Notifications",
+    href: "/dashboard/settings/notifications",
+    icon: Notification01Icon,
+  },
+  {
+    label: "Appearance",
+    href: "/dashboard/settings/appearance",
+    icon: Sun01Icon,
+  },
 ]
 
 export function SettingsTabs() {
@@ -34,7 +50,7 @@ export function SettingsTabs() {
                 "flex items-center gap-2 border-b-2 px-3 py-3.5 text-[13px] font-medium transition-colors",
                 isActive
                   ? "border-primary text-foreground"
-                  : "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
+                  : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
               )}
             >
               <HugeiconsIcon icon={tab.icon} size={13} strokeWidth={1.8} />

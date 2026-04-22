@@ -3,7 +3,13 @@
 import { useEffect } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
-import { authApi, AuthResponse, LoginPayload, SelectRolePayload, SwitchRolePayload } from "@/lib/auth-api"
+import {
+  authApi,
+  AuthResponse,
+  LoginPayload,
+  SelectRolePayload,
+  SwitchRolePayload,
+} from "@/lib/auth-api"
 import { useAuthStore } from "@/store/auth-store"
 
 export const AUTH_KEYS = {
@@ -16,14 +22,14 @@ export function useMe() {
   const { apiRole, setUser } = useAuthStore()
   const q = useQuery({
     queryKey: AUTH_KEYS.me,
-    queryFn:  authApi.me,
-    enabled:  !!apiRole,
-    retry:    false,
+    queryFn: authApi.me,
+    enabled: !!apiRole,
+    retry: false,
   })
 
   useEffect(() => {
     if (q.data) setUser(q.data)
-  }, [q.data])  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [q.data]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return q
 }
@@ -38,9 +44,9 @@ export function useLogin() {
   return useMutation({
     mutationFn: (payload: LoginPayload) => authApi.login(payload),
     onSuccess: (data) => {
-      if (data.requiresRoleSelection) return  // caller handles role picker
+      if (data.requiresRoleSelection) return // caller handles role picker
       const res = data as AuthResponse
-      setFromAuth(res)                       // cookies set by server automatically
+      setFromAuth(res) // cookies set by server automatically
       qc.invalidateQueries({ queryKey: AUTH_KEYS.me })
       redirectByRole(res.role, router)
     },
@@ -57,7 +63,7 @@ export function useSelectRole() {
   return useMutation({
     mutationFn: (payload: SelectRolePayload) => authApi.selectRole(payload),
     onSuccess: (res) => {
-      setFromAuth(res)                       // cookies set by server automatically
+      setFromAuth(res) // cookies set by server automatically
       qc.invalidateQueries({ queryKey: AUTH_KEYS.me })
       redirectByRole(res.role, router)
     },
@@ -88,7 +94,7 @@ export function useLogout() {
   const { clear } = useAuthStore()
 
   return useMutation({
-    mutationFn: () => authApi.logout(),   // server clears cookies; browser sends them automatically
+    mutationFn: () => authApi.logout(), // server clears cookies; browser sends them automatically
     onSettled: () => {
       clear()
       qc.clear()

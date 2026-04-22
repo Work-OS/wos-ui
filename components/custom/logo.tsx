@@ -15,7 +15,7 @@ export function Logo({ showText = true, size = "md", className }: LogoProps) {
       <div
         className={cn(
           boxSize,
-          "relative flex shrink-0 items-center justify-center overflow-hidden rounded-lg bg-primary",
+          "relative flex shrink-0 items-center justify-center overflow-hidden rounded-lg bg-primary"
         )}
       >
         <svg
@@ -54,14 +54,11 @@ export function Logo({ showText = true, size = "md", className }: LogoProps) {
             opacity=".4"
           />
         </svg>
-        <div className="absolute -bottom-1 -right-1 size-3.5 rounded-full bg-cyan-400 opacity-70" />
+        <div className="absolute -right-1 -bottom-1 size-3.5 rounded-full bg-cyan-400 opacity-70" />
       </div>
       {showText && (
         <span
-          className={cn(
-            textSize,
-            "font-bold tracking-tight text-foreground",
-          )}
+          className={cn(textSize, "font-bold tracking-tight text-foreground")}
         >
           WorkOS
         </span>

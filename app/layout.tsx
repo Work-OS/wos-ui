@@ -14,7 +14,14 @@ export const metadata: Metadata = {
   },
   description:
     "WorkOS is a modern HR and workforce management platform — track attendance, manage payroll, approve leave, and gain workforce insights in one place.",
-  keywords: ["HR", "workforce management", "attendance tracking", "payroll", "leave management", "employee portal"],
+  keywords: [
+    "HR",
+    "workforce management",
+    "attendance tracking",
+    "payroll",
+    "leave management",
+    "employee portal",
+  ],
   authors: [{ name: "WorkOS" }],
   creator: "WorkOS",
   metadataBase: new URL("https://workos.app"),
@@ -39,7 +46,7 @@ export const metadata: Metadata = {
   },
 }
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'})
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
@@ -55,7 +62,12 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", geist.variable)}
+      className={cn(
+        "antialiased",
+        fontMono.variable,
+        "font-sans",
+        geist.variable
+      )}
     >
       <body>
         <ThemeProvider>

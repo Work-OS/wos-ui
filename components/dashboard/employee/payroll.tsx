@@ -43,7 +43,12 @@ function parseAmt(s: string): number {
 }
 
 const DownloadIcon = ({ className }: { className?: string }) => (
-  <HugeiconsIcon icon={Download01Icon} size={13} strokeWidth={2} className={className} />
+  <HugeiconsIcon
+    icon={Download01Icon}
+    size={13}
+    strokeWidth={2}
+    className={className}
+  />
 )
 
 // ── sub-components ────────────────────────────────────────────────────────────
@@ -51,7 +56,7 @@ const DownloadIcon = ({ className }: { className?: string }) => (
 function SectionBand({ children }: { children: React.ReactNode }) {
   return (
     <div className="-mx-6 bg-muted px-6 py-2">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+      <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
         {children}
       </p>
     </div>
@@ -71,8 +76,15 @@ function SlipRow({
 }) {
   return (
     <div className="flex items-center justify-between border-b border-border py-2.5 last:border-0">
-      <span className={cn("text-[13px]", labelClass ?? "text-foreground")}>{label}</span>
-      <span className={cn("text-[13px] font-medium tabular-nums", valueClass ?? "text-foreground")}>
+      <span className={cn("text-[13px]", labelClass ?? "text-foreground")}>
+        {label}
+      </span>
+      <span
+        className={cn(
+          "text-[13px] font-medium tabular-nums",
+          valueClass ?? "text-foreground"
+        )}
+      >
         {value}
       </span>
     </div>
@@ -96,9 +108,17 @@ function BreakdownBar({
     <div>
       <div className="mb-1.5 flex items-center justify-between">
         <span className="text-[13px]">{label}</span>
-        <span className={cn("text-[13px] font-semibold tabular-nums", valueClass)}>{value}</span>
+        <span
+          className={cn("text-[13px] font-semibold tabular-nums", valueClass)}
+        >
+          {value}
+        </span>
       </div>
-      <Progress value={pct} className="h-1.5" indicatorClassName={indicatorClassName} />
+      <Progress
+        value={pct}
+        className="h-1.5"
+        indicatorClassName={indicatorClassName}
+      />
     </div>
   )
 }
@@ -116,11 +136,15 @@ function YtdCard({
 }) {
   return (
     <div className="rounded-lg border border-border bg-muted/40 p-3">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+      <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
         {label}
       </p>
-      <p className={cn("mt-1 text-lg font-bold tabular-nums", valueClass)}>{value}</p>
-      {meta && <p className="mt-0.5 text-[11px] text-muted-foreground">{meta}</p>}
+      <p className={cn("mt-1 text-lg font-bold tabular-nums", valueClass)}>
+        {value}
+      </p>
+      {meta && (
+        <p className="mt-0.5 text-[11px] text-muted-foreground">{meta}</p>
+      )}
     </div>
   )
 }
@@ -132,34 +156,38 @@ function toPayslipData(p: PayslipEntry): PayslipData {
 }
 
 export function PayrollSection() {
-  const [selectedPayslip, setSelectedPayslip] = useState<PayslipData | null>(null)
-  const [page, setPage]         = useState(1)
+  const [selectedPayslip, setSelectedPayslip] = useState<PayslipData | null>(
+    null
+  )
+  const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
 
   const { user } = useAuthStore()
-  const { data, isLoading, isError } = usePayslips({ page: page - 1, size: pageSize })
+  const { data, isLoading, isError } = usePayslips({
+    page: page - 1,
+    size: pageSize,
+  })
 
-  const payslips   = data?.content       ?? []
-  const total      = data?.totalElements ?? 0
-  const totalPages = data?.totalPages    ?? 0
+  const payslips = data?.content ?? []
+  const total = data?.totalElements ?? 0
+  const totalPages = data?.totalPages ?? 0
 
   const latest = payslips.find((p) => p.status === "released") ?? payslips[0]
 
-  const basicAmt = latest ? parseAmt(latest.basic)      : 0
-  const otAmt    = latest ? parseAmt(latest.ot)         : 0
-  const grossAmt = latest ? parseAmt(latest.gross)      : 0
-  const ssAmt    = latest ? parseAmt(latest.sss)        : 0
-  const phAmt    = latest ? parseAmt(latest.philhealth) : 0
-  const taxAmt   = latest ? parseAmt(latest.tax)        : 0
-  const dedAmt   = latest ? parseAmt(latest.deductions) : 0
+  const basicAmt = latest ? parseAmt(latest.basic) : 0
+  const otAmt = latest ? parseAmt(latest.ot) : 0
+  const grossAmt = latest ? parseAmt(latest.gross) : 0
+  const ssAmt = latest ? parseAmt(latest.sss) : 0
+  const phAmt = latest ? parseAmt(latest.philhealth) : 0
+  const taxAmt = latest ? parseAmt(latest.tax) : 0
+  const dedAmt = latest ? parseAmt(latest.deductions) : 0
 
-  const month    = latest?.period.split(" ")[0] ?? "—"
+  const month = latest?.period.split(" ")[0] ?? "—"
   const fullName = user ? `${user.firstName} ${user.lastName}` : "—"
-  const empId    = user?.employeeId ?? "—"
+  const empId = user?.employeeId ?? "—"
 
   return (
     <div className="space-y-5">
-
       {/* ── 4 stat cards ── */}
       <div className="grid grid-cols-4 gap-4">
         <StatCard
@@ -171,7 +199,11 @@ export function PayrollSection() {
         <StatCard
           title={`Total earnings (${month})`}
           value={latest?.gross ?? "—"}
-          delta={latest?.otHrs !== "—" ? `Incl. ${latest?.otHrs} hrs overtime` : "No overtime"}
+          delta={
+            latest?.otHrs !== "—"
+              ? `Incl. ${latest?.otHrs} hrs overtime`
+              : "No overtime"
+          }
           deltaUp={true}
           accent="green"
         />
@@ -185,29 +217,28 @@ export function PayrollSection() {
         />
         <StatCard
           title={`Net pay (${month})`}
-          value={
-            <span className="text-success">{latest?.net ?? "—"}</span>
-          }
+          value={<span className="text-success">{latest?.net ?? "—"}</span>}
           accent="green"
         />
       </div>
 
       {/* ── Latest payslip + Pay breakdown ── */}
       {isLoading ? (
-        <p className="text-[13px] text-muted-foreground">Loading payroll data…</p>
+        <p className="text-[13px] text-muted-foreground">
+          Loading payroll data…
+        </p>
       ) : isError ? (
         <p className="rounded-lg border border-danger-border bg-danger-light px-4 py-3 text-[13px] text-danger">
           Failed to load payroll data
         </p>
       ) : latest ? (
         <div className="grid grid-cols-2 gap-4">
-
           {/* Latest payslip */}
           <div className="overflow-hidden rounded-xl border border-border shadow-sm">
             <div className="bg-primary px-6 py-5 text-primary-foreground">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-widest opacity-70">
+                  <p className="text-[11px] font-semibold tracking-widest uppercase opacity-70">
                     Latest payslip
                   </p>
                   <p className="mt-0.5 text-xl font-bold">{latest.period}</p>
@@ -239,13 +270,35 @@ export function PayrollSection() {
                 />
               )}
               <SectionBand>Deductions</SectionBand>
-              <SlipRow label="SSS contribution"   value={`-${latest.sss}`}       labelClass="text-muted-foreground" valueClass="text-danger" />
-              <SlipRow label="PhilHealth"          value={`-${latest.philhealth}`} labelClass="text-muted-foreground" valueClass="text-danger" />
-              <SlipRow label="Pag-IBIG"            value={`-${latest.pagibig}`}   labelClass="text-muted-foreground" valueClass="text-danger" />
-              <SlipRow label="Withholding tax"     value={`-${latest.tax}`}       labelClass="text-muted-foreground" valueClass="text-danger" />
+              <SlipRow
+                label="SSS contribution"
+                value={`-${latest.sss}`}
+                labelClass="text-muted-foreground"
+                valueClass="text-danger"
+              />
+              <SlipRow
+                label="PhilHealth"
+                value={`-${latest.philhealth}`}
+                labelClass="text-muted-foreground"
+                valueClass="text-danger"
+              />
+              <SlipRow
+                label="Pag-IBIG"
+                value={`-${latest.pagibig}`}
+                labelClass="text-muted-foreground"
+                valueClass="text-danger"
+              />
+              <SlipRow
+                label="Withholding tax"
+                value={`-${latest.tax}`}
+                labelClass="text-muted-foreground"
+                valueClass="text-danger"
+              />
               <div className="mt-3 flex items-center justify-between rounded-lg bg-muted px-4 py-3">
                 <span className="text-[13px] font-bold">Net pay</span>
-                <span className="text-lg font-bold text-success">{latest.net}</span>
+                <span className="text-lg font-bold text-success">
+                  {latest.net}
+                </span>
               </div>
             </div>
           </div>
@@ -323,17 +376,20 @@ export function PayrollSection() {
             <TableHeader>
               <TableRow>
                 {[
-                  { label: "Period",      right: false },
-                  { label: "Basic",       right: true  },
-                  { label: "Overtime",    right: true  },
-                  { label: "Gross",       right: true  },
-                  { label: "Deductions",  right: true  },
-                  { label: "Net pay",     right: true  },
-                  { label: "Released",    right: false },
-                  { label: "Status",      right: false },
-                  { label: "Actions",     right: false },
+                  { label: "Period", right: false },
+                  { label: "Basic", right: true },
+                  { label: "Overtime", right: true },
+                  { label: "Gross", right: true },
+                  { label: "Deductions", right: true },
+                  { label: "Net pay", right: true },
+                  { label: "Released", right: false },
+                  { label: "Status", right: false },
+                  { label: "Actions", right: false },
                 ].map(({ label, right }) => (
-                  <TableHead key={label} className={right ? "text-right" : undefined}>
+                  <TableHead
+                    key={label}
+                    className={right ? "text-right" : undefined}
+                  >
                     {label}
                   </TableHead>
                 ))}
@@ -342,7 +398,10 @@ export function PayrollSection() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="py-8 text-center text-[13px] text-muted-foreground">
+                  <TableCell
+                    colSpan={9}
+                    className="py-8 text-center text-[13px] text-muted-foreground"
+                  >
                     Loading…
                   </TableCell>
                 </TableRow>
@@ -352,20 +411,28 @@ export function PayrollSection() {
                   return (
                     <TableRow key={i}>
                       <TableCell className="font-medium">{p.period}</TableCell>
-                      <TableCell className="tabular-nums text-right text-muted-foreground">
-                        {isUpcoming ? <span className="text-muted-foreground">—</span> : p.basic}
+                      <TableCell className="text-right text-muted-foreground tabular-nums">
+                        {isUpcoming ? (
+                          <span className="text-muted-foreground">—</span>
+                        ) : (
+                          p.basic
+                        )}
                       </TableCell>
-                      <TableCell className="tabular-nums text-right">
+                      <TableCell className="text-right tabular-nums">
                         {p.ot !== "—" ? (
                           <span className="text-success">+{p.ot}</span>
                         ) : (
                           <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
-                      <TableCell className="tabular-nums text-right">
-                        {isUpcoming ? <span className="text-muted-foreground">—</span> : p.gross}
+                      <TableCell className="text-right tabular-nums">
+                        {isUpcoming ? (
+                          <span className="text-muted-foreground">—</span>
+                        ) : (
+                          p.gross
+                        )}
                       </TableCell>
-                      <TableCell className="tabular-nums text-right">
+                      <TableCell className="text-right tabular-nums">
                         {p.deductions !== "—" ? (
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -378,21 +445,25 @@ export function PayrollSection() {
                               showArrow={false}
                               className="min-w-50 flex-col items-stretch rounded-xl border border-border bg-card p-3 text-foreground shadow-raised"
                             >
-                              <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              <p className="mb-2 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
                                 Deduction breakdown
                               </p>
                               {[
-                                { label: "SSS",              value: p.sss       },
-                                { label: "PhilHealth",       value: p.philhealth },
-                                { label: "Pag-IBIG",         value: p.pagibig   },
-                                { label: "Withholding tax",  value: p.tax       },
+                                { label: "SSS", value: p.sss },
+                                { label: "PhilHealth", value: p.philhealth },
+                                { label: "Pag-IBIG", value: p.pagibig },
+                                { label: "Withholding tax", value: p.tax },
                               ].map(({ label, value }) => (
                                 <div
                                   key={label}
                                   className="flex justify-between gap-6 border-b border-border py-1 text-[12px] last:border-0"
                                 >
-                                  <span className="text-muted-foreground">{label}</span>
-                                  <span className="font-medium text-danger">{value}</span>
+                                  <span className="text-muted-foreground">
+                                    {label}
+                                  </span>
+                                  <span className="font-medium text-danger">
+                                    {value}
+                                  </span>
                                 </div>
                               ))}
                             </TooltipContent>
@@ -401,14 +472,18 @@ export function PayrollSection() {
                           <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
-                      <TableCell className="tabular-nums text-right font-bold">
+                      <TableCell className="text-right font-bold tabular-nums">
                         {isUpcoming ? (
-                          <span className="font-normal text-muted-foreground">Pending</span>
+                          <span className="font-normal text-muted-foreground">
+                            Pending
+                          </span>
                         ) : (
                           p.net
                         )}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">{p.released}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {p.released}
+                      </TableCell>
                       <TableCell>
                         <StatusBadge variant={isUpcoming ? "amber" : "green"}>
                           {isUpcoming ? "Upcoming" : "Released"}
@@ -416,13 +491,25 @@ export function PayrollSection() {
                       </TableCell>
                       <TableCell>
                         {isUpcoming ? (
-                          <span className="text-[12px] text-muted-foreground">—</span>
+                          <span className="text-[12px] text-muted-foreground">
+                            —
+                          </span>
                         ) : (
                           <div className="flex items-center gap-1">
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button size="icon-xs" variant="outline" onClick={() => setSelectedPayslip(toPayslipData(p))}>
-                                  <HugeiconsIcon icon={EyeIcon} size={12} strokeWidth={2} />
+                                <Button
+                                  size="icon-xs"
+                                  variant="outline"
+                                  onClick={() =>
+                                    setSelectedPayslip(toPayslipData(p))
+                                  }
+                                >
+                                  <HugeiconsIcon
+                                    icon={EyeIcon}
+                                    size={12}
+                                    strokeWidth={2}
+                                  />
                                   <span className="sr-only">View payslip</span>
                                 </Button>
                               </TooltipTrigger>
@@ -430,7 +517,13 @@ export function PayrollSection() {
                             </Tooltip>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button size="icon-xs" variant="default" onClick={() => setSelectedPayslip(toPayslipData(p))}>
+                                <Button
+                                  size="icon-xs"
+                                  variant="default"
+                                  onClick={() =>
+                                    setSelectedPayslip(toPayslipData(p))
+                                  }
+                                >
                                   <DownloadIcon />
                                   <span className="sr-only">Download PDF</span>
                                 </Button>
@@ -458,9 +551,22 @@ export function PayrollSection() {
           {/* YTD summary — static placeholder until backend provides totals */}
           <div className="mt-5 grid grid-cols-4 gap-3 border-t border-border pt-5">
             <YtdCard label="YTD gross earnings" value="₱233,325" />
-            <YtdCard label="YTD overtime pay"   value="₱8,325"   valueClass="text-success" meta="31.25 hrs total" />
-            <YtdCard label="YTD deductions"     value="₱29,000"  valueClass="text-danger" />
-            <YtdCard label="YTD net pay"        value="₱204,325" valueClass="text-success" />
+            <YtdCard
+              label="YTD overtime pay"
+              value="₱8,325"
+              valueClass="text-success"
+              meta="31.25 hrs total"
+            />
+            <YtdCard
+              label="YTD deductions"
+              value="₱29,000"
+              valueClass="text-danger"
+            />
+            <YtdCard
+              label="YTD net pay"
+              value="₱204,325"
+              valueClass="text-success"
+            />
           </div>
         </CardContent>
       </Card>

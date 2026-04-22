@@ -39,34 +39,37 @@ function useClock() {
 // ── Page ──────────────────────────────────────────────────────────────────
 
 export default function LoginPage() {
-  const [showPassword, setShowPassword]     = useState(false)
-  const [remember, setRemember]             = useState(false)
-  const [email, setEmail]                   = useState("")
-  const [password, setPassword]             = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [remember, setRemember] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [showQuickPunch, setShowQuickPunch] = useState(false)
 
   // Role-selection state (when API returns requiresRoleSelection: true)
-  const [availableRoles, setAvailableRoles]   = useState<AvailableRole[]>([])
-  const [selectedRoleId, setSelectedRoleId]   = useState<number | null>(null)
-  const [showRoleModal, setShowRoleModal]     = useState(false)
+  const [availableRoles, setAvailableRoles] = useState<AvailableRole[]>([])
+  const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null)
+  const [showRoleModal, setShowRoleModal] = useState(false)
 
-  const loginMutation      = useLogin()
+  const loginMutation = useLogin()
   const selectRoleMutation = useSelectRole()
 
   const isPending = loginMutation.isPending || selectRoleMutation.isPending
-  const apiError  = loginMutation.error || selectRoleMutation.error
+  const apiError = loginMutation.error || selectRoleMutation.error
 
   function handleLogin() {
     if (!email || !password) return
-    loginMutation.mutate({ email, password }, {
-      onSuccess: (data) => {
-        if (data.requiresRoleSelection) {
-          setAvailableRoles(data.availableRoles)
-          setShowRoleModal(true)
-        }
-        // if not requiresRoleSelection, useLogin's onSuccess handles redirect
-      },
-    })
+    loginMutation.mutate(
+      { email, password },
+      {
+        onSuccess: (data) => {
+          if (data.requiresRoleSelection) {
+            setAvailableRoles(data.availableRoles)
+            setShowRoleModal(true)
+          }
+          // if not requiresRoleSelection, useLogin's onSuccess handles redirect
+        },
+      }
+    )
   }
 
   function handleRoleContinue() {
@@ -75,9 +78,11 @@ export default function LoginPage() {
       { email, password, userRoleId: selectedRoleId },
       {
         onSuccess: () => {
-          useAuthStore.getState().setAvailableRoles(availableRoles, selectedRoleId!)
+          useAuthStore
+            .getState()
+            .setAvailableRoles(availableRoles, selectedRoleId!)
         },
-      },
+      }
     )
   }
 
@@ -91,7 +96,10 @@ export default function LoginPage() {
             <Logo />
             <p className="text-[13px] text-muted-foreground">
               Don&apos;t have an account?{" "}
-              <Link href="/auth/register" className="font-medium text-primary hover:underline">
+              <Link
+                href="/auth/register"
+                className="font-medium text-primary hover:underline"
+              >
                 Register
               </Link>
             </p>
@@ -99,8 +107,10 @@ export default function LoginPage() {
 
           {/* Form */}
           <div className="flex flex-1 items-center justify-center px-8 py-12">
-            <div className="w-full max-w-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <h1 className="text-[28px] font-bold tracking-tight text-foreground">Welcome back</h1>
+            <div className="w-full max-w-100 animate-in duration-500 fade-in slide-in-from-bottom-4">
+              <h1 className="text-[28px] font-bold tracking-tight text-foreground">
+                Welcome back
+              </h1>
               <p className="mt-1.5 text-[14px] text-muted-foreground">
                 Sign in to your WorkOS account to continue.
               </p>
@@ -108,13 +118,23 @@ export default function LoginPage() {
               <div className="mt-7 space-y-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="email">Work email</Label>
-                  <Input id="email" type="email" placeholder="you@company.com" className="h-11" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@company.com"
+                    className="h-11"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
                 </div>
 
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Password</Label>
-                    <Link href="/auth/forgot-password" className="text-[12px] text-primary hover:underline">
+                    <Link
+                      href="/auth/forgot-password"
+                      className="text-[12px] text-primary hover:underline"
+                    >
                       Forgot password?
                     </Link>
                   </div>
@@ -131,16 +151,34 @@ export default function LoginPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                      className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
                     >
                       {showPassword ? (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
                           <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
                           <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
                           <line x1="1" y1="1" x2="23" y2="23" />
                         </svg>
                       ) : (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
                           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                           <circle cx="12" cy="12" r="3" />
                         </svg>
@@ -154,24 +192,47 @@ export default function LoginPage() {
                     onClick={() => setRemember((v) => !v)}
                     className={cn(
                       "flex size-4 shrink-0 items-center justify-center rounded border transition-colors",
-                      remember ? "border-primary bg-primary" : "border-border bg-background",
+                      remember
+                        ? "border-primary bg-primary"
+                        : "border-border bg-background"
                     )}
                   >
                     {remember && (
-                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="text-primary-foreground">
-                        <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <svg
+                        width="10"
+                        height="10"
+                        viewBox="0 0 10 10"
+                        fill="none"
+                        className="text-primary-foreground"
+                      >
+                        <path
+                          d="M2 5l2.5 2.5L8 3"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                     )}
                   </div>
-                  <span className="text-[13px] text-muted-foreground">Remember me</span>
+                  <span className="text-[13px] text-muted-foreground">
+                    Remember me
+                  </span>
                 </label>
               </div>
 
               {apiError && (
                 <div className="mt-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 dark:border-red-900/40 dark:bg-red-900/20">
-                  <HugeiconsIcon icon={Alert01Icon} size={14} strokeWidth={2} className="shrink-0 text-red-500" />
+                  <HugeiconsIcon
+                    icon={Alert01Icon}
+                    size={14}
+                    strokeWidth={2}
+                    className="shrink-0 text-red-500"
+                  />
                   <p className="text-[12px] text-red-700 dark:text-red-400">
-                    {(apiError as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Invalid email or password."}
+                    {(
+                      apiError as { response?: { data?: { message?: string } } }
+                    )?.response?.data?.message ?? "Invalid email or password."}
                   </p>
                 </div>
               )}
@@ -182,7 +243,20 @@ export default function LoginPage() {
                 disabled={isPending}
               >
                 {isPending ? "Signing in…" : "Sign in"}
-                {!isPending && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>}
+                {!isPending && (
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                )}
               </Button>
 
               {/* Divider */}
@@ -197,7 +271,12 @@ export default function LoginPage() {
                 onClick={() => setShowQuickPunch(true)}
                 className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-background text-[13px] font-medium text-foreground transition-colors hover:bg-muted"
               >
-                <HugeiconsIcon icon={Clock01Icon} size={15} strokeWidth={1.8} className="text-muted-foreground" />
+                <HugeiconsIcon
+                  icon={Clock01Icon}
+                  size={15}
+                  strokeWidth={1.8}
+                  className="text-muted-foreground"
+                />
                 Quick Time In / Out
               </button>
             </div>
@@ -209,8 +288,18 @@ export default function LoginPage() {
               &copy; {new Date().getFullYear()} WorkOS. All rights reserved.
             </p>
             <div className="flex items-center gap-4">
-              <a href="#" className="text-[11px] text-muted-foreground hover:text-foreground">Privacy</a>
-              <a href="#" className="text-[11px] text-muted-foreground hover:text-foreground">Terms</a>
+              <a
+                href="#"
+                className="text-[11px] text-muted-foreground hover:text-foreground"
+              >
+                Privacy
+              </a>
+              <a
+                href="#"
+                className="text-[11px] text-muted-foreground hover:text-foreground"
+              >
+                Terms
+              </a>
             </div>
           </div>
         </div>
@@ -224,9 +313,12 @@ export default function LoginPage() {
       {/* ── Role modal (shown when API returns requiresRoleSelection: true) ── */}
       {showRoleModal && (
         <Modal onClose={() => setShowRoleModal(false)}>
-          <h2 className="text-[16px] font-semibold text-foreground">Select your role</h2>
+          <h2 className="text-[16px] font-semibold text-foreground">
+            Select your role
+          </h2>
           <p className="mt-1 text-[13px] text-muted-foreground">
-            Your account has multiple roles. Choose how you&apos;d like to continue.
+            Your account has multiple roles. Choose how you&apos;d like to
+            continue.
           </p>
 
           <div className="mt-5 grid grid-cols-2 gap-3">
@@ -238,24 +330,40 @@ export default function LoginPage() {
                   "flex flex-col items-center gap-3 rounded-xl border p-4 text-center transition-all duration-150",
                   selectedRoleId === r.id
                     ? "border-primary bg-primary/5 shadow-sm"
-                    : "border-border bg-background hover:bg-muted",
+                    : "border-border bg-background hover:bg-muted"
                 )}
               >
-                <div className={cn(
-                  "flex size-14 items-center justify-center rounded-2xl transition-colors",
-                  selectedRoleId === r.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
-                )}>
-                  <HugeiconsIcon icon={User03Icon} size={28} strokeWidth={1.5} />
+                <div
+                  className={cn(
+                    "flex size-14 items-center justify-center rounded-2xl transition-colors",
+                    selectedRoleId === r.id
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  <HugeiconsIcon
+                    icon={User03Icon}
+                    size={28}
+                    strokeWidth={1.5}
+                  />
                 </div>
-                <p className="text-[13px] font-semibold text-foreground">{r.name}</p>
+                <p className="text-[13px] font-semibold text-foreground">
+                  {r.name}
+                </p>
                 <p className="text-[11px] leading-relaxed text-muted-foreground">
                   {r.description?.trim() || "No description provided."}
                 </p>
-                <div className={cn(
-                  "mt-auto flex size-4 items-center justify-center rounded-full border-2 transition-colors",
-                  selectedRoleId === r.id ? "border-primary bg-primary" : "border-muted-foreground/30",
-                )}>
-                  {selectedRoleId === r.id && <div className="size-1.5 rounded-full bg-primary-foreground" />}
+                <div
+                  className={cn(
+                    "mt-auto flex size-4 items-center justify-center rounded-full border-2 transition-colors",
+                    selectedRoleId === r.id
+                      ? "border-primary bg-primary"
+                      : "border-muted-foreground/30"
+                  )}
+                >
+                  {selectedRoleId === r.id && (
+                    <div className="size-1.5 rounded-full bg-primary-foreground" />
+                  )}
                 </div>
               </button>
             ))}
@@ -263,8 +371,15 @@ export default function LoginPage() {
 
           {selectRoleMutation.error && (
             <div className="mt-3 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 dark:border-red-900/40 dark:bg-red-900/20">
-              <HugeiconsIcon icon={Alert01Icon} size={13} strokeWidth={2} className="shrink-0 text-red-500" />
-              <p className="text-[12px] text-red-700 dark:text-red-400">Failed to sign in. Please try again.</p>
+              <HugeiconsIcon
+                icon={Alert01Icon}
+                size={13}
+                strokeWidth={2}
+                className="shrink-0 text-red-500"
+              />
+              <p className="text-[12px] text-red-700 dark:text-red-400">
+                Failed to sign in. Please try again.
+              </p>
             </div>
           )}
 
@@ -287,18 +402,29 @@ export default function LoginPage() {
       )}
 
       {/* ── Quick punch modal ── */}
-      {showQuickPunch && <QuickPunchModal onClose={() => setShowQuickPunch(false)} />}
+      {showQuickPunch && (
+        <QuickPunchModal onClose={() => setShowQuickPunch(false)} />
+      )}
     </>
   )
 }
 
 // ── Shared backdrop modal wrapper ──────────────────────────────────────────
 
-function Modal({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+function Modal({
+  children,
+  onClose,
+}: {
+  children: React.ReactNode
+  onClose: () => void
+}) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md animate-in fade-in zoom-in-95 duration-200 rounded-2xl border border-border bg-card p-6 shadow-xl">
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div className="relative w-full max-w-md animate-in rounded-2xl border border-border bg-card p-6 shadow-xl duration-200 zoom-in-95 fade-in">
         {children}
       </div>
     </div>
@@ -316,8 +442,17 @@ function QuickPunchModal({ onClose }: { onClose: () => void }) {
   const [punchType, setPunchType] = useState<PunchType>("in")
   const [capturedAt, setCapturedAt] = useState("")
 
-  const timeStr = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
-  const dateStr = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
+  const timeStr = now.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  })
+  const dateStr = now.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  })
 
   function handleFormNext() {
     if (!employeeId.trim()) return
@@ -338,19 +473,31 @@ function QuickPunchModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className={cn(
-        "relative animate-in fade-in zoom-in-95 duration-200 rounded-2xl border border-border bg-card shadow-xl overflow-hidden",
-        step === "camera" ? "w-full max-w-md" : "w-full max-w-sm",
-      )}>
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div
+        className={cn(
+          "relative animate-in overflow-hidden rounded-2xl border border-border bg-card shadow-xl duration-200 zoom-in-95 fade-in",
+          step === "camera" ? "w-full max-w-md" : "w-full max-w-sm"
+        )}
+      >
         {/* Header */}
         <div className="bg-primary px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] font-medium uppercase tracking-widest text-white/60">{dateStr}</p>
-              <p className="mt-0.5 text-[26px] font-bold tabular-nums leading-none text-white">{timeStr}</p>
+              <p className="text-[10px] font-medium tracking-widest text-white/60 uppercase">
+                {dateStr}
+              </p>
+              <p className="mt-0.5 text-[26px] leading-none font-bold text-white tabular-nums">
+                {timeStr}
+              </p>
             </div>
-            <button onClick={onClose} className="rounded-lg p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white">
+            <button
+              onClick={onClose}
+              className="rounded-lg p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+            >
               <HugeiconsIcon icon={Cancel01Icon} size={16} strokeWidth={2} />
             </button>
           </div>
@@ -359,7 +506,9 @@ function QuickPunchModal({ onClose }: { onClose: () => void }) {
         {/* Steps */}
         {step === "form" && (
           <div className="p-6">
-            <p className="mb-4 text-[14px] font-semibold text-foreground">Quick attendance punch</p>
+            <p className="mb-4 text-[14px] font-semibold text-foreground">
+              Quick attendance punch
+            </p>
 
             {/* Punch type toggle */}
             <div className="mb-4 flex gap-2">
@@ -373,10 +522,14 @@ function QuickPunchModal({ onClose }: { onClose: () => void }) {
                       ? t === "in"
                         ? "border-green-500 bg-green-500/10 text-green-600"
                         : "border-red-500 bg-red-500/10 text-red-600"
-                      : "border-border bg-background text-muted-foreground hover:bg-muted",
+                      : "border-border bg-background text-muted-foreground hover:bg-muted"
                   )}
                 >
-                  <HugeiconsIcon icon={t === "in" ? Login01Icon : Logout01Icon} size={15} strokeWidth={2} />
+                  <HugeiconsIcon
+                    icon={t === "in" ? Login01Icon : Logout01Icon}
+                    size={15}
+                    strokeWidth={2}
+                  />
                   Time {t === "in" ? "In" : "Out"}
                 </button>
               ))}
@@ -390,7 +543,9 @@ function QuickPunchModal({ onClose }: { onClose: () => void }) {
                 placeholder="e.g. EMP-0042"
                 value={employeeId}
                 onChange={(e) => setEmployeeId(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") handleFormNext() }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleFormNext()
+                }}
                 className="h-11"
               />
             </div>
@@ -398,7 +553,7 @@ function QuickPunchModal({ onClose }: { onClose: () => void }) {
             <Button
               className={cn(
                 "mt-4 h-11 w-full justify-center gap-2 text-[14px] font-semibold",
-                punchType === "out" && "bg-red-500 hover:bg-red-600",
+                punchType === "out" && "bg-red-500 hover:bg-red-600"
               )}
               disabled={!employeeId.trim()}
               onClick={handleFormNext}
@@ -419,22 +574,27 @@ function QuickPunchModal({ onClose }: { onClose: () => void }) {
 
         {step === "done" && (
           <div className="p-6 text-center">
-            <div className={cn(
-              "mx-auto mb-4 flex size-14 items-center justify-center rounded-full",
-              punchType === "in" ? "bg-green-500/10" : "bg-red-500/10",
-            )}>
+            <div
+              className={cn(
+                "mx-auto mb-4 flex size-14 items-center justify-center rounded-full",
+                punchType === "in" ? "bg-green-500/10" : "bg-red-500/10"
+              )}
+            >
               <HugeiconsIcon
                 icon={CheckmarkBadge01Icon}
                 size={28}
                 strokeWidth={1.5}
-                className={punchType === "in" ? "text-green-500" : "text-red-500"}
+                className={
+                  punchType === "in" ? "text-green-500" : "text-red-500"
+                }
               />
             </div>
             <p className="text-[16px] font-bold text-foreground">
               Time {punchType === "in" ? "In" : "Out"} Recorded
             </p>
             <p className="mt-1 text-[13px] text-muted-foreground">
-              <span className="font-medium text-foreground">{employeeId}</span> — {capturedAt}
+              <span className="font-medium text-foreground">{employeeId}</span>{" "}
+              — {capturedAt}
             </p>
             <div className="mt-5 flex gap-2">
               <button
@@ -443,7 +603,9 @@ function QuickPunchModal({ onClose }: { onClose: () => void }) {
               >
                 Another punch
               </button>
-              <Button className="h-10 flex-1 text-[13px]" onClick={onClose}>Done</Button>
+              <Button className="h-10 flex-1 text-[13px]" onClick={onClose}>
+                Done
+              </Button>
             </div>
           </div>
         )}
@@ -465,13 +627,14 @@ function AuthPanel() {
           backgroundSize: "40px 40px",
         }}
       />
-      <div className="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full bg-cyan-400 opacity-20 blur-3xl" />
+      <div className="pointer-events-none absolute -top-24 -right-24 size-96 rounded-full bg-cyan-400 opacity-20 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-32 -left-16 size-80 rounded-full bg-primary opacity-40 blur-3xl" />
 
       <div className="relative flex flex-1 flex-col justify-between">
         <div className="mt-auto">
-          <blockquote className="text-[22px] font-semibold leading-snug text-white">
-            &ldquo;Streamline your workforce operations with a single platform built for modern teams.&rdquo;
+          <blockquote className="text-[22px] leading-snug font-semibold text-white">
+            &ldquo;Streamline your workforce operations with a single platform
+            built for modern teams.&rdquo;
           </blockquote>
           <p className="mt-4 text-[13px] text-white/60">
             Attendance, payroll, leaves, and more — all in one place.

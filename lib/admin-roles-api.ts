@@ -3,52 +3,52 @@ import { api } from "./axios"
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface FunctionalityDef {
-  id:   number
+  id: number
   name: string
 }
 
 export interface AccessRole {
-  id:              number
-  name:            string
+  id: number
+  name: string
   functionalities: FunctionalityDef[]
 }
 
 export interface AssignedFunctionality {
-  id:              number
+  id: number
   functionalityId: number
-  name:            string
-  enabled:         boolean
+  name: string
+  enabled: boolean
 }
 
 export interface AssignedAccessRole {
-  accessRoleId:    number
-  name:            string
+  accessRoleId: number
+  name: string
   functionalities: AssignedFunctionality[]
-  startDate?:      string | null   // ISO date "YYYY-MM-DD"
-  endDate?:        string | null
-  startTime?:      string | null   // "HH:MM" 24h
-  endTime?:        string | null
+  startDate?: string | null // ISO date "YYYY-MM-DD"
+  endDate?: string | null
+  startTime?: string | null // "HH:MM" 24h
+  endTime?: string | null
 }
 
 export interface TemporaryAccessPayload {
-  startDate:  string | null
-  endDate:    string | null
-  startTime:  string | null
-  endTime:    string | null
+  startDate: string | null
+  endDate: string | null
+  startTime: string | null
+  endTime: string | null
 }
 
 export interface UserRole {
-  id:          number
-  name:        string
+  id: number
+  name: string
   description: string
-  color?:      string
+  color?: string
   accessRoles: AssignedAccessRole[]
 }
 
 export interface UserRolePayload {
-  name:        string
+  name: string
   description: string
-  color?:      string
+  color?: string
 }
 
 // ── API calls ─────────────────────────────────────────────────────────────────
@@ -64,40 +64,41 @@ export const adminRolesApi = {
   updateUserRole: (id: number, payload: UserRolePayload) =>
     api.put<UserRole>(`/admin/user-roles/${id}`, payload).then((r) => r.data),
 
-  deleteUserRole: (id: number) =>
-    api.delete(`/admin/user-roles/${id}`),
+  deleteUserRole: (id: number) => api.delete(`/admin/user-roles/${id}`),
 
   // Access Roles assignment
   addAccessRole: (userRoleId: number, accessRoleId: number) =>
-    api.post(`/admin/user-roles/${userRoleId}/access-roles`, { accessRoleId }).then((r) => r.data),
+    api
+      .post(`/admin/user-roles/${userRoleId}/access-roles`, { accessRoleId })
+      .then((r) => r.data),
 
   removeAccessRole: (userRoleId: number, accessRoleId: number) =>
     api.delete(`/admin/user-roles/${userRoleId}/access-roles/${accessRoleId}`),
 
   // Temporary access
   setTemporaryAccess: (
-    userRoleId:   number,
+    userRoleId: number,
     accessRoleId: number,
-    payload:      TemporaryAccessPayload,
+    payload: TemporaryAccessPayload
   ) =>
     api
       .put(
         `/admin/user-roles/${userRoleId}/access-roles/${accessRoleId}/temporary-access`,
-        payload,
+        payload
       )
       .then((r) => r.data),
 
   // Functionality toggles
   toggleFunctionality: (
-    userRoleId:      number,
-    accessRoleId:    number,
+    userRoleId: number,
+    accessRoleId: number,
     functionalityId: number,
-    enabled:         boolean,
+    enabled: boolean
   ) =>
     api
       .put(
         `/admin/user-roles/${userRoleId}/access-roles/${accessRoleId}/functionalities/${functionalityId}`,
-        { enabled },
+        { enabled }
       )
       .then((r) => r.data),
 

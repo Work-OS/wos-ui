@@ -19,21 +19,28 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { useLeaveRequests, useApproveLeave, useRejectLeave } from "@/hooks/use-hr"
+import {
+  useLeaveRequests,
+  useApproveLeave,
+  useRejectLeave,
+} from "@/hooks/use-hr"
 
 export function LeaveSection() {
-  const [page, setPage]         = useState(1)
+  const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
 
-  const { data, isLoading, isError } = useLeaveRequests({ page: page - 1, size: pageSize })
+  const { data, isLoading, isError } = useLeaveRequests({
+    page: page - 1,
+    size: pageSize,
+  })
   const approveMutation = useApproveLeave()
-  const rejectMutation  = useRejectLeave()
+  const rejectMutation = useRejectLeave()
 
-  const requests   = data?.content       ?? []
-  const total      = data?.totalElements ?? 0
-  const totalPages = data?.totalPages    ?? 0
+  const requests = data?.content ?? []
+  const total = data?.totalElements ?? 0
+  const totalPages = data?.totalPages ?? 0
 
-  const pendingCount  = requests.filter((r) => r.status === "pending").length
+  const pendingCount = requests.filter((r) => r.status === "pending").length
   const approvedCount = requests.filter((r) => r.status === "approved").length
 
   return (
@@ -55,21 +62,41 @@ export function LeaveSection() {
       <Table>
         <TableHeader>
           <TableRow>
-            {["Employee", "Type", "From", "To", "Days", "Filed", "Status", "Actions"].map((h) => (
-              <TableHead key={h} className={h === "Actions" ? "text-right" : undefined}>{h}</TableHead>
+            {[
+              "Employee",
+              "Type",
+              "From",
+              "To",
+              "Days",
+              "Filed",
+              "Status",
+              "Actions",
+            ].map((h) => (
+              <TableHead
+                key={h}
+                className={h === "Actions" ? "text-right" : undefined}
+              >
+                {h}
+              </TableHead>
             ))}
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={8} className="py-8 text-center text-[13px] text-muted-foreground">
+              <TableCell
+                colSpan={8}
+                className="py-8 text-center text-[13px] text-muted-foreground"
+              >
                 Loading…
               </TableCell>
             </TableRow>
           ) : requests.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8} className="py-8 text-center text-[13px] text-muted-foreground">
+              <TableCell
+                colSpan={8}
+                className="py-8 text-center text-[13px] text-muted-foreground"
+              >
                 No leave requests
               </TableCell>
             </TableRow>
@@ -91,13 +118,29 @@ export function LeaveSection() {
                       <span className="font-medium">{r.employeeName}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{r.leaveType}</TableCell>
-                  <TableCell className="tabular-nums text-muted-foreground">{r.startDate}</TableCell>
-                  <TableCell className="tabular-nums text-muted-foreground">{r.endDate}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {r.leaveType}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground tabular-nums">
+                    {r.startDate}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground tabular-nums">
+                    {r.endDate}
+                  </TableCell>
                   <TableCell className="text-center">{r.days}</TableCell>
-                  <TableCell className="tabular-nums text-muted-foreground">{r.filedAt}</TableCell>
+                  <TableCell className="text-muted-foreground tabular-nums">
+                    {r.filedAt}
+                  </TableCell>
                   <TableCell>
-                    <StatusBadge variant={r.status === "approved" ? "green" : r.status === "pending" ? "amber" : "red"}>
+                    <StatusBadge
+                      variant={
+                        r.status === "approved"
+                          ? "green"
+                          : r.status === "pending"
+                            ? "amber"
+                            : "red"
+                      }
+                    >
                       {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
                     </StatusBadge>
                   </TableCell>
@@ -113,7 +156,11 @@ export function LeaveSection() {
                               disabled={approveMutation.isPending}
                               onClick={() => approveMutation.mutate(r.id)}
                             >
-                              <HugeiconsIcon icon={CheckmarkCircle01Icon} size={12} strokeWidth={2.5} />
+                              <HugeiconsIcon
+                                icon={CheckmarkCircle01Icon}
+                                size={12}
+                                strokeWidth={2.5}
+                              />
                               <span className="sr-only">Approve</span>
                             </Button>
                           </TooltipTrigger>
@@ -128,7 +175,11 @@ export function LeaveSection() {
                               disabled={rejectMutation.isPending}
                               onClick={() => rejectMutation.mutate(r.id)}
                             >
-                              <HugeiconsIcon icon={Cancel01Icon} size={12} strokeWidth={2.5} />
+                              <HugeiconsIcon
+                                icon={Cancel01Icon}
+                                size={12}
+                                strokeWidth={2.5}
+                              />
                               <span className="sr-only">Decline</span>
                             </Button>
                           </TooltipTrigger>

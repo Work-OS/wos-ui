@@ -9,7 +9,7 @@ export default function EmployeesPage() {
   const canManageUsers = authorities.includes("USER_MANAGEMENT:VIEW_USERS")
 
   return (
-    <div className="p-6 animate-in fade-in duration-300">
+    <div className="animate-in p-6 duration-300 fade-in">
       {canManageUsers ? <UsersSection /> : <EmployeesSection />}
     </div>
   )

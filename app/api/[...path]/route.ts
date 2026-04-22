@@ -92,10 +92,7 @@ async function proxy(request: NextRequest, path: string[]) {
       method: request.method,
       error,
     })
-    return Response.json(
-      { error: "Proxy forwarding failed" },
-      { status: 502 },
-    )
+    return Response.json({ error: "Proxy forwarding failed" }, { status: 502 })
   }
 }
 

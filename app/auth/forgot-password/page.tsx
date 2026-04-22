@@ -22,20 +22,42 @@ export default function ForgotPasswordPage() {
             href="/auth/login"
             className="flex items-center gap-1.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
             Back to sign in
           </Link>
         </div>
 
         {/* Form area */}
         <div className="flex flex-1 items-center justify-center px-8 py-12">
-          <div className="w-full max-w-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="w-full max-w-100 animate-in duration-500 fade-in slide-in-from-bottom-4">
             {!sent ? (
               <>
                 {/* Icon */}
                 <div className="mb-5 flex size-12 items-center justify-center rounded-xl bg-primary/10">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                    <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-primary"
+                  >
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
                   </svg>
                 </div>
 
@@ -43,7 +65,8 @@ export default function ForgotPasswordPage() {
                   Reset your password
                 </h1>
                 <p className="mt-1.5 text-[14px] text-muted-foreground">
-                  Enter your work email and we&apos;ll send a reset link straight to your inbox.
+                  Enter your work email and we&apos;ll send a reset link
+                  straight to your inbox.
                 </p>
 
                 <div className="mt-7 space-y-1.5">
@@ -64,12 +87,27 @@ export default function ForgotPasswordPage() {
                   disabled={!email}
                 >
                   Send reset link
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
                 </Button>
 
                 <p className="mt-5 text-center text-[12px] text-muted-foreground">
                   Remember your password?{" "}
-                  <Link href="/auth/login" className="text-primary hover:underline">
+                  <Link
+                    href="/auth/login"
+                    className="text-primary hover:underline"
+                  >
                     Sign in
                   </Link>
                 </p>
@@ -128,8 +166,18 @@ export default function ForgotPasswordPage() {
             &copy; {new Date().getFullYear()} WorkOS. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
-            <a href="#" className="text-[11px] text-muted-foreground hover:text-foreground">Privacy</a>
-            <a href="#" className="text-[11px] text-muted-foreground hover:text-foreground">Terms</a>
+            <a
+              href="#"
+              className="text-[11px] text-muted-foreground hover:text-foreground"
+            >
+              Privacy
+            </a>
+            <a
+              href="#"
+              className="text-[11px] text-muted-foreground hover:text-foreground"
+            >
+              Terms
+            </a>
           </div>
         </div>
       </div>
@@ -153,12 +201,13 @@ function AuthPanel() {
           backgroundSize: "40px 40px",
         }}
       />
-      <div className="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full bg-cyan-400 opacity-20 blur-3xl" />
+      <div className="pointer-events-none absolute -top-24 -right-24 size-96 rounded-full bg-cyan-400 opacity-20 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-32 -left-16 size-80 rounded-full bg-primary opacity-40 blur-3xl" />
 
       <div className="relative flex flex-1 flex-col justify-center">
-        <blockquote className="text-[22px] font-semibold leading-snug text-white">
-          &ldquo;Your account security is our top priority. We&apos;ll get you back in seconds.&rdquo;
+        <blockquote className="text-[22px] leading-snug font-semibold text-white">
+          &ldquo;Your account security is our top priority. We&apos;ll get you
+          back in seconds.&rdquo;
         </blockquote>
         <p className="mt-4 text-[13px] text-white/60">
           WorkOS uses industry-standard encryption to keep your data safe.
@@ -167,7 +216,8 @@ function AuthPanel() {
         <div className="mt-8 rounded-xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
           <p className="text-[12px] font-medium text-white/80">Security tip</p>
           <p className="mt-1 text-[12px] text-white/50">
-            Use a unique password for your WorkOS account and enable two-factor authentication for extra protection.
+            Use a unique password for your WorkOS account and enable two-factor
+            authentication for extra protection.
           </p>
         </div>
       </div>

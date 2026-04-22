@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: "Audit Log" }
 
 export default function AuditPage() {
   return (
-    <div className="p-6 animate-in fade-in duration-300">
+    <div className="animate-in p-6 duration-300 fade-in">
       <AuditSection />
     </div>
   )

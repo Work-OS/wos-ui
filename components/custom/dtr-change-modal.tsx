@@ -50,8 +50,15 @@ export function DtrChangeModal({ open, onClose }: DtrChangeModalProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {["Missed clock-out", "Missed clock-in", "Wrong time logged", "System error"].map((v) => (
-                    <SelectItem key={v} value={v}>{v}</SelectItem>
+                  {[
+                    "Missed clock-out",
+                    "Missed clock-in",
+                    "Wrong time logged",
+                    "System error",
+                  ].map((v) => (
+                    <SelectItem key={v} value={v}>
+                      {v}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -64,7 +71,9 @@ export function DtrChangeModal({ open, onClose }: DtrChangeModalProps) {
                 </SelectTrigger>
                 <SelectContent>
                   {["Time in", "Time out", "Both"].map((v) => (
-                    <SelectItem key={v} value={v}>{v}</SelectItem>
+                    <SelectItem key={v} value={v}>
+                      {v}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -84,17 +93,27 @@ export function DtrChangeModal({ open, onClose }: DtrChangeModalProps) {
 
           <div className="space-y-1.5">
             <Label htmlFor="dtr-reason">Reason / explanation</Label>
-            <Textarea id="dtr-reason" placeholder="Briefly explain why the correction is needed…" rows={2} className="resize-none" />
+            <Textarea
+              id="dtr-reason"
+              placeholder="Briefly explain why the correction is needed…"
+              rows={2}
+              className="resize-none"
+            />
           </div>
 
           <div className="rounded-lg border border-warning-border bg-warning-light px-3 py-2.5 text-[12px] text-warning">
-            DTR corrections require HR approval and may affect your attendance record and salary computation.
+            DTR corrections require HR approval and may affect your attendance
+            record and salary computation.
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
-          <Button size="sm" onClick={onClose}>Submit correction</Button>
+          <Button variant="outline" size="sm" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button size="sm" onClick={onClose}>
+            Submit correction
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

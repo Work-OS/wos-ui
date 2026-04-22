@@ -2,24 +2,24 @@
 
 import { useEffect, useRef, useState, useCallback } from "react"
 
-const INACTIVE_MS  = 15 * 60 * 1000   // 15 minutes → show warning
-const GRACE_MS     = 2  * 60 * 1000   // 2 minutes grace → auto-logout
-const TICK_MS      = 1_000
+const INACTIVE_MS = 15 * 60 * 1000 // 15 minutes → show warning
+const GRACE_MS = 2 * 60 * 1000 // 2 minutes grace → auto-logout
+const TICK_MS = 1_000
 
 type Phase = "active" | "warning" | "expired"
 
 export function useInactivity() {
-  const [phase,     setPhase]     = useState<Phase>("active")
-  const [countdown, setCountdown] = useState(GRACE_MS / 1000)  // seconds left in grace
+  const [phase, setPhase] = useState<Phase>("active")
+  const [countdown, setCountdown] = useState(GRACE_MS / 1000) // seconds left in grace
 
   const inactiveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const graceTimer    = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const tickInterval  = useRef<ReturnType<typeof setInterval> | null>(null)
+  const graceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const tickInterval = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const clearAll = useCallback(() => {
     if (inactiveTimer.current) clearTimeout(inactiveTimer.current)
-    if (graceTimer.current)    clearTimeout(graceTimer.current)
-    if (tickInterval.current)  clearInterval(tickInterval.current)
+    if (graceTimer.current) clearTimeout(graceTimer.current)
+    if (tickInterval.current) clearInterval(tickInterval.current)
   }, [])
 
   const startInactiveTimer = useCallback(() => {
@@ -54,8 +54,17 @@ export function useInactivity() {
   }, [startInactiveTimer])
 
   useEffect(() => {
-    const events = ["mousemove", "mousedown", "keydown", "touchstart", "scroll", "click"]
-    events.forEach((e) => window.addEventListener(e, handleActivity, { passive: true }))
+    const events = [
+      "mousemove",
+      "mousedown",
+      "keydown",
+      "touchstart",
+      "scroll",
+      "click",
+    ]
+    events.forEach((e) =>
+      window.addEventListener(e, handleActivity, { passive: true })
+    )
     startInactiveTimer()
 
     return () => {
